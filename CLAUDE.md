@@ -286,37 +286,61 @@ Tu ne dois PAS modifier CLAUDE.md sans validation.
 
 | Phase | Période | Focus | Compétences validées |
 |-------|---------|-------|----------------------|
-| **Phase 1** | Maintenant | **Data + analyse exploratoire** | C1, C2, C3, C4 (partiel) |
-| Phase 2 | Sprint 2 | API REST data + RGPD | C4 (complet), C5 |
-| Phase 3 | Sprint 3 | Modèles ML (HMM + RF) + tests | C9, C12 |
+| Phase 1 | ✅ Terminé | Data + analyse exploratoire | C1, C2, C3, C4 (partiel) |
+| Phase 2 | ✅ Terminé | API REST data + RGPD | C4 (complet), C5 |
+| **Phase 3** | **En cours** | **Modèles ML (comparaisons + choix final)** | C9, C12 |
 | Phase 4 | Sprint 4 | MLOps (MLflow, CI/CD ML) + monitoring | C11, C13 |
-| Phase 5 | Sprint 5 | Service IA tiers (Mistral) + benchmark | C6, C7, C8 |
+| Phase 5 | Sprint 5 | Service IA tiers (Mistral/Gemini) + chatbot | C6, C7, C8 |
 | Phase 6 | Sprint 6 | Application Next.js | C14, C15, C17 |
 | Phase 7 | Sprint 7 | CI/CD app + monitoring + incidents | C18, C19, C20, C21 |
 | Phase 8 | Sprint 8 | Rapports pro + soutenance | C16 transverse |
 
-**Phase actuelle : Phase 1.** Tout ce qui n'est pas dans cette phase est hors scope pour l'instant.
+**Phase actuelle : Phase 3.** Focus sur les modèles ML avec comparaisons rigoureuses.
 
 ---
 
-## 10. Décisions ML arrêtées (pour mémoire)
+## 10. Décisions ML (avec comparaisons)
 
 ### 10.1 Modèle 1 — Détection de régime de marché
 
-- **Algorithme** : Hidden Markov Model (HMM, lib `hmmlearn`)
+**Modèles comparés :**
+| Modèle | Lib | Pourquoi le tester |
+|--------|-----|-------------------|
+| **HMM** (choix final) | `hmmlearn` | Standard pour séries temporelles à états cachés |
+| K-Means | `sklearn` | Baseline simple, clustering sur features |
+| GMM | `sklearn` | Comme K-Means mais probabiliste |
+
 - **États** : 4 régimes (bull / bear / volatile / stable)
-- **Features d'entrée** : VIX, spread crédit haut rendement, courbe taux 10Y-2Y, returns S&P500, volatilité réalisée
-- **Validation** : labels rétrospectifs (NBER recessions + drawdowns SP500)
+- **Features d'entrée** : VIX, spread crédit HY, courbe taux 10Y-2Y, returns S&P500, volatilité réalisée
+- **Validation** : labels rétrospectifs (NBER recessions + drawdowns SP500 > 20%)
+- **Métrique** : Adjusted Rand Index vs labels historiques
 
 ### 10.2 Modèle 2 — Prédiction de rendement
 
-- **Algorithme** : Random Forest Classifier (binaire : rendement positif/négatif à 1 mois)
-- **Features** : indicateurs techniques (SMA 20/50/200, RSI, MACD, Bollinger), volume, returns lagged, **régime sortant du modèle 1**
+**Modèles comparés :**
+| Modèle | Lib | Pourquoi le tester |
+|--------|-----|-------------------|
+| **Random Forest** (choix final) | `sklearn` | Robuste, gère bien les features hétérogènes |
+| XGBoost | `xgboost` | Souvent meilleur en compétition |
+| Logistic Regression | `sklearn` | Baseline interprétable |
+
+- **Cible** : Binaire (rendement positif/négatif à 1 mois)
+- **Features** : indicateurs techniques (SMA, RSI, MACD, Bollinger), returns lagged, **régime du modèle 1**
 - **Validation** : walk-forward roulant TimeSeriesSplit
-- **Métrique principale** : directional accuracy (signe correct du rendement)
+- **Métriques** : Accuracy, Precision, Recall, F1, AUC-ROC
 
-### 10.3 Optimisation portefeuille
+### 10.3 Stratégies de portefeuille comparées
 
+**Stratégies benchmark :**
+| Stratégie | Description |
+|-----------|-------------|
+| Buy & Hold SPY | 100% SPY tout le temps |
+| Buy & Hold URTH | 100% MSCI World |
+| 60/40 | 60% SPY + 40% TLT, rebalancé annuellement |
+| Equal Weight | 12.5% chaque ETF, rebalancé mensuellement |
+| **DeepPilot** | Notre stratégie ML |
+
+**Optimisation :**
 - **Méthode** : Markowitz contraint (max Sharpe ratio)
 - **Lib** : `scipy.optimize.minimize` (méthode SLSQP)
 - **Contraintes** : poids min 5% / max 25% par ETF, somme = 1, pas de short
@@ -326,10 +350,15 @@ Tu ne dois PAS modifier CLAUDE.md sans validation.
 
 ### 10.4 Validation rigoureuse
 
-- Walk-forward roulant : optim sur N années glissantes, test sur année suivante
-- Pas de look-ahead bias : assertions strictes sur les indices temporels en tests
-- Comparaison à 4 benchmarks systématique
-- Métriques : Sharpe, max drawdown, CAGR, vol annualisée, Calmar ratio
+- **Walk-forward roulant** : train sur 5 ans glissants, test sur 1 an suivant
+- **Pas de look-ahead bias** : assertions strictes sur les indices temporels
+- **Métriques de comparaison** :
+  - Sharpe ratio
+  - CAGR (Compound Annual Growth Rate)
+  - Max Drawdown
+  - Volatilité annualisée
+  - Calmar ratio (CAGR / Max DD)
+  - Win rate (% mois positifs)
 
 ---
 
@@ -339,4 +368,4 @@ Le projet est purement éducatif. Il ne constitue pas un conseil en investisseme
 
 ---
 
-**Dernière mise à jour : 6 mai 2026**
+**Dernière mise à jour : 15 mai 2026**

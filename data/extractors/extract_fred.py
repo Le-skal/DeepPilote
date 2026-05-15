@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 # Format: (code_fred, nom_colonne, description)
 FRED_SERIES: list[tuple[str, str, str]] = [
     ("VIXCLS", "vix", "CBOE Volatility Index"),
-    ("BAMLH0A0HYM2", "credit_spread_hy", "BofA High Yield Credit Spread"),
+    ("BAA10Y", "credit_spread_hy", "Moody's BAA Corporate - 10Y Treasury Spread"),
     ("T10Y2Y", "yield_curve_10y2y", "10Y-2Y Treasury Yield Spread"),
     ("DGS3MO", "t3mo", "3-Month Treasury Rate (risk-free)"),
     ("DGS10", "t10y", "10-Year Treasury Rate"),
