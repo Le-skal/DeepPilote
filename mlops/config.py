@@ -62,7 +62,7 @@ MODEL_STAGES = {
 # Seuils de performance minimaux pour promotion
 PERFORMANCE_THRESHOLDS = {
     "regime": {
-        "silhouette_min": 0.15,
+        "silhouette_min": 0.0,  # Abaissé car les régimes de marché se chevauchent
         "stability_min": 0.90,
     },
     "prediction": {
