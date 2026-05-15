@@ -1,7 +1,7 @@
 # DeepPilot — TODO Principal
 
-> **Phase actuelle : Phase 4 terminée**
-> Prochaine étape : Phase 5 (Mistral API - Sentiment Analysis)
+> **Phase actuelle : Phase 4.5 à faire**
+> Prochaine étape : Améliorer validation HMM, puis Phase 5
 
 ---
 
@@ -13,6 +13,7 @@
 | Phase 2 | API REST + RGPD | ✅ Terminée | C4, C5 |
 | Phase 3 | Modèles ML (HMM + RF) | ✅ Terminée | C9, C12 |
 | Phase 4 | MLOps (MLflow, monitoring) | ✅ Terminée | C11, C13 |
+| **Phase 4.5** | **Validation HMM améliorée** | ⏳ À faire | C13 |
 | Phase 5 | Service IA tiers (Mistral) | ⏳ À faire | C6, C7, C8 |
 | Phase 6 | Application Next.js | ⏳ À faire | C14, C15, C17 |
 | Phase 7 | CI/CD + monitoring app | ⏳ À faire | C18, C19, C20, C21 |
@@ -43,6 +44,29 @@
 - **Monitoring** : alertes de performance avec seuils
 - **30 tests MLOps passent**
 - **182 tests totaux**
+
+---
+
+## Phase 4.5 — Validation HMM améliorée
+
+Remplacer le silhouette score (peu pertinent pour régimes de marché) par des métriques économiques.
+
+### Nouvelles métriques à implémenter
+
+| Métrique | Description | Seuil proposé |
+|----------|-------------|---------------|
+| `crisis_recall` | % des crises historiques (NBER, drawdown >20%) détectées comme régime bear/volatile | ≥ 0.80 |
+| `regime_return_separation` | Rendement moyen(bull) > rendement moyen(bear) | True |
+| `regime_vol_separation` | Volatilité(volatile) > volatilité(stable) | True |
+| `stability` | Déjà implémenté, garder | ≥ 0.90 |
+
+### Étapes
+
+1. [ ] Créer `ml/evaluation/regime_validation.py` avec les nouvelles métriques
+2. [ ] Définir les dates de crises historiques (COVID-2020, 2022, 2008 si données dispo)
+3. [ ] Mettre à jour `mlops/config.py` avec les nouveaux seuils
+4. [ ] Mettre à jour `scripts/validate_models.py` pour utiliser les nouvelles métriques
+5. [ ] Mettre à jour les tests
 
 ---
 
