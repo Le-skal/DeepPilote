@@ -58,13 +58,43 @@
 
 ---
 
-## Prochaines étapes (Phase 3)
+## Résultats Phase 3 — Modèles ML
 
-1. **HMM** : Entraîner sur VIX + yield curve + vol réalisée → 4 états (bull/bear/volatile/stable)
-2. **Random Forest** : Prédire signe du return mensuel → features techniques + régime
-3. **Backtest** : Optimisation Markowitz conditionnelle au régime
-4. **Validation** : Walk-forward, pas de look-ahead bias
+### HMM (Détection de régime)
+- **4 régimes** détectés : bull, bear, volatile, stable
+- **Stabilité** : 97.9% (transitions peu fréquentes)
+- **Validation** : Détecte correctement COVID-2020, crise 2022
+
+### Random Forest (Prédiction)
+- **Accuracy** : 55-58%
+- **AUC** : ~0.51
+- **Features importantes** : VIX, momentum 20j, yield curve
+
+### Backtest DeepPilot (2010-2025)
+| Métrique | DeepPilot | SPY B&H | 60/40 |
+|----------|-----------|---------|-------|
+| CAGR | 5.59% | 12.8% | 8.2% |
+| Volatilité | 8.5% | 15.2% | 9.8% |
+| Sharpe | 0.41 | 0.71 | 0.62 |
+| Max Drawdown | -17.2% | -33.7% | -22.4% |
+
+> DeepPilot est une stratégie défensive : volatilité et drawdown réduits.
+
+---
+
+## Résultats Phase 4 — MLOps
+
+### Drift Detection
+- **Yield curve** : PSI = 5.49 (drift majeur post-2022, hausse des taux)
+- **Volatilité SPY** : PSI = 0.31 (drift modéré)
+- **Autres features** : PSI < 0.1 (stables)
+
+### MLflow Tracking
+- 4 expériences configurées (HMM, RF, backtest, production)
+- Model registry avec versioning
+- CI/CD GitHub Actions pour validation automatique
 
 ---
 
 *Analyse réalisée sur données 2010-2026 (16 ans, ~4100 jours de trading)*
+*Mise à jour : 15 mai 2026 (Phase 4 complète)*

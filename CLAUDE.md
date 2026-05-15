@@ -166,7 +166,7 @@ Raphaël Martin (alias Skal / Le-skal), 3e année Bachelor Data & IA à l'ECE Pa
 
 ## 6. Architecture du projet
 
-### 6.1 Structure dossiers (phase 1 — data + analyse)
+### 6.1 Structure dossiers (Phase 4 — complète)
 
 ```
 deeppilot/
@@ -176,55 +176,49 @@ deeppilot/
 ├── .env.example
 ├── .env                       # local, gitignored
 ├── .gitignore
-├── .python-version            # 3.11
 ├── pyproject.toml             # config black/ruff/pytest
 ├── requirements.txt
 │
 ├── data/
-│   ├── extractors/            # scripts d'extraction depuis sources
-│   │   ├── __init__.py
-│   │   ├── extract_yfinance.py
-│   │   ├── extract_fred.py
-│   │   ├── extract_files.py        # CSV INSEE/BCE
-│   │   └── extract_bigquery.py
-│   ├── pipeline/
-│   │   ├── __init__.py
-│   │   ├── aggregate.py
-│   │   ├── cleaning_rules.py
-│   │   └── load_to_db.py           # CSV → Supabase
-│   ├── sql/
-│   │   ├── postgres/
-│   │   │   ├── 01_init_schema.sql
-│   │   │   └── ...
-│   │   └── bigquery/
-│   ├── raw/                        # données brutes téléchargées (gitignored si volumineux)
-│   ├── processed/                  # données nettoyées
-│   └── README.md
+│   ├── extractors/            # scripts d'extraction (yfinance, FRED, BigQuery)
+│   ├── pipeline/              # agrégation et nettoyage
+│   ├── sql/                   # requêtes SQL (Postgres, BigQuery)
+│   └── processed/             # données nettoyées
 │
-├── analysis/                       # notebooks d'exploration
-│   ├── 01_explore_etfs.ipynb
-│   ├── 02_correlations.ipynb
-│   ├── 03_returns_distributions.ipynb
-│   └── 04_macro_features.ipynb
+├── ml/
+│   ├── models/                # modèles ML (HMM, GMM, K-Means, RF, XGBoost)
+│   ├── features/              # feature engineering
+│   ├── portfolio/             # optimisation Markowitz, backtesting
+│   └── evaluation/            # métriques et comparaisons
 │
-├── tests/
-│   ├── test_extractors.py
-│   ├── test_aggregate.py
-│   └── test_data_quality.py
+├── mlops/
+│   ├── config.py              # configuration MLflow
+│   ├── tracking.py            # wrapper MLflow
+│   ├── registry.py            # model registry
+│   └── monitoring.py          # drift detection (PSI, KS)
 │
-└── docs/
-    ├── data_sources.md
-    ├── database_schema.md
-    └── ...
+├── api/                       # API FastAPI RGPD-compliant
+│
+├── analysis/                  # notebooks d'exploration (01-09)
+│   ├── 01-04                  # exploration données
+│   ├── 05-07                  # modèles ML et backtest
+│   └── 08-09                  # MLOps (tracking, monitoring)
+│
+├── tests/                     # 182 tests (data, ML, MLOps, API)
+│
+├── scripts/                   # scripts utilitaires
+│
+└── docs/                      # documentation
 ```
 
-### 6.2 Structure dossiers (phases ultérieures, à anticiper)
+### 6.2 Dossiers ajoutés (Phases 2-4)
 
-Quand on passera aux modèles ML : ajout de `/ml/`
-Quand on passera à l'API : ajout de `/api/`
-Quand on passera au front : ajout de `/web/`
+Les dossiers suivants ont été créés au fil des phases :
+- `/ml/` : modèles ML (HMM, RF), features, portfolio, backtest (Phase 3)
+- `/mlops/` : tracking MLflow, registry, monitoring (Phase 4)
+- `/api/` : API FastAPI RGPD-compliant (Phase 2)
 
-**Ne crée pas ces dossiers maintenant**, ils seront ajoutés en temps voulu.
+**À venir (Phase 6)** : `/web/` pour l'application Next.js
 
 ---
 
@@ -288,14 +282,14 @@ Tu ne dois PAS modifier CLAUDE.md sans validation.
 |-------|---------|-------|----------------------|
 | Phase 1 | ✅ Terminé | Data + analyse exploratoire | C1, C2, C3, C4 (partiel) |
 | Phase 2 | ✅ Terminé | API REST data + RGPD | C4 (complet), C5 |
-| **Phase 3** | **En cours** | **Modèles ML (comparaisons + choix final)** | C9, C12 |
-| Phase 4 | Sprint 4 | MLOps (MLflow, CI/CD ML) + monitoring | C11, C13 |
-| Phase 5 | Sprint 5 | Service IA tiers (Mistral/Gemini) + chatbot | C6, C7, C8 |
-| Phase 6 | Sprint 6 | Application Next.js | C14, C15, C17 |
-| Phase 7 | Sprint 7 | CI/CD app + monitoring + incidents | C18, C19, C20, C21 |
-| Phase 8 | Sprint 8 | Rapports pro + soutenance | C16 transverse |
+| Phase 3 | ✅ Terminé | Modèles ML (HMM, RF, backtest) | C9, C12 |
+| Phase 4 | ✅ Terminé | MLOps (MLflow, CI/CD ML) + monitoring | C11, C13 |
+| **Phase 5** | **À faire** | **Service IA tiers (Mistral) + sentiment** | C6, C7, C8 |
+| Phase 6 | À faire | Application Next.js | C14, C15, C17 |
+| Phase 7 | À faire | CI/CD app + monitoring + incidents | C18, C19, C20, C21 |
+| Phase 8 | À faire | Rapports pro + soutenance | C16 transverse |
 
-**Phase actuelle : Phase 3.** Focus sur les modèles ML avec comparaisons rigoureuses.
+**Phase actuelle : Phase 4 terminée.** Prochaine étape : Phase 5 (Mistral API pour sentiment analysis).
 
 ---
 

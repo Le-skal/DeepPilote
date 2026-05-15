@@ -1,0 +1,76 @@
+name: ML Tests
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'ml/**'
+      - 'mlops/**'
+      - 'tests/ml/**'
+      - 'tests/mlops/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'ml/**'
+      - 'mlops/**'
+      - 'tests/ml/**'
+      - 'tests/mlops/**'
+
+jobs:
+  test-ml:
+    name: ML Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov
+
+      - name: Run ML tests
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+        run: |
+          python -m pytest tests/ml/ -v --tb=short
+
+      - name: Run MLOps tests
+        run: |
+          python -m pytest tests/mlops/ -v --tb=short
+
+  test-models:
+    name: Model Training Smoke Test
+    runs-on: ubuntu-latest
+    needs: test-ml
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Validate models
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+        run: |
+          python scripts/validate_models.py

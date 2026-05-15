@@ -47,9 +47,10 @@ data/raw/files/*.csv
 data/processed/*.csv
 data/processed/*.parquet
 
-# MLflow
-mlruns/
-mlartifacts/
+# MLflow (n'importe où dans le projet)
+**/mlruns/
+**/mlartifacts/
+mlflow.db
 
 # DVC
 .dvc/cache/
@@ -75,3 +76,6 @@ htmlcov/
 # Misc
 *.bak
 *.tmp
+
+# Erreurs pip (fichiers créés par erreur de syntaxe)
+=*
