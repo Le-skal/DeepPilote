@@ -1,93 +1,178 @@
 # Procédures TRI (Traitement des Risques et Incidents) — DeepPilot
 
-> **Note** : Ce document sera complété en Phase 2/7 lorsque l'application sera en production.
-> Pour l'instant (Phase 1), ces procédures sont préparées mais non actives.
+> Document de procédures pour la gestion des incidents de sécurité et l'exercice des droits RGPD.
 
-## Statut actuel (Phase 1)
-
-Pas d'utilisateurs, pas de données personnelles → pas de risques RGPD identifiés.
+**Dernière mise à jour** : Mai 2026
 
 ---
 
-## À compléter en phases ultérieures
+## 1. Procédure de notification de violation de données
 
-### 1. Procédure de notification de violation de données
+### 1.1 Définition
 
-#### Délai
-- Notification à la CNIL : 72 heures maximum après découverte
-- Notification aux personnes concernées : sans délai injustifié si risque élevé
+Une violation de données personnelles est une faille de sécurité entraînant, de manière accidentelle ou illicite :
+- La destruction
+- La perte
+- L'altération
+- La divulgation non autorisée
+- L'accès non autorisé à des données personnelles
 
-#### Étapes
-1. Identification et confinement de l'incident
-2. Évaluation de la gravité
-3. Documentation dans le registre des violations
-4. Notification CNIL si nécessaire
-5. Notification utilisateurs si nécessaire
-6. Mesures correctives
+### 1.2 Délais de notification
 
-#### Formulaire CNIL
-https://www.cnil.fr/fr/notifier-une-violation-de-donnees-personnelles
+| Destinataire | Délai | Condition |
+|--------------|-------|-----------|
+| CNIL | 72 heures | Risque pour les droits des personnes |
+| Personnes concernées | Sans délai | Risque élevé pour leurs droits |
 
----
+### 1.3 Procédure
 
-### 2. Procédure d'exercice des droits
+```
+1. DÉTECTION
+   └── Identification de l'incident (logs, alertes, signalement)
 
-#### Droits concernés
-- Droit d'accès (art. 15 RGPD)
-- Droit de rectification (art. 16)
-- Droit à l'effacement (art. 17)
-- Droit à la portabilité (art. 20)
-- Droit d'opposition (art. 21)
+2. CONFINEMENT (< 1 heure)
+   ├── Isolation du système affecté
+   ├── Révocation des accès compromis
+   └── Préservation des preuves
 
-#### Délai de réponse
-- 1 mois maximum (prolongeable de 2 mois si complexe)
+3. ÉVALUATION (< 24 heures)
+   ├── Nature des données affectées
+   ├── Nombre de personnes concernées
+   ├── Probabilité d'utilisation malveillante
+   └── Gravité des conséquences
 
-#### Canal de contact
-- Email : [à définir]
-- Formulaire in-app : [à définir]
+4. NOTIFICATION (< 72 heures si nécessaire)
+   ├── CNIL : https://www.cnil.fr/fr/notifier-une-violation
+   └── Personnes concernées (si risque élevé)
 
----
+5. REMÉDIATION
+   ├── Correction de la vulnérabilité
+   ├── Mise à jour des mesures de sécurité
+   └── Documentation dans le registre des violations
 
-### 3. Procédure de gestion des sous-traitants
+6. BILAN
+   └── Analyse post-mortem et amélioration continue
+```
 
-#### Sous-traitants actuels
-| Sous-traitant | Service | Localisation | Contrat DPA |
-|---------------|---------|--------------|-------------|
-| Supabase | BDD | EU (Francfort) | À signer |
-| Vercel | Hébergement | US (SCCs) | À vérifier |
-| Google Cloud | BigQuery | EU | DPA standard |
+### 1.4 Registre des violations
 
-#### Vérifications périodiques
-- Annuelle : revue des contrats et certifications
-- À chaque changement : mise à jour du registre
-
----
-
-### 4. Analyse d'impact (AIPD)
-
-#### Critères de déclenchement
-Une AIPD est requise si le traitement :
-- Implique une évaluation systématique (scoring, profilage)
-- Traite des données sensibles à grande échelle
-- Surveille systématiquement un lieu public
-
-#### Statut DeepPilot
-- Phase 1-5 : AIPD non requise (pas de données personnelles)
-- Phase 6+ : À évaluer selon les fonctionnalités
+| Date | Description | Données | Personnes | CNIL | Mesures |
+|------|-------------|---------|-----------|------|---------|
+| - | Aucune violation à date | - | - | - | - |
 
 ---
 
-## Contacts
+## 2. Procédure d'exercice des droits
+
+### 2.1 Droits concernés
+
+| Droit | Article RGPD | Délai |
+|-------|--------------|-------|
+| Accès | Art. 15 | 1 mois |
+| Rectification | Art. 16 | 1 mois |
+| Effacement ("droit à l'oubli") | Art. 17 | 1 mois |
+| Limitation | Art. 18 | 1 mois |
+| Portabilité | Art. 20 | 1 mois |
+| Opposition | Art. 21 | 1 mois |
+
+### 2.2 Canal de demande
+
+**Email** : [à définir]
+
+### 2.3 Procédure de traitement
+
+```
+1. RÉCEPTION
+   └── Accusé de réception sous 48h
+
+2. VÉRIFICATION IDENTITÉ
+   └── Demande de justificatif si doute
+
+3. TRAITEMENT (< 1 mois)
+   ├── Recherche des données
+   ├── Exécution de la demande
+   └── Documentation
+
+4. RÉPONSE
+   ├── Communication des données (accès)
+   ├── Confirmation d'exécution (rectification, effacement)
+   └── Export (portabilité)
+```
+
+### 2.4 Cas de refus
+
+Le responsable peut refuser si :
+- La demande est manifestement infondée ou excessive
+- Les données sont nécessaires pour une obligation légale
+- Les données sont nécessaires à la constatation d'un droit en justice
+
+---
+
+## 3. Gestion des sous-traitants
+
+### 3.1 Liste des sous-traitants
+
+| Sous-traitant | Service | Localisation | DPA | Dernière revue |
+|---------------|---------|--------------|-----|----------------|
+| Supabase Inc. | Base de données PostgreSQL | EU (Francfort) | Oui | Mai 2026 |
+| Google Cloud | BigQuery (analytics) | EU | Oui | Mai 2026 |
+| Vercel (futur) | Hébergement frontend | EU | À signer | - |
+
+### 3.2 Exigences contractuelles
+
+Chaque sous-traitant doit :
+- Signer un DPA (Data Processing Agreement)
+- Garantir des mesures de sécurité appropriées
+- Ne pas faire appel à un sous-traitant ultérieur sans autorisation
+- Notifier les violations sous 48h
+
+### 3.3 Revue périodique
+
+- **Fréquence** : Annuelle
+- **Éléments vérifiés** :
+  - Certifications à jour (ISO 27001, SOC 2)
+  - Localisation des données
+  - Mesures de sécurité
+
+---
+
+## 4. Analyse d'impact (AIPD)
+
+### 4.1 Critères de déclenchement
+
+Une AIPD est obligatoire si le traitement présente un risque élevé :
+
+| Critère | DeepPilot |
+|---------|-----------|
+| Évaluation/scoring systématique | Non |
+| Données sensibles à grande échelle | Non |
+| Surveillance de lieux publics | Non |
+| Croisement de données | Non |
+| Personnes vulnérables | Non |
+
+**Conclusion** : AIPD non requise actuellement.
+
+### 4.2 Réévaluation
+
+À réévaluer si :
+- Introduction de fonctionnalités de profilage utilisateur
+- Collecte de données personnelles sensibles
+- Traitement automatisé avec effets significatifs
+
+---
+
+## 5. Contacts
 
 | Rôle | Nom | Email |
 |------|-----|-------|
-| Responsable de traitement | [À définir] | - |
-| DPO (si applicable) | [À définir] | - |
-| Contact technique | Raphaël Martin | - |
+| Responsable de traitement | Raphaël Martin | [à définir] |
+| DPO (si applicable) | Raphaël Martin | [à définir] |
+| Contact technique | Raphaël Martin | [à définir] |
 
 ---
 
-## Références
+## 6. Références
 
-- Guide CNIL AIPD : https://www.cnil.fr/fr/RGPD-analyse-impact-protection-des-donnees-aipd
-- Notification violations : https://www.cnil.fr/fr/les-violations-de-donnees-personnelles
+- [Guide CNIL sur les violations](https://www.cnil.fr/fr/les-violations-de-donnees-personnelles)
+- [Notification CNIL](https://www.cnil.fr/fr/notifier-une-violation-de-donnees-personnelles)
+- [Guide AIPD](https://www.cnil.fr/fr/RGPD-analyse-impact-protection-des-donnees-aipd)
