@@ -40,6 +40,7 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
         run: |
           python -m pytest tests/ml/ -v --tb=short
@@ -71,6 +72,7 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
         run: |
           python scripts/validate_models.py
