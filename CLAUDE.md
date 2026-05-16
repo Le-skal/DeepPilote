@@ -284,12 +284,42 @@ Tu ne dois PAS modifier CLAUDE.md sans validation.
 | Phase 2 | ✅ Terminé | API REST data + RGPD | C4 (complet), C5 |
 | Phase 3 | ✅ Terminé | Modèles ML (HMM, RF, backtest) | C9, C12 |
 | Phase 4 | ✅ Terminé | MLOps (MLflow, CI/CD ML) + monitoring | C11, C13 |
-| **Phase 5** | **À faire** | **Service IA tiers (Mistral) + sentiment** | C6, C7, C8 |
-| Phase 6 | À faire | Application Next.js | C14, C15, C17 |
+| **Phase 4.5** | **À faire** | **Validation HMM améliorée (métriques éco.)** | C13 (renforcement) |
+| Phase 5 | À faire | Service IA tiers (Mistral) + sentiment | C6, C7, C8 |
+| Phase 6 | À faire | Application Next.js + intégration API ML | C10, C14, C15, C17 |
 | Phase 7 | À faire | CI/CD app + monitoring + incidents | C18, C19, C20, C21 |
 | Phase 8 | À faire | Rapports pro + soutenance | C16 transverse |
 
-**Phase actuelle : Phase 4 terminée.** Prochaine étape : Phase 5 (Mistral API pour sentiment analysis).
+**Phase actuelle : Phase 4.5 à faire.** Prochaine étape : Améliorer validation HMM, puis Phase 5.
+
+### 9.1 Détail des compétences par bloc
+
+**Bloc 1 — Collecte, stockage, mise à disposition des données (C1-C5)**
+- C1 : Automatiser l'extraction de données (yfinance, FRED, BigQuery, fichiers CSV)
+- C2 : Développer des requêtes SQL d'extraction (PostgreSQL, BigQuery)
+- C3 : Développer des règles d'agrégation de données (pipeline, nettoyage)
+- C4 : Créer une base de données RGPD-compliant (Supabase + registre traitements)
+- C5 : Développer une API REST mettant à disposition les données (FastAPI)
+
+**Bloc 2 — Modèles et services d'IA (C6-C13)**
+- C6 : Organiser et réaliser une veille technique et réglementaire
+- C7 : Identifier des services d'IA préexistants (benchmark Mistral vs autres)
+- C8 : Paramétrer un service d'IA (configuration Mistral API)
+- C9 : Développer une API exposant un modèle d'IA (FastAPI + HMM/RF)
+- C10 : Intégrer l'API d'un modèle d'IA dans une application (Next.js consomme FastAPI)
+- C11 : Monitorer un modèle d'IA (MLflow, drift detection PSI/KS)
+- C12 : Programmer les tests automatisés d'un modèle d'IA (pytest ML)
+- C13 : Créer une chaîne de livraison continue d'un modèle d'IA (GitHub Actions ML)
+
+**Bloc 3 — Application intégrant un service d'IA (C14-C21)**
+- C14 : Analyser le besoin d'application (spécifications fonctionnelles)
+- C15 : Concevoir le cadre technique (architecture Next.js + FastAPI)
+- C16 : Coordonner la réalisation technique (gestion agile, rapport)
+- C17 : Développer les composants et interfaces (Next.js + shadcn/ui)
+- C18 : Automatiser les tests du code source (CI/CD app)
+- C19 : Créer un processus de livraison continue (Vercel)
+- C20 : Surveiller une application (Sentry + UptimeRobot)
+- C21 : Résoudre les incidents techniques (procédures, post-mortems)
 
 ---
 
@@ -362,4 +392,4 @@ Le projet est purement éducatif. Il ne constitue pas un conseil en investisseme
 
 ---
 
-**Dernière mise à jour : 15 mai 2026**
+**Dernière mise à jour : 16 mai 2026**

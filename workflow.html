@@ -1,0 +1,1752 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeepPilot - Workflow Projet</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #eee;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            background: linear-gradient(90deg, #00d4ff, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: #888;
+            margin-top: 10px;
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+        }
+
+        .legend-dot.done { background: #10b981; }
+        .legend-dot.current { background: #f59e0b; }
+        .legend-dot.todo { background: #6b7280; }
+
+        .timeline-container {
+            overflow-x: auto;
+            padding: 20px 0;
+        }
+
+        .timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            min-width: 2400px;
+            padding: 20px;
+        }
+
+        .phase-row {
+            display: flex;
+            align-items: stretch;
+            gap: 10px;
+        }
+
+        .phase-label {
+            min-width: 180px;
+            padding: 15px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border-left: 4px solid;
+        }
+
+        .phase-label.done { border-color: #10b981; }
+        .phase-label.current { border-color: #f59e0b; }
+        .phase-label.todo { border-color: #6b7280; }
+
+        .phase-label h3 {
+            font-size: 1em;
+            margin-bottom: 5px;
+        }
+
+        .phase-label .competences {
+            font-size: 0.75em;
+            color: #888;
+        }
+
+        .phase-label .status {
+            font-size: 0.8em;
+            margin-top: 5px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            display: inline-block;
+            width: fit-content;
+        }
+
+        .status.done { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .status.current { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+        .status.todo { background: rgba(107, 114, 128, 0.2); color: #9ca3af; }
+
+        .phase-steps {
+            display: flex;
+            gap: 8px;
+            flex: 1;
+            align-items: center;
+            position: relative;
+        }
+
+        .phase-steps::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: rgba(255,255,255,0.1);
+            z-index: 0;
+        }
+
+        .step {
+            position: relative;
+            z-index: 1;
+            min-width: 140px;
+            padding: 12px 15px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .step:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+        .step.done {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .step.current {
+            background: rgba(245, 158, 11, 0.15);
+            border-color: rgba(245, 158, 11, 0.3);
+        }
+
+        .step.todo {
+            background: rgba(107, 114, 128, 0.1);
+            border-color: rgba(107, 114, 128, 0.2);
+        }
+
+        .step-title {
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .step-subtitle {
+            font-size: 0.7em;
+            color: #888;
+        }
+
+        .step-icon {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7em;
+        }
+
+        .step-icon.done { background: #10b981; }
+        .step-icon.current { background: #f59e0b; }
+        .step-icon.todo { background: #6b7280; }
+
+        .arrow {
+            color: rgba(255,255,255,0.3);
+            font-size: 1.2em;
+            z-index: 1;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: #1e293b;
+            border-radius: 15px;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 30px;
+            position: relative;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            font-size: 1.2em;
+        }
+
+        .modal h2 {
+            margin-bottom: 10px;
+            color: #00d4ff;
+        }
+
+        .modal h3 {
+            margin-top: 20px;
+            margin-bottom: 10px;
+            color: #7c3aed;
+            font-size: 1em;
+        }
+
+        .modal p {
+            color: #aaa;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .modal ul {
+            margin-left: 20px;
+            color: #ccc;
+        }
+
+        .modal li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
+        .modal .tag {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
+
+        .modal .tag.done { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        .modal .tag.tech { background: rgba(124, 58, 237, 0.2); color: #a78bfa; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.05);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #00d4ff;
+        }
+
+        .stat-label {
+            font-size: 0.8em;
+            color: #888;
+        }
+
+        .progress-bar {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .progress-bar-inner {
+            height: 10px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #00d4ff);
+            border-radius: 5px;
+            transition: width 0.5s ease;
+        }
+
+        .demo-button {
+            margin-top: 20px;
+            padding: 12px 30px;
+            font-size: 1.1em;
+            font-weight: bold;
+            background: linear-gradient(90deg, #7c3aed, #00d4ff);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(124, 58, 237, 0.4);
+        }
+
+        .demo-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(124, 58, 237, 0.6);
+        }
+
+        .demo-section {
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .demo-section h4 {
+            color: #00d4ff;
+            margin-bottom: 10px;
+            font-size: 1em;
+        }
+
+        .demo-code {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 12px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.85em;
+            color: #c9d1d9;
+            overflow-x: auto;
+            margin: 8px 0;
+        }
+
+        .demo-code .comment {
+            color: #8b949e;
+        }
+
+        .demo-code .command {
+            color: #79c0ff;
+        }
+
+        .demo-url {
+            color: #58a6ff;
+            text-decoration: none;
+        }
+
+        .demo-url:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>DeepPilot - Workflow Projet</h1>
+        <p>Copilote d'allocation d'actifs avec ML | Bachelor Data & IA - ECE Paris</p>
+        <div class="progress-bar">
+            <span>Progression globale : 50% (Phase 4 terminée, Phase 4.5-8 à faire)</span>
+            <div class="progress-bar-inner">
+                <div class="progress-bar-fill" style="width: 50%;"></div>
+            </div>
+        </div>
+        <button class="demo-button" onclick="showModal('demo')">Commandes Démo</button>
+    </div>
+
+    <div class="legend">
+        <div class="legend-item">
+            <div class="legend-dot done"></div>
+            <span>Terminé</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot current"></div>
+            <span>En cours / À faire prochainement</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-dot todo"></div>
+            <span>À faire</span>
+        </div>
+    </div>
+
+    <div class="timeline-container">
+        <div class="timeline">
+            <!-- Phase 1 -->
+            <div class="phase-row">
+                <div class="phase-label done">
+                    <h3>Phase 1</h3>
+                    <span class="competences">C1, C2, C3, C4</span>
+                    <span class="status done">✓ Terminée</span>
+                </div>
+                <div class="phase-steps">
+                    <div class="step done" onclick="showModal('p1-setup')">
+                        <div class="step-icon done">✓</div>
+                        <div class="step-title">Setup</div>
+                        <div class="step-subtitle">Env + Config</div>
+                    </div>
+                    <span class="arrow">→</span>
+                    <div class="step done" onclick="showModal('p1-yfinance')">
+                        <div class="step-icon done">✓</div>
+                        <div class="step-title">yfinance</div>
+                        <div class="step-subtitle">10 ETF, 4109j</div>
+                    </div>
+                    <span class="arrow">→</span>
+                    <div class="step done" onclick="showModal('p1-fred')">
+                        <div class="step-icon done">✓</div>
+                        <div class="step-title">FRED API</div>
+                        <div class="step-subtitle">9 séries macro</div>
+                    </div>
+                    <span class="arrow">→</span>
+                    <div class="step done" onclick="showModal('p1-csv')">
+                        <div class="step-icon done">✓</div>
+                        <div class="step-title">CSV Files</div>
+                        <div class="step-subtitle">INSEE, BCE</div>
+                    </div>
+                    <span class="arrow">→</span>
+                    <div class="step done" onclick="showModal('p1-bigquery')">
+                        <div class="step-icon done">✓</div>
+                        <div class="step-title">BigQuery</div>
+                        <div class="step-subtitle">40k lignes</div>
+                    </div>
+                    <span class="arrow">→</span>
+                    <div class="step done" onclick="showModal('p1-pipeline')">
+                        <div class="step-icon done">✓</div>
+                        <div class="step-title">Pipeline</div>
+                        <div class="step-subtitle">148 colonnes</div>
+                    </div>
+                    <span class="arrow">→</span>
+                    <div class="step done" onclick="showModal('p1-supabase')">
+                        <div class="step-icon done">✓</div>
+                        <div class="step-title">Supabase</div>
+                        <div class="step-subtitle">4 tables, 77k+</div>
+                    </div>
+                    <span class="arrow">→</span>
+                    <div class="step done" onclick="showModal('p1-notebooks')">
+                        <div class="step-icon done">✓</div>
+                        <div class="step-title">Notebooks</div>
+                        <div class="step-subtitle">01-04 analyse</div>
+                    </div>
+                    <span class="arrow">→</span>
+                    <div class="step done" onclick="showModal('p1-tests')">
+                        <div class="step-icon done">✓</div>
+                        <div class="step-title">Tests</div>
+                        <div class="step-subtitle">64 tests ✓</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Phase 2 -->
+            <div class="phase-row">
+                <div class="phase-label done">
+                    <h3>Phase 2</h3>
+                    <span class="competences">C4, C5</span>
+                    <span class="status done">✓ Terminée</span>
+                </div>
+                <div class="phase-steps">
+                    <div class="step done" onclick="showModal('p2-fastapi')">
+                        <div class="step-icon done">✓</div>
+                        <div class="step-title">FastAPI</div>
+                        <div class="step-subtitle">App + Config</div>
+                    </div>
+                    <span class="arrow">→</span>
+                    <div class="step done" onclick="showModal('p2-schemas')">
+                        <div class="step-icon done">✓</div>
+                        <div class="step-title">Schemas</div>
+                        <div class="step-subtitle">Pydantic</div>
+                    </div>
+                    <span class="arrow">→</span>
+                    <div class="step done" onclick="showModal('p2-db')">
+                        <div class="step-icon done">✓</div>
+                        <div class="step-title">Database</div>
+                        <div class="step-subtitle">SQLAlchemy</div>
+                    </div>
+                    <span class="arrow">→</span>
+                    <div class="step done" onclick="showModal('p2-endpoints')">
+                        <div class="step-icon done">✓</div>
+                        <div class="step-title">Endpoints</div>
+                        <div class="step-subtitle">11 routes REST</div>
+                    </div>
+                    <span class="arrow">→</span>
+                    <div class="step done" onclick="showModal('p2-validation')">
+                        <div class="step-icon done">✓</div>
+                        <div class="step-title">Validation</div>
+                        <div class="step-subtitle">Errors + Rate</div>
+                    </div>
+                    <span class="arrow">→</span>
+                    <div class="step done" onclick="showModal('p2-rgpd')">
+                        <div class="step-icon done">✓</div>
+                        <div class="step-title">RGPD</div>
+                        <div class="step-subtitle">Registre complet</div>
+                    </div>
+                    <span class="arrow">→</span>
+                    <div class="step done" onclick="showModal('p2-tests')">
+                        <div class="step-icon done">✓</div>
+                        <div class="step-title">Tests API</div>
+                        <div class="step-subtitle">27 tests ✓</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Phase 3 -->
+            <div class="phase-row">
+                <div class="phase-label done">
+                    <h3>Phase 3</h3>
+                    <span class="competences">C9, C12</span>
+                    <span class="status done">✓ Terminée</span>
+                </div>
+                <div class="phase-steps">
+                    <div class="step done" onclick="showModal('p3-features')">
+                        <div class="step-icon done">✓</div>
+                        <div class="step-title">Features</div>
+                        <div class="step-subtitle">Engineering</div>
+                    </div>
+                    <span class="arrow">→</span>
+                    <div class="step done" onclick="showModal('p3-regime')">
+                        <div class="step-icon done">✓</div>
+                        <div class="step-title">Régimes</div>
+                        <div class="step-subtitle">HMM choisi</div>
+                    </div>
+                    <span class="arrow">→</span>
+                    <div class="step done" onclick="showModal('p3-prediction')">
+                        <div class="step-icon done">✓</div>
+                        <div class="step-title">Prédiction</div>
+                        <div class="step-subtitle">RF choisi</div>
+                    </div>
+                    <span class="arrow">→</span>
+                    <div class="step done" onclick="showModal('p3-portfolio')">
+                        <div class="step-icon done">✓</div>
+                        <div class="step-title">Portfolio</div>
+                        <div class="step-subtitle">Markowitz</div>
+                    </div>
+                    <span class="arrow">→</span>
+                    <div class="step done" onclick="showModal('p3-strategy')">
+                        <div class="step-icon done">✓</div>
+                        <div class="step-title">DeepPilot</div>
+                        <div class="step-subtitle">Stratégie ML</div>
+                    </div>
+                    <span class="arrow">→</span>
+                    <div class="step done" onclick="showModal('p3-backtest')">
+                        <div class="step-icon done">✓</div>
+                        <div class="step-title">Backtest</div>
+                        <div class="step-subtitle">Walk-forward</div>
+                    </div>
+                    <span class="arrow">→</span>
+                    <div class="step done" onclick="showModal('p3-notebooks')">
+                        <div class="step-icon done">✓</div>
+                        <div class="step-title">Notebooks</div>
+                        <div class="step-subtitle">05-07</div>
+                    </div>
+                    <span class="arrow">→</span>
+                    <div class="step done" onclick="showModal('p3-tests')">
+                        <div class="step-icon done">✓</div>
+                        <div class="step-title">Tests ML</div>
+                        <div class="step-subtitle">61 tests ✓</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Phase 4 -->
+            <div class="phase-row">
+                <div class="phase-label done">
+                    <h3>Phase 4</h3>
+                    <span class="competences">C11, C13</span>
+                    <span class="status done">✓ Terminée</span>
+                </div>
+                <div class="phase-steps">
+                    <div class="step done" onclick="showModal('p4-mlflow')">
+                        <div class="step-icon done">✓</div>
+                        <div class="step-title">MLflow</div>
+                        <div class="step-subtitle">Tracking</div>
+                    </div>
+                    <span class="arrow">→</span>
+                    <div class="step done" onclick="showModal('p4-registry')">
+                        <div class="step-icon done">✓</div>
+                        <div class="step-title">Registry</div>
+                        <div class="step-subtitle">Versioning</div>
+                    </div>
+                    <span class="arrow">→</span>
+                    <div class="step done" onclick="showModal('p4-cicd')">
+                        <div class="step-icon done">✓</div>
+                        <div class="step-title">CI/CD</div>
+                        <div class="step-subtitle">GitHub Actions</div>
+                    </div>
+                    <span class="arrow">→</span>
+                    <div class="step done" onclick="showModal('p4-monitoring')">
+                        <div class="step-icon done">✓</div>
+                        <div class="step-title">Monitoring</div>
+                        <div class="step-subtitle">Drift + PSI</div>
+                    </div>
+                    <span class="arrow">→</span>
+                    <div class="step done" onclick="showModal('p4-notebooks')">
+                        <div class="step-icon done">✓</div>
+                        <div class="step-title">Notebooks</div>
+                        <div class="step-subtitle">08-09</div>
+                    </div>
+                    <span class="arrow">→</span>
+                    <div class="step done" onclick="showModal('p4-tests')">
+                        <div class="step-icon done">✓</div>
+                        <div class="step-title">Tests</div>
+                        <div class="step-subtitle">30 tests ✓</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Phase 4.5 -->
+            <div class="phase-row">
+                <div class="phase-label current">
+                    <h3>Phase 4.5</h3>
+                    <span class="competences">C13</span>
+                    <span class="status current">À faire</span>
+                </div>
+                <div class="phase-steps">
+                    <div class="step current" onclick="showModal('p45-validation')">
+                        <div class="step-icon current">!</div>
+                        <div class="step-title">Validation HMM</div>
+                        <div class="step-subtitle">Métriques éco.</div>
+                    </div>
+                    <span class="arrow">→</span>
+                    <div class="step todo" onclick="showModal('p45-crisis')">
+                        <div class="step-icon todo">○</div>
+                        <div class="step-title">crisis_recall</div>
+                        <div class="step-subtitle">Détection crises</div>
+                    </div>
+                    <span class="arrow">→</span>
+                    <div class="step todo" onclick="showModal('p45-separation')">
+                        <div class="step-icon todo">○</div>
+                        <div class="step-title">Séparation</div>
+                        <div class="step-subtitle">Returns + Vol</div>
+                    </div>
+                    <span class="arrow">→</span>
+                    <div class="step todo" onclick="showModal('p45-update')">
+                        <div class="step-icon todo">○</div>
+                        <div class="step-title">Update</div>
+                        <div class="step-subtitle">Config + Tests</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Phase 5 -->
+            <div class="phase-row">
+                <div class="phase-label todo">
+                    <h3>Phase 5</h3>
+                    <span class="competences">C6, C7, C8</span>
+                    <span class="status todo">À faire</span>
+                </div>
+                <div class="phase-steps">
+                    <div class="step todo" onclick="showModal('p5-mistral')">
+                        <div class="step-icon todo">○</div>
+                        <div class="step-title">Mistral API</div>
+                        <div class="step-subtitle">Intégration</div>
+                    </div>
+                    <span class="arrow">→</span>
+                    <div class="step todo" onclick="showModal('p5-news')">
+                        <div class="step-icon todo">○</div>
+                        <div class="step-title">News</div>
+                        <div class="step-subtitle">Extraction</div>
+                    </div>
+                    <span class="arrow">→</span>
+                    <div class="step todo" onclick="showModal('p5-sentiment')">
+                        <div class="step-icon todo">○</div>
+                        <div class="step-title">Sentiment</div>
+                        <div class="step-subtitle">Score par ETF</div>
+                    </div>
+                    <span class="arrow">→</span>
+                    <div class="step todo" onclick="showModal('p5-integration')">
+                        <div class="step-icon todo">○</div>
+                        <div class="step-title">Intégration</div>
+                        <div class="step-subtitle">Features ML</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Phase 6 -->
+            <div class="phase-row">
+                <div class="phase-label todo">
+                    <h3>Phase 6</h3>
+                    <span class="competences">C10, C14, C15, C17</span>
+                    <span class="status todo">À faire</span>
+                </div>
+                <div class="phase-steps">
+                    <div class="step todo" onclick="showModal('p6-nextjs')">
+                        <div class="step-icon todo">○</div>
+                        <div class="step-title">Next.js</div>
+                        <div class="step-subtitle">Setup</div>
+                    </div>
+                    <span class="arrow">→</span>
+                    <div class="step todo" onclick="showModal('p6-api-integration')">
+                        <div class="step-icon todo">○</div>
+                        <div class="step-title">API ML</div>
+                        <div class="step-subtitle">Intégration C10</div>
+                    </div>
+                    <span class="arrow">→</span>
+                    <div class="step todo" onclick="showModal('p6-dashboard')">
+                        <div class="step-icon todo">○</div>
+                        <div class="step-title">Dashboard</div>
+                        <div class="step-subtitle">Visualisations</div>
+                    </div>
+                    <span class="arrow">→</span>
+                    <div class="step todo" onclick="showModal('p6-portfolio')">
+                        <div class="step-icon todo">○</div>
+                        <div class="step-title">Portfolio</div>
+                        <div class="step-subtitle">Recommandations</div>
+                    </div>
+                    <span class="arrow">→</span>
+                    <div class="step todo" onclick="showModal('p6-deploy')">
+                        <div class="step-icon todo">○</div>
+                        <div class="step-title">Déploiement</div>
+                        <div class="step-subtitle">Vercel</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Phase 7 -->
+            <div class="phase-row">
+                <div class="phase-label todo">
+                    <h3>Phase 7</h3>
+                    <span class="competences">C18, C19, C20, C21</span>
+                    <span class="status todo">À faire</span>
+                </div>
+                <div class="phase-steps">
+                    <div class="step todo" onclick="showModal('p7-cicd')">
+                        <div class="step-icon todo">○</div>
+                        <div class="step-title">CI/CD App</div>
+                        <div class="step-subtitle">GitHub Actions</div>
+                    </div>
+                    <span class="arrow">→</span>
+                    <div class="step todo" onclick="showModal('p7-monitoring')">
+                        <div class="step-icon todo">○</div>
+                        <div class="step-title">Monitoring</div>
+                        <div class="step-subtitle">Sentry + Uptime</div>
+                    </div>
+                    <span class="arrow">→</span>
+                    <div class="step todo" onclick="showModal('p7-incidents')">
+                        <div class="step-icon todo">○</div>
+                        <div class="step-title">Incidents</div>
+                        <div class="step-subtitle">Procédures</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Phase 8 -->
+            <div class="phase-row">
+                <div class="phase-label todo">
+                    <h3>Phase 8</h3>
+                    <span class="competences">C16</span>
+                    <span class="status todo">À faire</span>
+                </div>
+                <div class="phase-steps">
+                    <div class="step todo" onclick="showModal('p8-rapport')">
+                        <div class="step-icon todo">○</div>
+                        <div class="step-title">Rapport</div>
+                        <div class="step-subtitle">Documentation</div>
+                    </div>
+                    <span class="arrow">→</span>
+                    <div class="step todo" onclick="showModal('p8-soutenance')">
+                        <div class="step-icon todo">○</div>
+                        <div class="step-title">Soutenance</div>
+                        <div class="step-subtitle">Présentation</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="modal-overlay" onclick="hideModal(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="hideModal()">&times;</button>
+            <div id="modal-content"></div>
+        </div>
+    </div>
+
+    <script>
+        const modalData = {
+            // Démo
+            'demo': {
+                title: 'Commandes de Démonstration',
+                phase: 'Toutes phases',
+                status: 'done',
+                description: 'Commandes pour démontrer le projet au professeur.',
+                isDemo: true
+            },
+            // Phase 1
+            'p1-setup': {
+                title: 'Setup Environnement',
+                phase: 'Phase 1',
+                status: 'done',
+                description: 'Configuration initiale du projet avec Python 3.11, création de la structure de dossiers, configuration des outils de développement.',
+                details: [
+                    '.env avec Supabase, FRED, GCP, Mistral',
+                    'pyproject.toml (black, ruff, pytest)',
+                    'requirements.txt avec toutes les dépendances',
+                    'Structure data/, tests/, docs/'
+                ],
+                tech: ['Python 3.11', 'black', 'ruff', 'pytest'],
+                files: [
+                    'pyproject.toml',
+                    'requirements.txt',
+                    '.env.example',
+                    '.gitignore',
+                    'CLAUDE.md'
+                ]
+            },
+            'p1-yfinance': {
+                title: 'Extraction yfinance',
+                phase: 'Phase 1',
+                status: 'done',
+                description: 'Téléchargement des prix historiques de 10 ETF via l\'API Yahoo Finance.',
+                details: [
+                    'Période : 2010-01-04 → 2026-05-05',
+                    'Tickers : SPY, EFA, EEM, TLT, HYG, GLD, VNQ, SH, URTH, QQQ',
+                    '4109 jours de trading',
+                    'Stockage : data/raw/prices_*.csv'
+                ],
+                tech: ['yfinance', 'pandas'],
+                stats: { 'ETFs': 10, 'Jours': 4109 },
+                files: [
+                    'data/extractors/extract_yfinance.py',
+                    'data/raw/prices_20260506.csv',
+                    'tests/test_extract_yfinance.py'
+                ]
+            },
+            'p1-fred': {
+                title: 'FRED API',
+                phase: 'Phase 1',
+                status: 'done',
+                description: 'Extraction des indicateurs macroéconomiques depuis la Federal Reserve.',
+                details: [
+                    'VIX (indice de volatilité)',
+                    'Credit spread HY (BAA10Y)',
+                    'Yield curve 10Y-2Y',
+                    'T3MO, T10Y, WTI Oil, USD/EUR, Unemployment, CPI'
+                ],
+                tech: ['fredapi', 'pandas'],
+                stats: { 'Séries': 9, 'Lignes': 4330 },
+                files: [
+                    'data/extractors/extract_fred.py',
+                    'data/raw/macro_20260506.csv',
+                    'tests/test_extract_fred.py'
+                ]
+            },
+            'p1-csv': {
+                title: 'Fichiers CSV',
+                phase: 'Phase 1',
+                status: 'done',
+                description: 'Import de données externes depuis INSEE et BCE.',
+                details: [
+                    'insee_inflation_eu.csv - Inflation zone euro',
+                    'ecb_main_refinancing_rate.csv - Taux directeur BCE',
+                    'Stockage dans data/raw/files/'
+                ],
+                tech: ['pandas'],
+                files: [
+                    'data/extractors/extract_files.py',
+                    'data/raw/files/insee_inflation_eu.csv',
+                    'data/raw/files/ecb_main_refinancing_rate.csv',
+                    'data/processed/normalized_*.csv',
+                    'tests/test_extract_files.py'
+                ]
+            },
+            'p1-bigquery': {
+                title: 'BigQuery',
+                phase: 'Phase 1',
+                status: 'done',
+                description: 'Chargement des données dans Google BigQuery pour analyse big data.',
+                details: [
+                    'Projet GCP : n8n-credentials-475110',
+                    'Dataset : deeppilot',
+                    'Table prices_simple : 40579 lignes',
+                    'Partitionnement par date'
+                ],
+                tech: ['google-cloud-bigquery', 'pandas-gbq'],
+                stats: { 'Lignes': '40k+' },
+                files: [
+                    'data/extractors/extract_bigquery.py',
+                    'data/sql/bigquery/01_partitioned_prices.sql',
+                    'data/sql/bigquery/02_features_aggregation.sql',
+                    'data/raw/bq_prices_full.csv',
+                    'scripts/check_bq.py',
+                    'tests/test_extract_bigquery.py'
+                ]
+            },
+            'p1-pipeline': {
+                title: 'Pipeline Agrégation',
+                phase: 'Phase 1',
+                status: 'done',
+                description: 'Pipeline de transformation : fusion prix + macro, calcul de features.',
+                details: [
+                    'Returns : 1d, 5d, 20d, 60d (simples + log)',
+                    'Volatilité : 20d, 60d annualisée',
+                    'Indicateurs techniques : SMA 20/50/200, RSI 14, MACD, Bollinger',
+                    'Détection outliers : COVID mars 2020, avril 2025'
+                ],
+                tech: ['pandas', 'numpy'],
+                stats: { 'Colonnes': 148, 'Lignes': 4109 },
+                files: [
+                    'data/pipeline/aggregate.py',
+                    'data/pipeline/cleaning_rules.py',
+                    'data/processed/dataset_20260506.csv',
+                    'tests/test_aggregate.py',
+                    'tests/test_data_quality.py'
+                ]
+            },
+            'p1-supabase': {
+                title: 'Supabase',
+                phase: 'Phase 1',
+                status: 'done',
+                description: 'Base de données PostgreSQL hébergée sur Supabase.',
+                details: [
+                    'Table etf : 10 métadonnées ETF',
+                    'Table price : 40579 prix historiques',
+                    'Table macro_indicator : 4109 indicateurs macro',
+                    'Table feature : 32872 features calculées',
+                    'Vue v_prices_with_macro'
+                ],
+                tech: ['PostgreSQL', 'Supabase'],
+                stats: { 'Tables': 4, 'Lignes totales': '77k+' },
+                files: [
+                    'data/pipeline/load_to_db.py',
+                    'data/sql/postgres/01_init_schema.sql',
+                    'data/sql/postgres/02_join_prices_macro.sql',
+                    'data/sql/postgres/03_monthly_returns.sql',
+                    'data/sql/postgres/04_rolling_volatility.sql',
+                    'data/sql/postgres/05_correlation_matrix.sql',
+                    'docs/database_schema.md'
+                ]
+            },
+            'p1-notebooks': {
+                title: 'Notebooks Analyse',
+                phase: 'Phase 1',
+                status: 'done',
+                description: 'Notebooks d\'exploration et analyse exploratoire des données.',
+                details: [
+                    '01_explore_etfs : SPY 14.6%/an, Sharpe 0.85, Max DD -34%',
+                    '02_correlations : SPY/SH -0.99, SPY/TLT -0.30',
+                    '03_distributions : Skewness négative, fat tails',
+                    '04_macro_features : VIX prédictif, yield curve inversée'
+                ],
+                tech: ['Jupyter', 'matplotlib', 'seaborn'],
+                files: [
+                    'analysis/01_explore_etfs.ipynb',
+                    'analysis/02_correlations.ipynb',
+                    'analysis/03_returns_distributions.ipynb',
+                    'analysis/04_macro_features.ipynb'
+                ]
+            },
+            'p1-tests': {
+                title: 'Tests Phase 1',
+                phase: 'Phase 1',
+                status: 'done',
+                description: 'Tests unitaires pour les extracteurs et le pipeline.',
+                details: [
+                    'test_extract_yfinance.py',
+                    'test_extract_fred.py',
+                    'test_extract_files.py',
+                    'test_extract_bigquery.py',
+                    'test_aggregate.py',
+                    'test_data_quality.py'
+                ],
+                tech: ['pytest'],
+                stats: { 'Tests': 64 },
+                files: [
+                    'tests/test_extract_yfinance.py',
+                    'tests/test_extract_fred.py',
+                    'tests/test_extract_files.py',
+                    'tests/test_extract_bigquery.py',
+                    'tests/test_aggregate.py',
+                    'tests/test_data_quality.py'
+                ]
+            },
+
+            // Phase 2
+            'p2-fastapi': {
+                title: 'FastAPI Setup',
+                phase: 'Phase 2',
+                status: 'done',
+                description: 'Configuration de l\'application FastAPI avec lifespan, CORS, rate limiting.',
+                details: [
+                    'api/main.py : Point d\'entrée',
+                    'api/config.py : Pydantic Settings',
+                    'CORS configuré pour localhost',
+                    'Swagger UI + ReDoc'
+                ],
+                tech: ['FastAPI', 'uvicorn', 'pydantic'],
+                files: [
+                    'api/main.py',
+                    'api/config.py',
+                    'api/__init__.py',
+                    'scripts/run_api.py'
+                ]
+            },
+            'p2-schemas': {
+                title: 'Schemas Pydantic',
+                phase: 'Phase 2',
+                status: 'done',
+                description: 'Modèles de données pour validation entrées/sorties.',
+                details: [
+                    'ETFBase, ETFPrice, ETFFeature',
+                    'MacroIndicator, MacroLatest',
+                    'CorrelationMatrix, ETFStats',
+                    'Validation automatique des types'
+                ],
+                tech: ['pydantic'],
+                files: [
+                    'api/models/etf.py',
+                    'api/models/macro.py',
+                    'api/models/analysis.py',
+                    'api/models/__init__.py'
+                ]
+            },
+            'p2-db': {
+                title: 'Database Connection',
+                phase: 'Phase 2',
+                status: 'done',
+                description: 'Connexion SQLAlchemy avec pool de connexions.',
+                details: [
+                    'Repository pattern',
+                    'etf_repository.py',
+                    'macro_repository.py',
+                    'features_repository.py',
+                    'analysis_repository.py'
+                ],
+                tech: ['SQLAlchemy', 'psycopg2'],
+                files: [
+                    'api/database.py',
+                    'api/repositories/etf_repository.py',
+                    'api/repositories/macro_repository.py',
+                    'api/repositories/features_repository.py',
+                    'api/repositories/analysis_repository.py',
+                    'api/repositories/__init__.py'
+                ]
+            },
+            'p2-endpoints': {
+                title: 'Endpoints REST',
+                phase: 'Phase 2',
+                status: 'done',
+                description: '11 endpoints REST pour accéder aux données.',
+                details: [
+                    'GET /api/v1/etfs - Liste des ETF',
+                    'GET /api/v1/etfs/{ticker}/prices - Historique prix',
+                    'GET /api/v1/etfs/{ticker}/features - Features ML',
+                    'GET /api/v1/macro - Indicateurs macro',
+                    'GET /api/v1/analysis/correlations - Matrice corrélation',
+                    'GET /api/v1/analysis/stats - Stats ETF'
+                ],
+                tech: ['FastAPI'],
+                stats: { 'Endpoints': 11 },
+                files: [
+                    'api/routers/etf.py',
+                    'api/routers/macro.py',
+                    'api/routers/analysis.py',
+                    'api/routers/__init__.py',
+                    'docs/api/README.md'
+                ]
+            },
+            'p2-validation': {
+                title: 'Validation & Errors',
+                phase: 'Phase 2',
+                status: 'done',
+                description: 'Validation des inputs et gestion des erreurs.',
+                details: [
+                    'Validation des tickers (liste blanche)',
+                    'Validation des dates (ISO, pas futur)',
+                    'Rate limiting : 100 req/min (slowapi)',
+                    'Erreurs HTTP : 400, 404, 503'
+                ],
+                tech: ['slowapi', 'pydantic'],
+                files: [
+                    'api/exceptions.py'
+                ]
+            },
+            'p2-rgpd': {
+                title: 'RGPD Complet',
+                phase: 'Phase 2',
+                status: 'done',
+                description: 'Documentation RGPD complète pour conformité.',
+                details: [
+                    'Registre des traitements (2 traitements)',
+                    'Base légale : intérêt légitime (art. 6.1.f)',
+                    'Procédures incidents et droits',
+                    'Mentions légales + disclaimer investissement',
+                    'Sous-traitants : Supabase EU, GCP EU'
+                ],
+                tech: [],
+                files: [
+                    'docs/rgpd/registre_traitements.md',
+                    'docs/rgpd/procedures_tri.md',
+                    'docs/rgpd/mentions_legales.md'
+                ]
+            },
+            'p2-tests': {
+                title: 'Tests API',
+                phase: 'Phase 2',
+                status: 'done',
+                description: 'Tests unitaires pour tous les endpoints.',
+                details: [
+                    'test_etf_endpoints.py : 14 tests',
+                    'test_macro_endpoints.py : 4 tests',
+                    'test_analysis_endpoints.py : 9 tests',
+                    'TestClient FastAPI'
+                ],
+                tech: ['pytest', 'httpx'],
+                stats: { 'Tests': 27 },
+                files: [
+                    'tests/api/test_etf_endpoints.py',
+                    'tests/api/test_macro_endpoints.py',
+                    'tests/api/test_analysis_endpoints.py',
+                    'tests/api/__init__.py'
+                ]
+            },
+
+            // Phase 3
+            'p3-features': {
+                title: 'Feature Engineering',
+                phase: 'Phase 3',
+                status: 'done',
+                description: 'Préparation des features pour les modèles ML.',
+                details: [
+                    'prepare_regime_features() : VIX z-score, spread crédit, yield curve',
+                    'prepare_prediction_features() : SMA ratios, RSI, MACD, Bollinger',
+                    'create_target() : target binaire (rendement positif/négatif)',
+                    'walk_forward_split() : splits temporels'
+                ],
+                tech: ['pandas', 'numpy', 'scikit-learn'],
+                files: [
+                    'ml/features/feature_engineering.py',
+                    'ml/features/time_split.py',
+                    'ml/features/__init__.py',
+                    'ml/config.py'
+                ]
+            },
+            'p3-regime': {
+                title: 'Modèles de Régime',
+                phase: 'Phase 3',
+                status: 'done',
+                description: 'Comparaison de 3 modèles pour détection de régime de marché.',
+                details: [
+                    'K-Means : Silhouette 0.215, Stabilité 94.1%',
+                    'GMM : Silhouette 0.147, Stabilité 91.1%',
+                    'HMM (choisi) : Silhouette 0.199, Stabilité 97.9%',
+                    'HMM capture la dynamique temporelle'
+                ],
+                tech: ['hmmlearn', 'scikit-learn'],
+                stats: { 'Régimes': 4, 'Stabilité': '97.9%' },
+                files: [
+                    'ml/models/regime_hmm.py',
+                    'ml/models/regime_kmeans.py',
+                    'ml/models/regime_gmm.py',
+                    'ml/evaluation/regime_labels.py',
+                    'ml/evaluation/compare_regime_models.py',
+                    'data/processed/regime_model_comparison.csv'
+                ]
+            },
+            'p3-prediction': {
+                title: 'Modèles de Prédiction',
+                phase: 'Phase 3',
+                status: 'done',
+                description: 'Comparaison de 3 modèles pour prédiction de rendement.',
+                details: [
+                    'LogReg : Accuracy 58.5% (walk-forward)',
+                    'XGBoost : Accuracy 56.1% (walk-forward)',
+                    'Random Forest (choisi) : Accuracy 55.6%',
+                    'RF équilibre performance/interprétabilité'
+                ],
+                tech: ['scikit-learn', 'xgboost'],
+                stats: { 'Accuracy': '55-58%', 'AUC': '~0.51' },
+                files: [
+                    'ml/models/predict_rf.py',
+                    'ml/models/predict_logreg.py',
+                    'ml/models/predict_xgboost.py',
+                    'ml/evaluation/compare_prediction_models.py',
+                    'data/processed/prediction_model_comparison.csv',
+                    'data/processed/prediction_walkforward_comparison.csv'
+                ]
+            },
+            'p3-portfolio': {
+                title: 'Optimisation Portfolio',
+                phase: 'Phase 3',
+                status: 'done',
+                description: 'Optimisation Markowitz avec scipy.optimize.',
+                details: [
+                    'Contraintes : 5% ≤ w ≤ 25%, sum(w) = 1',
+                    'Maximisation Sharpe ratio',
+                    'Calcul turnover et transaction costs',
+                    'Frontière efficiente'
+                ],
+                tech: ['scipy.optimize'],
+                files: [
+                    'ml/portfolio/optimizer.py',
+                    'ml/portfolio/benchmarks.py',
+                    'ml/portfolio/__init__.py'
+                ]
+            },
+            'p3-strategy': {
+                title: 'Stratégie DeepPilot',
+                phase: 'Phase 3',
+                status: 'done',
+                description: 'Stratégie ML intégrant HMM + RF + Markowitz.',
+                details: [
+                    'Détection régime avec HMM',
+                    'Prédiction avec Random Forest',
+                    'Ajustement weights selon régime',
+                    'Rebalancement mensuel'
+                ],
+                tech: [],
+                files: [
+                    'ml/portfolio/deeppilot_strategy.py',
+                    'data/processed/deeppilot_weights_history.csv'
+                ]
+            },
+            'p3-backtest': {
+                title: 'Backtest',
+                phase: 'Phase 3',
+                status: 'done',
+                description: 'Backtesting walk-forward avec comparaison benchmarks.',
+                details: [
+                    'DeepPilot : CAGR 5.59%, Sharpe 0.29, Max DD -22.1%',
+                    'SPY : CAGR 14.55%, Sharpe 0.69, Max DD -33.7%',
+                    '60/40 : CAGR 9.23%, Sharpe 0.60, Max DD -27.2%',
+                    'DeepPilot = stratégie défensive (vol 2x plus faible)'
+                ],
+                tech: [],
+                stats: { 'CAGR': '5.59%', 'Sharpe': '0.29', 'Max DD': '-22.1%' },
+                files: [
+                    'ml/portfolio/backtester.py',
+                    'data/processed/strategy_comparison.csv',
+                    'data/processed/annual_returns_comparison.csv'
+                ]
+            },
+            'p3-notebooks': {
+                title: 'Notebooks ML',
+                phase: 'Phase 3',
+                status: 'done',
+                description: 'Notebooks de comparaison des modèles.',
+                details: [
+                    '05_regime_comparison : K-Means vs GMM vs HMM',
+                    '06_prediction_comparison : LogReg vs XGBoost vs RF',
+                    '07_strategy_comparison : DeepPilot vs benchmarks'
+                ],
+                tech: ['Jupyter', 'matplotlib'],
+                files: [
+                    'analysis/05_regime_comparison.ipynb',
+                    'analysis/06_prediction_comparison.ipynb',
+                    'analysis/CONCLUSIONS.md'
+                ]
+            },
+            'p3-tests': {
+                title: 'Tests ML',
+                phase: 'Phase 3',
+                status: 'done',
+                description: 'Tests unitaires pour les modèles ML.',
+                details: [
+                    'test_regime_models.py : 18 tests',
+                    'test_prediction_models.py : 22 tests',
+                    'test_portfolio.py : 21 tests'
+                ],
+                tech: ['pytest'],
+                stats: { 'Tests': 61 },
+                files: [
+                    'tests/ml/test_regime_models.py',
+                    'tests/ml/test_prediction_models.py',
+                    'tests/ml/test_portfolio.py',
+                    'tests/ml/__init__.py'
+                ]
+            },
+
+            // Phase 4
+            'p4-mlflow': {
+                title: 'MLflow Tracking',
+                phase: 'Phase 4',
+                status: 'done',
+                description: 'Tracking des expériences ML avec MLflow.',
+                details: [
+                    '4 expériences configurées',
+                    'Logging params, metrics, models',
+                    'Comparaison de runs',
+                    'UI : python -m mlflow ui --port 5000'
+                ],
+                tech: ['mlflow'],
+                files: [
+                    'mlops/tracking.py',
+                    'mlops/config.py',
+                    'mlops/__init__.py',
+                    'analysis/mlruns/'
+                ]
+            },
+            'p4-registry': {
+                title: 'Model Registry',
+                phase: 'Phase 4',
+                status: 'done',
+                description: 'Versioning et promotion des modèles.',
+                details: [
+                    'Enregistrement automatique',
+                    'Stages : None → Staging → Production',
+                    'Validation avant promotion',
+                    'Archivage des anciennes versions'
+                ],
+                tech: ['mlflow'],
+                files: [
+                    'mlops/registry.py'
+                ]
+            },
+            'p4-cicd': {
+                title: 'CI/CD ML',
+                phase: 'Phase 4',
+                status: 'done',
+                description: 'GitHub Actions pour tests et validation ML.',
+                details: [
+                    '.github/workflows/ml_tests.yml',
+                    'Tests unitaires ML automatisés',
+                    'Validation des modèles avec seuils',
+                    'Connexion Supabase via secrets'
+                ],
+                tech: ['GitHub Actions'],
+                files: [
+                    '.github/workflows/ml_tests.yml',
+                    'scripts/validate_models.py'
+                ]
+            },
+            'p4-monitoring': {
+                title: 'Monitoring ML',
+                phase: 'Phase 4',
+                status: 'done',
+                description: 'Détection de drift et alertes de performance.',
+                details: [
+                    'PSI (Population Stability Index)',
+                    'KS test (Kolmogorov-Smirnov)',
+                    'Seuils de performance configurables',
+                    'Classe ModelMonitor pour suivi continu'
+                ],
+                tech: ['scipy', 'numpy'],
+                files: [
+                    'mlops/monitoring.py'
+                ]
+            },
+            'p4-notebooks': {
+                title: 'Notebooks MLOps',
+                phase: 'Phase 4',
+                status: 'done',
+                description: 'Démonstration MLflow et monitoring.',
+                details: [
+                    '08_mlflow_tracking : Tracking HMM et RF',
+                    '09_model_monitoring : Drift detection, PSI'
+                ],
+                tech: ['Jupyter', 'mlflow'],
+                files: [
+                    'docs/mlops/README.md'
+                ]
+            },
+            'p4-tests': {
+                title: 'Tests MLOps',
+                phase: 'Phase 4',
+                status: 'done',
+                description: 'Tests unitaires pour le module MLOps.',
+                details: [
+                    'test_tracking.py : 12 tests',
+                    'test_monitoring.py : 18 tests'
+                ],
+                tech: ['pytest'],
+                stats: { 'Tests': 30 },
+                files: [
+                    'tests/mlops/test_tracking.py',
+                    'tests/mlops/test_monitoring.py',
+                    'tests/mlops/__init__.py'
+                ]
+            },
+
+            // Phase 4.5
+            'p45-validation': {
+                title: 'Validation HMM Améliorée',
+                phase: 'Phase 4.5',
+                status: 'current',
+                description: 'Remplacer le silhouette score par des métriques économiques.',
+                details: [
+                    'Le silhouette score (0.017) est peu pertinent pour régimes de marché',
+                    'Besoin de métriques qui valident le sens économique',
+                    'Créer ml/evaluation/regime_validation.py'
+                ],
+                tech: []
+            },
+            'p45-crisis': {
+                title: 'Crisis Recall',
+                phase: 'Phase 4.5',
+                status: 'todo',
+                description: '% des crises historiques détectées comme régime bear/volatile.',
+                details: [
+                    'Définir dates de crises (COVID-2020, 2022, 2008)',
+                    'Calculer le rappel sur ces périodes',
+                    'Seuil proposé : ≥ 80%'
+                ],
+                tech: []
+            },
+            'p45-separation': {
+                title: 'Séparation Régimes',
+                phase: 'Phase 4.5',
+                status: 'todo',
+                description: 'Vérifier que les régimes ont des caractéristiques distinctes.',
+                details: [
+                    'regime_return_separation : Return(bull) > Return(bear)',
+                    'regime_vol_separation : Vol(volatile) > Vol(stable)',
+                    'Validation booléenne'
+                ],
+                tech: []
+            },
+            'p45-update': {
+                title: 'Mise à jour Config',
+                phase: 'Phase 4.5',
+                status: 'todo',
+                description: 'Mettre à jour la config et les tests avec les nouvelles métriques.',
+                details: [
+                    'Modifier mlops/config.py',
+                    'Modifier scripts/validate_models.py',
+                    'Ajouter tests pour nouvelles métriques'
+                ],
+                tech: []
+            },
+
+            // Phase 5
+            'p5-mistral': {
+                title: 'Mistral API',
+                phase: 'Phase 5',
+                status: 'todo',
+                description: 'Intégration de l\'API Mistral pour analyse de texte.',
+                details: [
+                    'Connexion à l\'API Mistral (EU-based)',
+                    'Configuration des prompts',
+                    'Gestion des limites API'
+                ],
+                tech: ['mistral-ai']
+            },
+            'p5-news': {
+                title: 'Extraction News',
+                phase: 'Phase 5',
+                status: 'todo',
+                description: 'Extraction de news financières.',
+                details: [
+                    'Sources à définir (API news)',
+                    'Filtrage par ETF/secteur',
+                    'Stockage des articles'
+                ],
+                tech: []
+            },
+            'p5-sentiment': {
+                title: 'Score Sentiment',
+                phase: 'Phase 5',
+                status: 'todo',
+                description: 'Calcul d\'un score de sentiment par ETF.',
+                details: [
+                    'Analyse des titres/résumés',
+                    'Score [-1, 1] par article',
+                    'Agrégation par ETF et par jour'
+                ],
+                tech: ['mistral-ai']
+            },
+            'p5-integration': {
+                title: 'Intégration ML',
+                phase: 'Phase 5',
+                status: 'todo',
+                description: 'Ajout du sentiment dans les features ML.',
+                details: [
+                    'Nouveau feature : sentiment_score',
+                    'Impact sur prédiction RF',
+                    'Réévaluation des modèles'
+                ],
+                tech: []
+            },
+
+            // Phase 6
+            'p6-nextjs': {
+                title: 'Next.js Setup',
+                phase: 'Phase 6',
+                status: 'todo',
+                description: 'Configuration de l\'application Next.js.',
+                details: [
+                    'Next.js 14 + Tailwind + shadcn/ui',
+                    'Structure pages/components',
+                    'Connexion à l\'API FastAPI'
+                ],
+                tech: ['Next.js', 'Tailwind', 'shadcn/ui']
+            },
+            'p6-api-integration': {
+                title: 'Intégration API ML (C10)',
+                phase: 'Phase 6',
+                status: 'todo',
+                description: 'Intégrer l\'API du modèle d\'IA dans l\'application Next.js.',
+                details: [
+                    'Communication avec l\'API FastAPI exposant HMM + RF',
+                    'Gestion de l\'authentification API',
+                    'Affichage des prédictions de régime',
+                    'Affichage des recommandations d\'allocation',
+                    'Tests d\'intégration API côté frontend'
+                ],
+                tech: ['Next.js', 'fetch/axios', 'FastAPI']
+            },
+            'p6-dashboard': {
+                title: 'Dashboard',
+                phase: 'Phase 6',
+                status: 'todo',
+                description: 'Interface de visualisation des données.',
+                details: [
+                    'Graphiques prix ETF',
+                    'Indicateurs macro',
+                    'Régimes détectés',
+                    'Performance portfolio'
+                ],
+                tech: ['recharts', 'tremor']
+            },
+            'p6-portfolio': {
+                title: 'Recommandations',
+                phase: 'Phase 6',
+                status: 'todo',
+                description: 'Affichage des recommandations du modèle.',
+                details: [
+                    'Allocation actuelle',
+                    'Recommandations de rebalancement',
+                    'Historique des trades'
+                ],
+                tech: []
+            },
+            'p6-deploy': {
+                title: 'Déploiement',
+                phase: 'Phase 6',
+                status: 'todo',
+                description: 'Déploiement sur Vercel.',
+                details: [
+                    'Configuration Vercel',
+                    'Variables d\'environnement',
+                    'Domaine personnalisé (optionnel)'
+                ],
+                tech: ['Vercel']
+            },
+
+            // Phase 7
+            'p7-cicd': {
+                title: 'CI/CD App',
+                phase: 'Phase 7',
+                status: 'todo',
+                description: 'CI/CD pour l\'application Next.js.',
+                details: [
+                    'GitHub Actions pour tests frontend',
+                    'Déploiement automatique sur Vercel',
+                    'Preview deployments'
+                ],
+                tech: ['GitHub Actions', 'Vercel']
+            },
+            'p7-monitoring': {
+                title: 'Monitoring App',
+                phase: 'Phase 7',
+                status: 'todo',
+                description: 'Monitoring de l\'application en production.',
+                details: [
+                    'Sentry pour error tracking',
+                    'UptimeRobot pour disponibilité',
+                    'Analytics (optionnel)'
+                ],
+                tech: ['Sentry', 'UptimeRobot']
+            },
+            'p7-incidents': {
+                title: 'Gestion Incidents',
+                phase: 'Phase 7',
+                status: 'todo',
+                description: 'Procédures de gestion des incidents.',
+                details: [
+                    'Alertes configurées',
+                    'Procédures de réponse',
+                    'Post-mortems'
+                ],
+                tech: []
+            },
+
+            // Phase 8
+            'p8-rapport': {
+                title: 'Rapport Final',
+                phase: 'Phase 8',
+                status: 'todo',
+                description: 'Documentation finale du projet.',
+                details: [
+                    'Rapport technique complet',
+                    'Documentation utilisateur',
+                    'Bilan des compétences validées'
+                ],
+                tech: []
+            },
+            'p8-soutenance': {
+                title: 'Soutenance',
+                phase: 'Phase 8',
+                status: 'todo',
+                description: 'Présentation orale du projet.',
+                details: [
+                    'Slides de présentation',
+                    'Démonstration live',
+                    'Questions/réponses'
+                ],
+                tech: []
+            }
+        };
+
+        function showModal(id) {
+            const data = modalData[id];
+            if (!data) return;
+
+            let html = '';
+
+            // Cas spécial pour la démo
+            if (data.isDemo) {
+                html = `
+                    <h2>${data.title}</h2>
+                    <p>${data.description}</p>
+
+                    <div class="demo-section">
+                        <h4>Phase 1 — Tests Data</h4>
+                        <div class="demo-code">
+                            <span class="comment"># Lancer les tests data</span><br>
+                            <span class="command">python -m pytest tests/test_extract_yfinance.py tests/test_aggregate.py -v</span>
+                        </div>
+                    </div>
+
+                    <div class="demo-section">
+                        <h4>Phase 2 — API REST (Swagger UI)</h4>
+                        <div class="demo-code">
+                            <span class="comment"># Lancer l'API FastAPI</span><br>
+                            <span class="command">python scripts/run_api.py</span>
+                        </div>
+                        <p>Puis ouvrir : <a href="http://localhost:8000/docs" target="_blank" class="demo-url">http://localhost:8000/docs</a></p>
+                        <p style="color: #888; font-size: 0.9em;">→ Montrer les endpoints /api/v1/etfs, /macro, /analysis/correlations</p>
+                    </div>
+
+                    <div class="demo-section">
+                        <h4>Phase 3 — Tests ML + Notebooks</h4>
+                        <div class="demo-code">
+                            <span class="comment"># Lancer les tests ML</span><br>
+                            <span class="command">python -m pytest tests/ml/ -v</span>
+                        </div>
+                        <p style="color: #888; font-size: 0.9em;">Notebooks à ouvrir :</p>
+                        <ul style="color: #aaa; font-size: 0.9em;">
+                            <li>analysis/05_regime_comparison.ipynb</li>
+                            <li>analysis/06_prediction_comparison.ipynb</li>
+                        </ul>
+                    </div>
+
+                    <div class="demo-section">
+                        <h4>Phase 4 — MLflow UI + Validation</h4>
+                        <div class="demo-code">
+                            <span class="comment"># Lancer MLflow UI (depuis le dossier analysis)</span><br>
+                            <span class="command">cd analysis && python -m mlflow ui --port 5000</span>
+                        </div>
+                        <p>Puis ouvrir : <a href="http://localhost:5000" target="_blank" class="demo-url">http://localhost:5000</a></p>
+                        <div class="demo-code">
+                            <span class="comment"># Valider les modèles (script CI/CD)</span><br>
+                            <span class="command">python scripts/validate_models.py</span>
+                        </div>
+                    </div>
+
+                    <div class="demo-section">
+                        <h4>Tous les tests (182)</h4>
+                        <div class="demo-code">
+                            <span class="command">python -m pytest tests/ -v</span>
+                        </div>
+                    </div>
+                `;
+            } else {
+                // Affichage normal
+                html = `
+                    <h2>${data.title}</h2>
+                    <p><strong>${data.phase}</strong></p>
+                    <span class="tag ${data.status}">${data.status === 'done' ? '✓ Terminé' : data.status === 'current' ? '⚡ En cours' : '○ À faire'}</span>
+                    <p>${data.description}</p>
+                    <h3>Détails</h3>
+                    <ul>
+                        ${data.details.map(d => `<li>${d}</li>`).join('')}
+                    </ul>
+                `;
+            }
+
+            if (!data.isDemo) {
+                if (data.tech && data.tech.length > 0) {
+                    html += `<h3>Technologies</h3><p>${data.tech.map(t => `<span class="tag tech">${t}</span>`).join(' ')}</p>`;
+                }
+
+                if (data.files && data.files.length > 0) {
+                    html += `<h3>Fichiers</h3><ul style="font-family: monospace; font-size: 0.85em;">`;
+                    data.files.forEach(f => {
+                        html += `<li>${f}</li>`;
+                    });
+                    html += `</ul>`;
+                }
+
+                if (data.stats) {
+                    html += `<h3>Statistiques</h3><div class="stats-grid">`;
+                    for (const [key, value] of Object.entries(data.stats)) {
+                        html += `<div class="stat-card"><div class="stat-value">${value}</div><div class="stat-label">${key}</div></div>`;
+                    }
+                    html += `</div>`;
+                }
+            }
+
+            document.getElementById('modal-content').innerHTML = html;
+            document.getElementById('modal-overlay').classList.add('active');
+        }
+
+        function hideModal(event) {
+            if (event && event.target !== document.getElementById('modal-overlay')) return;
+            document.getElementById('modal-overlay').classList.remove('active');
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') hideModal();
+        });
+    </script>
+</body>
+</html>
