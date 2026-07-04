@@ -91,11 +91,11 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 # Middleware pour CORS sur les erreurs (doit etre avant CORSMiddleware)
 app.add_middleware(CORSErrorMiddleware)
 
-# CORS
+# CORS (API publique en lecture seule - pas de credentials)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["GET", "OPTIONS"],  # API read-only + preflight
     allow_headers=["*"],
 )

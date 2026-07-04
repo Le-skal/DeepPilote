@@ -30,13 +30,8 @@ class Settings(BaseSettings):
     supabase_key: str
     supabase_db_url: str
 
-    # CORS - origines autorisées
-    cors_origins: list[str] = [
-        "http://localhost:3000",  # Next.js dev
-        "http://localhost:8000",  # FastAPI docs
-        "http://127.0.0.1:3000",
-        "http://127.0.0.1:8000",
-    ]
+    # CORS - origines autorisées (API publique en lecture seule)
+    cors_origins: list[str] = ["*"]
 
     # Rate limiting
     rate_limit: str = "100/minute"  # 100 requêtes par minute
