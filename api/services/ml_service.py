@@ -40,11 +40,11 @@ def get_macro_data(days: int = 500) -> pd.DataFrame:
     SELECT
         date,
         vix,
-        credit_spread,
+        credit_spread_hy AS credit_spread,
         yield_curve_10y2y,
         t10y,
         t3mo
-    FROM macro_indicators
+    FROM macro_indicator
     WHERE date >= CURRENT_DATE - INTERVAL '{days} days'
     ORDER BY date
     """
@@ -76,7 +76,7 @@ def get_etf_returns(days: int = 500) -> pd.DataFrame:
         date,
         ticker,
         close
-    FROM etf_prices
+    FROM price
     WHERE ticker IN ({tickers_str})
     AND date >= CURRENT_DATE - INTERVAL '{days} days'
     ORDER BY date, ticker

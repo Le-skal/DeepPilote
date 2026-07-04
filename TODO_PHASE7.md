@@ -1,7 +1,7 @@
 # TODO Phase 7 — CI/CD + Monitoring + Incidents
 
-**Status** : ⏳ En cours
-**Date début** : 4 juillet 2026
+**Status** : ✅ Terminée
+**Date** : 4 juillet 2026
 **Compétences à valider** : C18, C19, C20, C21
 
 ---
@@ -32,13 +32,13 @@ Mettre en place la chaîne CI/CD complète, le monitoring et les procédures d'i
 - [x] GitHub Actions pour build frontend (`frontend_ci.yml`)
 - [ ] Protection de branche main (require PR + checks) - optionnel
 
-### Phase B : Monitoring Sentry
+### Phase B : Monitoring Sentry ✅
 
-- [ ] Créer compte Sentry (gratuit) → https://sentry.io/signup
-- [x] Intégrer Sentry dans le backend FastAPI (code prêt, ajouter `SENTRY_DSN` sur Render)
-- [ ] Intégrer Sentry dans le frontend Next.js (voir instructions ci-dessous)
-- [ ] Configurer alertes (email/Slack)
-- [ ] Tester avec une erreur volontaire
+- [x] Créer compte Sentry (gratuit)
+- [x] Intégrer Sentry dans le backend FastAPI
+- [x] Ajouter `SENTRY_DSN` sur Render
+- [ ] Intégrer Sentry dans le frontend Next.js (optionnel)
+- [x] Error monitoring + Tracing activés
 
 #### Instructions Sentry Frontend
 
@@ -52,12 +52,13 @@ Puis ajouter dans Vercel :
 - `SENTRY_DSN` : ton DSN Sentry
 - `SENTRY_AUTH_TOKEN` : token pour source maps
 
-### Phase C : Monitoring Uptime
+### Phase C : Monitoring Uptime ✅
 
-- [ ] Créer compte UptimeRobot (gratuit)
-- [ ] Monitorer `/health` du backend
-- [ ] Monitorer la page d'accueil frontend
-- [ ] Configurer alertes (email)
+- [x] Créer compte UptimeRobot (gratuit)
+- [x] Monitorer `/health` du backend
+- [x] Monitorer la page d'accueil frontend
+- [x] Monitorer `/api/v1/ml/status`
+- [x] Alertes email configurées
 
 ### Phase D : Procédures d'incident ✅
 

@@ -1,7 +1,7 @@
 # DeepPilot — TODO Principal
 
-> **Phase actuelle : Phase 7 à faire**
-> Prochaine étape : CI/CD application + monitoring Sentry
+> **Phase actuelle : Phase 8 à faire**
+> Prochaine étape : Rapports professionnels + soutenance
 
 ---
 
@@ -16,8 +16,8 @@
 | Phase 4.5 | Validation HMM améliorée | ✅ Terminée | C13 |
 | Phase 5 | Service IA tiers (Mistral) | ✅ Terminée | C6, C7, C8 |
 | Phase 6 | Application Next.js | ✅ Terminée | C10, C14, C15, C17 |
-| **Phase 7** | **CI/CD + monitoring app** | ⏳ À faire | C18, C19, C20, C21 |
-| Phase 8 | Rapports + soutenance | ⏳ À faire | C16 |
+| Phase 7 | CI/CD + monitoring app | ✅ Terminée | C18, C19, C20, C21 |
+| **Phase 8** | **Rapports + soutenance** | ⏳ À faire | C16 |
 
 ---
 
@@ -27,6 +27,7 @@
 - `TODO_PHASE3.md` - Modèles ML (terminée)
 - `TODO_PHASE4.md` - MLOps (terminée)
 - `TODO_PHASE6.md` - Application Next.js + ML endpoints (terminée)
+- `TODO_PHASE7.md` - CI/CD + monitoring (terminée)
 
 ---
 
@@ -146,13 +147,31 @@ cd web && npm run dev
 
 ---
 
-## Prochaines étapes (Phase 7)
+## Phase 7 — CI/CD + Monitoring ✅
 
-1. CI/CD application (GitHub Actions)
-2. Déploiement Vercel
-3. Monitoring Sentry
-4. UptimeRobot pour surveillance
-5. Procédures d'incident
+**Terminée le 4 juillet 2026.**
+
+### CI/CD GitHub Actions
+- `ml_tests.yml` - Tests ML + MLOps
+- `api_tests.yml` - Tests API + lint Python
+- `frontend_ci.yml` - Build + lint Next.js
+
+### Monitoring
+- **Sentry** : Tracking erreurs backend (FastAPI)
+- **UptimeRobot** : 3 monitors (API health, frontend, ML status)
+
+### Procédures d'incident
+- `docs/incidents/README.md` - Processus complet
+- `docs/incidents/runbooks/` - 3 guides de résolution
+- `docs/incidents/postmortems/TEMPLATE.md`
+
+---
+
+## Prochaines étapes (Phase 8)
+
+1. Rapports professionnels
+2. Préparation soutenance
+3. Documentation finale
 
 ---
 
