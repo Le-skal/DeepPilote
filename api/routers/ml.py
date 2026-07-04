@@ -7,7 +7,12 @@ from slowapi import Limiter
 from slowapi.util import get_remote_address
 
 from api.models.ml import RegimeResponse, PortfolioWeights
-from api.services.ml_service import get_current_regime, get_portfolio_weights
+from api.services.ml_service import (
+    get_current_regime,
+    get_portfolio_weights,
+    clear_cache,
+    get_cache_info,
+)
 
 router = APIRouter(prefix="/ml", tags=["ML"])
 limiter = Limiter(key_func=get_remote_address)
@@ -26,6 +31,8 @@ limiter = Limiter(key_func=get_remote_address)
     - **bear** : marché baissier
     - **volatile** : haute volatilité
     - **stable** : marché calme
+
+    Le modèle est réentraîné automatiquement toutes les 6 heures.
     """,
 )
 @limiter.limit("30/minute")
@@ -56,3 +63,26 @@ def get_portfolio(request: Request) -> PortfolioWeights:
     """Retourne les poids optimaux du portefeuille."""
     result = get_portfolio_weights()
     return PortfolioWeights(**result)
+
+
+@router.get(
+    "/status",
+    summary="État du cache ML",
+    description="Retourne les informations sur le cache du modèle HMM.",
+)
+@limiter.limit("10/minute")
+def get_ml_status(request: Request) -> dict:
+    """Retourne l'état du cache ML."""
+    return get_cache_info()
+
+
+@router.post(
+    "/refresh",
+    summary="Force le réentraînement",
+    description="Vide le cache et force le réentraînement du modèle HMM au prochain appel.",
+)
+@limiter.limit("2/minute")
+def refresh_model(request: Request) -> dict:
+    """Force le réentraînement du modèle."""
+    clear_cache()
+    return {"message": "Cache cleared, model will be retrained on next request"}

@@ -66,7 +66,10 @@ Créer une application Next.js 14 pour visualiser les données du projet DeepPil
 ### Phase G : API ML ✅
 - [x] Endpoint `/api/v1/ml/regime` (régime HMM en temps réel)
 - [x] Endpoint `/api/v1/ml/portfolio` (poids optimaux Markowitz)
+- [x] Endpoint `/api/v1/ml/status` (état du cache)
+- [x] Endpoint `/api/v1/ml/refresh` (forcer réentraînement)
 - [x] Service ML (`api/services/ml_service.py`)
+- [x] Réentraînement automatique avec TTL cache (6h)
 - [x] Hooks React Query (`useRegime`, `usePortfolio`)
 
 ### Phase H : Finitions ✅
@@ -151,6 +154,32 @@ web/
 | `GET /api/v1/analysis/stats` | `useAllStats()` | Stats tous ETF |
 | `GET /api/v1/ml/regime` | `useRegime()` | Régime HMM actuel |
 | `GET /api/v1/ml/portfolio` | `usePortfolio()` | Poids optimaux Markowitz |
+| `GET /api/v1/ml/status` | - | État du cache ML |
+| `POST /api/v1/ml/refresh` | - | Forcer réentraînement |
+
+---
+
+## Réentraînement automatique du modèle HMM
+
+Le modèle HMM est réentraîné automatiquement grâce à un cache TTL :
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     Cycle de vie du modèle                   │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│  1. Premier appel → Entraînement HMM (~5 sec)               │
+│  2. Cache le modèle (TTL = 6 heures)                        │
+│  3. Appels suivants → Utilise le cache (instantané)         │
+│  4. Après 6h OU cold start Render → Réentraînement auto     │
+│                                                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Avec Render Free tier** :
+- Service dort après 15 min d'inactivité → cache vidé
+- Au réveil → réentraînement automatique avec données fraîches
+- Pas besoin de job externe (GitHub Actions, cron, etc.)
 
 ---
 

@@ -123,6 +123,10 @@ Application web pour visualiser les données DeepPilot avec endpoints ML. **Term
 |----------|-------------|
 | `GET /api/v1/ml/regime` | Régime HMM actuel (bull/bear/volatile/stable) |
 | `GET /api/v1/ml/portfolio` | Poids optimaux Markowitz en temps réel |
+| `GET /api/v1/ml/status` | État du cache ML |
+| `POST /api/v1/ml/refresh` | Forcer réentraînement |
+
+**Réentraînement automatique** : Le modèle HMM est réentraîné toutes les 6h (cache TTL) ou au cold start Render.
 
 ### Déploiement
 

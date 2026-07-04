@@ -142,6 +142,46 @@ Retourne les poids optimaux calculés par Markowitz :
 }
 ```
 
+### `GET /api/v1/ml/status`
+
+Retourne l'état du cache ML :
+
+```json
+{
+  "cache_size": 1,
+  "cache_ttl_seconds": 21600,
+  "cache_ttl_hours": 6.0
+}
+```
+
+### `POST /api/v1/ml/refresh`
+
+Force le réentraînement du modèle :
+
+```json
+{
+  "message": "Cache cleared, model will be retrained on next request"
+}
+```
+
+---
+
+## Réentraînement automatique
+
+Le modèle HMM utilise un **cache TTL de 6 heures** (`cachetools.TTLCache`) :
+
+| Événement | Action |
+|-----------|--------|
+| Premier appel | Entraînement HMM (~5 sec), mise en cache |
+| Appels suivants | Utilisation du cache (instantané) |
+| Après 6 heures | Cache expiré → réentraînement auto |
+| Cold start Render | Cache vide → réentraînement auto |
+
+**Avantages avec Render Free tier** :
+- Le service dort après 15 min d'inactivité
+- Au réveil, le cache est vide → réentraînement avec données fraîches
+- Pas besoin de job externe (GitHub Actions, cron)
+
 ---
 
 ## Fichiers API créés
@@ -150,7 +190,14 @@ Retourne les poids optimaux calculés par Markowitz :
 |---------|-------------|
 | `api/models/ml.py` | Schemas Pydantic (RegimeResponse, PortfolioWeights) |
 | `api/routers/ml.py` | Router FastAPI pour `/api/v1/ml/*` |
-| `api/services/ml_service.py` | Service ML (charge données, entraîne HMM, optimise) |
+| `api/services/ml_service.py` | Service ML (cache TTL 6h, HMM, Markowitz) |
+| `api/services/__init__.py` | Export des services |
+
+## Dépendances ajoutées
+
+| Package | Version | Usage |
+|---------|---------|-------|
+| `cachetools` | >=5.3.0 | TTL cache pour réentraînement automatique |
 
 ---
 

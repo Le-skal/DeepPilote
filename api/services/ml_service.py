@@ -2,17 +2,24 @@
 Service ML pour calculer régime et poids du portefeuille.
 
 Utilise les données en base pour fournir des prédictions en temps réel.
+Le modèle HMM est réentraîné automatiquement toutes les 6 heures (TTL cache).
 """
 
 import pandas as pd
 import numpy as np
-from functools import lru_cache
-from datetime import datetime, timedelta
+from datetime import datetime
+from cachetools import TTLCache
 
 from api.database import get_engine
-from ml.config import ETF_TICKERS, REGIME_NAMES, REGIME_FEATURES
+from ml.config import ETF_TICKERS, REGIME_NAMES
 from ml.models.regime_hmm import RegimeHMM
 from ml.portfolio.optimizer import PortfolioOptimizer
+
+
+# Cache avec TTL de 6 heures (21600 secondes)
+# Le modèle sera réentraîné automatiquement après expiration
+MODEL_CACHE_TTL = 6 * 60 * 60  # 6 heures
+_model_cache: TTLCache = TTLCache(maxsize=1, ttl=MODEL_CACHE_TTL)
 
 
 def get_macro_data(days: int = 500) -> pd.DataFrame:
@@ -137,20 +144,22 @@ def compute_regime_features(macro_df: pd.DataFrame, returns_df: pd.DataFrame) ->
     return features
 
 
-@lru_cache(maxsize=1)
-def _get_trained_hmm() -> tuple[RegimeHMM | None, pd.DataFrame | None, str]:
+def _train_hmm() -> tuple[RegimeHMM | None, pd.DataFrame | None, str]:
     """
-    Retourne un modèle HMM entraîné (cached).
+    Entraîne un nouveau modèle HMM.
 
     Returns:
         Tuple (modèle, features, date)
     """
+    print("[ML] Training HMM model...")
+
     macro_df = get_macro_data(days=1500)
     returns_df = get_etf_returns(days=1500)
 
     features = compute_regime_features(macro_df, returns_df)
 
     if features.empty or len(features) < 100:
+        print("[ML] Not enough data to train HMM")
         return None, None, ""
 
     # Entraîner HMM
@@ -159,7 +168,35 @@ def _get_trained_hmm() -> tuple[RegimeHMM | None, pd.DataFrame | None, str]:
 
     last_date = features.index[-1].strftime("%Y-%m-%d")
 
+    print(f"[ML] HMM trained on {len(features)} samples, last date: {last_date}")
+
     return hmm, features, last_date
+
+
+def _get_trained_hmm() -> tuple[RegimeHMM | None, pd.DataFrame | None, str]:
+    """
+    Retourne un modèle HMM entraîné (avec cache TTL de 6h).
+
+    Le modèle est réentraîné automatiquement quand :
+    - Le cache expire (après 6h)
+    - Le service redémarre (cold start Render)
+
+    Returns:
+        Tuple (modèle, features, date)
+    """
+    cache_key = "hmm_model"
+
+    if cache_key in _model_cache:
+        print("[ML] Using cached HMM model")
+        return _model_cache[cache_key]
+
+    # Cache miss → entraîner le modèle
+    result = _train_hmm()
+
+    if result[0] is not None:
+        _model_cache[cache_key] = result
+
+    return result
 
 
 def get_current_regime() -> dict:
@@ -275,5 +312,15 @@ def get_portfolio_weights() -> dict:
 
 
 def clear_cache():
-    """Vide le cache du modèle HMM."""
-    _get_trained_hmm.cache_clear()
+    """Vide le cache du modèle HMM (force réentraînement)."""
+    _model_cache.clear()
+    print("[ML] Cache cleared, model will be retrained on next request")
+
+
+def get_cache_info() -> dict:
+    """Retourne les infos sur le cache."""
+    return {
+        "cache_size": len(_model_cache),
+        "cache_ttl_seconds": MODEL_CACHE_TTL,
+        "cache_ttl_hours": MODEL_CACHE_TTL / 3600,
+    }
