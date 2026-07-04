@@ -398,9 +398,9 @@
         <h1>DeepPilot - Workflow Projet</h1>
         <p>Copilote d'allocation d'actifs avec ML | Bachelor Data & IA - ECE Paris</p>
         <div class="progress-bar">
-            <span>Progression globale : 80% (Phase 6 terminée, Phases 7-8 à faire)</span>
+            <span>Progression globale : 90% (Phase 7 terminée, Phase 8 à faire)</span>
             <div class="progress-bar-inner">
-                <div class="progress-bar-fill" style="width: 80%;"></div>
+                <div class="progress-bar-fill" style="width: 90%;"></div>
             </div>
         </div>
         <button class="demo-button" onclick="showModal('demo')">Commandes Démo</button>
@@ -759,28 +759,34 @@
 
             <!-- Phase 7 -->
             <div class="phase-row">
-                <div class="phase-label todo">
+                <div class="phase-label done">
                     <h3>Phase 7</h3>
                     <span class="competences">C18, C19, C20, C21</span>
-                    <span class="status todo">À faire</span>
+                    <span class="status done">✓ Terminée</span>
                 </div>
                 <div class="phase-steps">
-                    <div class="step todo" onclick="showModal('p7-cicd')">
-                        <div class="step-icon todo">○</div>
+                    <div class="step done" onclick="showModal('p7-cicd')">
+                        <div class="step-icon done">✓</div>
                         <div class="step-title">CI/CD App</div>
-                        <div class="step-subtitle">GitHub Actions</div>
+                        <div class="step-subtitle">3 workflows</div>
                     </div>
                     <span class="arrow">→</span>
-                    <div class="step todo" onclick="showModal('p7-monitoring')">
-                        <div class="step-icon todo">○</div>
+                    <div class="step done" onclick="showModal('p7-monitoring')">
+                        <div class="step-icon done">✓</div>
                         <div class="step-title">Monitoring</div>
                         <div class="step-subtitle">Sentry + Uptime</div>
                     </div>
                     <span class="arrow">→</span>
-                    <div class="step todo" onclick="showModal('p7-incidents')">
-                        <div class="step-icon todo">○</div>
+                    <div class="step done" onclick="showModal('p7-incidents')">
+                        <div class="step-icon done">✓</div>
                         <div class="step-title">Incidents</div>
-                        <div class="step-subtitle">Procédures</div>
+                        <div class="step-subtitle">3 runbooks</div>
+                    </div>
+                    <span class="arrow">→</span>
+                    <div class="step done" onclick="showModal('p7-deploy')">
+                        <div class="step-icon done">✓</div>
+                        <div class="step-title">Deploy</div>
+                        <div class="step-subtitle">Vercel + Render</div>
                     </div>
                 </div>
             </div>
@@ -1686,40 +1692,77 @@
 
             // Phase 7
             'p7-cicd': {
-                title: 'CI/CD App',
+                title: 'CI/CD Application',
                 phase: 'Phase 7',
-                status: 'todo',
-                description: 'CI/CD pour l\'application Next.js.',
+                status: 'done',
+                description: '3 workflows GitHub Actions pour tests automatisés.',
                 details: [
-                    'GitHub Actions pour tests frontend',
-                    'Déploiement automatique sur Vercel',
-                    'Preview deployments'
+                    'ml_tests.yml : Tests ML + MLOps (push sur ml/, tests/ml/)',
+                    'api_tests.yml : Tests API + lint Python (black, ruff)',
+                    'frontend_ci.yml : Lint + type-check + build Next.js',
+                    'Tous les workflows exécutés avec succès'
                 ],
-                tech: ['GitHub Actions', 'Vercel']
+                tech: ['GitHub Actions', 'pytest', 'ruff', 'black'],
+                files: [
+                    '.github/workflows/ml_tests.yml',
+                    '.github/workflows/api_tests.yml',
+                    '.github/workflows/frontend_ci.yml'
+                ]
             },
             'p7-monitoring': {
-                title: 'Monitoring App',
+                title: 'Monitoring Production',
                 phase: 'Phase 7',
-                status: 'todo',
-                description: 'Monitoring de l\'application en production.',
+                status: 'done',
+                description: 'Sentry pour error tracking + UptimeRobot pour uptime.',
                 details: [
-                    'Sentry pour error tracking',
-                    'UptimeRobot pour disponibilité',
-                    'Analytics (optionnel)'
+                    'Sentry intégré dans FastAPI (api/main.py)',
+                    'Error monitoring + tracing activés',
+                    'UptimeRobot : 3 monitors (API health, frontend, ML status)',
+                    'Alertes email configurées'
                 ],
-                tech: ['Sentry', 'UptimeRobot']
+                tech: ['Sentry', 'UptimeRobot', 'sentry-sdk'],
+                stats: { 'Monitors': 3, 'Traces': '10%' },
+                files: [
+                    'api/main.py (Sentry init)',
+                    'api/config.py (SENTRY_DSN)',
+                    'requirements.txt (sentry-sdk)'
+                ]
             },
             'p7-incidents': {
                 title: 'Gestion Incidents',
                 phase: 'Phase 7',
-                status: 'todo',
-                description: 'Procédures de gestion des incidents.',
+                status: 'done',
+                description: 'Documentation complète pour gestion des incidents.',
                 details: [
-                    'Alertes configurées',
-                    'Procédures de réponse',
-                    'Post-mortems'
+                    'README.md : Processus complet (P1-P4, contacts, escalade)',
+                    'api_down.md : Diagnostic API ne répond pas',
+                    'db_error.md : Diagnostic erreur base de données',
+                    'ml_error.md : Diagnostic erreur modèle ML',
+                    'TEMPLATE.md : Template post-mortem'
                 ],
-                tech: []
+                tech: [],
+                files: [
+                    'docs/incidents/README.md',
+                    'docs/incidents/runbooks/api_down.md',
+                    'docs/incidents/runbooks/db_error.md',
+                    'docs/incidents/runbooks/ml_error.md',
+                    'docs/incidents/postmortems/TEMPLATE.md'
+                ]
+            },
+            'p7-deploy': {
+                title: 'Déploiement Production',
+                phase: 'Phase 7',
+                status: 'done',
+                description: 'Application déployée sur Vercel (frontend) et Render (backend).',
+                details: [
+                    'Frontend : https://deep-pilote.vercel.app',
+                    'Backend : https://deeppilote.onrender.com',
+                    'Auto-deploy sur push main',
+                    'Modèle ML réentraîné automatiquement (TTL 6h)',
+                    'Données mises à jour quotidiennement'
+                ],
+                tech: ['Vercel', 'Render', 'Supabase'],
+                stats: { 'Frontend': 'Vercel', 'Backend': 'Render' }
             },
 
             // Phase 8
@@ -1848,6 +1891,21 @@
                         <p>Puis ouvrir : <a href="http://localhost:3000" target="_blank" class="demo-url">http://localhost:3000</a></p>
                         <p style="color: #888; font-size: 0.9em;">→ 7 pages : Dashboard, ETFs, Market, Analysis, Portfolio, About</p>
                         <p style="color: #888; font-size: 0.9em;">→ Theme Cyberpunk Finance avec accents néon</p>
+                    </div>
+
+                    <div class="demo-section">
+                        <h4>Phase 7 — CI/CD + Monitoring</h4>
+                        <p style="color: #888; font-size: 0.9em;">→ GitHub Actions : <a href="https://github.com/Le-skal/DeepPilote/actions" target="_blank" class="demo-url">Voir les workflows</a></p>
+                        <p style="color: #888; font-size: 0.9em;">→ Sentry Dashboard : <a href="https://sentry.io" target="_blank" class="demo-url">sentry.io</a></p>
+                        <p style="color: #888; font-size: 0.9em;">→ UptimeRobot : <a href="https://uptimerobot.com" target="_blank" class="demo-url">uptimerobot.com</a></p>
+                        <div class="demo-code">
+                            <span class="comment"># Tester l'API ML en production</span><br>
+                            <span class="command">curl https://deeppilote.onrender.com/api/v1/ml/regime</span>
+                        </div>
+                        <div class="demo-code">
+                            <span class="comment"># Voir les runbooks d'incidents</span><br>
+                            <span class="command">cat docs/incidents/README.md</span>
+                        </div>
                     </div>
                 `;
             } else {
