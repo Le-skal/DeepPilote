@@ -36,6 +36,10 @@ class Settings(BaseSettings):
     # Rate limiting
     rate_limit: str = "100/minute"  # 100 requêtes par minute
 
+    # Sentry (monitoring erreurs) - optionnel
+    sentry_dsn: str | None = None
+    sentry_environment: str = "production"
+
 
 @lru_cache
 def get_settings() -> Settings:

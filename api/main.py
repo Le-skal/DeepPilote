@@ -7,6 +7,7 @@ Docs: http://localhost:8000/docs
 
 from contextlib import asynccontextmanager
 
+import sentry_sdk
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, RedirectResponse
@@ -19,6 +20,18 @@ from api.config import get_settings
 from api.database import check_db_connection
 from api.models.analysis import HealthResponse
 from api.routers import analysis, etf, macro, ml
+
+
+# Initialiser Sentry (si DSN configuré)
+_settings = get_settings()
+if _settings.sentry_dsn:
+    sentry_sdk.init(
+        dsn=_settings.sentry_dsn,
+        environment=_settings.sentry_environment,
+        traces_sample_rate=0.1,  # 10% des requêtes tracées
+        profiles_sample_rate=0.1,
+    )
+    print(f"[OK] Sentry initialized ({_settings.sentry_environment})")
 
 
 class CORSErrorMiddleware(BaseHTTPMiddleware):
