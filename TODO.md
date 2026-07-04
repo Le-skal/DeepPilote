@@ -26,6 +26,7 @@
 - `TODO_PHASE2.md` - API REST + RGPD (terminée)
 - `TODO_PHASE3.md` - Modèles ML (terminée)
 - `TODO_PHASE4.md` - MLOps (terminée)
+- `TODO_PHASE6.md` - Application Next.js + ML endpoints (terminée)
 
 ---
 
@@ -94,47 +95,41 @@ Intégration de Mistral API pour l'analyse de sentiment sur les news financière
 
 ## Phase 6 — Application Next.js ✅
 
-Application web pour visualiser les données DeepPilot. **Terminée le 4 juillet 2026.**
+Application web pour visualiser les données DeepPilot avec endpoints ML. **Terminée le 4 juillet 2026.**
 
 ### Stack technique
 
 - Next.js 14 (App Router)
 - TypeScript
-- Tailwind CSS + shadcn/ui
+- Tailwind CSS + shadcn/ui (theme Cyberpunk Finance)
 - React Query (@tanstack/react-query)
 - Recharts (graphiques)
 
-### Pages créées
+### Pages créées (toutes dynamiques, pas de données mockées)
 
 | Page | Route | Description |
 |------|-------|-------------|
-| Dashboard | `/` | Vue d'ensemble (régime, VIX, stats) |
+| Dashboard | `/` | Vue d'ensemble (régime ML, VIX, stats) |
 | ETFs | `/etfs` | Liste des 8 ETF + benchmarks |
 | Détail ETF | `/etfs/[ticker]` | Prix, stats, features |
-| Market | `/market` | Indicateurs macro, régimes |
+| Market | `/market` | Indicateurs macro, régimes ML, probabilités |
 | Analysis | `/analysis` | Corrélations, statistiques |
-| Portfolio | `/portfolio` | Allocations (mock data) |
+| Portfolio | `/portfolio` | Allocations optimales ML (Markowitz) |
 | About | `/about` | Disclaimer légal |
 
-### Fichiers clés
+### Nouveaux endpoints ML
 
-```
-web/
-├── app/                    # Pages (App Router)
-├── components/
-│   ├── layout/            # Header, Footer
-│   ├── cards/             # StatCard, ETFCard, RegimeIndicator
-│   ├── charts/            # PriceChart (Recharts)
-│   └── ui/                # shadcn/ui
-├── lib/
-│   ├── api/               # Client API + fonctions
-│   └── utils/             # Formatters, constantes
-├── hooks/                 # React Query hooks
-├── types/                 # TypeScript types (miroir Pydantic)
-└── providers/             # QueryProvider
-```
+| Endpoint | Description |
+|----------|-------------|
+| `GET /api/v1/ml/regime` | Régime HMM actuel (bull/bear/volatile/stable) |
+| `GET /api/v1/ml/portfolio` | Poids optimaux Markowitz en temps réel |
 
-### Lancement
+### Déploiement
+
+- **Frontend** : https://deep-pilote.vercel.app (Vercel)
+- **Backend** : https://deeppilote.onrender.com (Render)
+
+### Lancement local
 
 ```bash
 # Backend (terminal 1)

@@ -143,30 +143,26 @@ export interface CorrelationMatrix {
 }
 
 // ============================================================
-// Regime Types (pour futur ML API)
+// ML Types (Régime et Portfolio)
 // ============================================================
 
 export type RegimeName = 'bull' | 'bear' | 'volatile' | 'stable';
 
-export interface RegimeInfo {
-  regime: number;
-  regime_name: RegimeName;
+export interface RegimeResponse {
+  regime: RegimeName;
+  regime_id: number;
   confidence: number;
+  as_of_date: string;
   probabilities: Record<RegimeName, number>;
 }
 
-// ============================================================
-// Portfolio Types (pour futur ML API)
-// ============================================================
-
-export interface PortfolioWeights {
-  date: string;
-  regime: number;
-  regime_name: RegimeName;
+export interface PortfolioResponse {
   weights: Record<string, number>;
   expected_return: number;
   volatility: number;
   sharpe_ratio: number;
+  regime: RegimeName;
+  as_of_date: string;
 }
 
 // ============================================================

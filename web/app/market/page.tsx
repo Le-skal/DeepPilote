@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { StatCard } from '@/components/cards/StatCard';
 import { RegimeIndicator } from '@/components/cards/RegimeIndicator';
-import { useMacroLatest } from '@/hooks';
+import { useMacroLatest, useRegime } from '@/hooks';
 import {
   Activity,
   TrendingUp,
@@ -14,8 +14,7 @@ import {
 
 export default function MarketPage() {
   const { data: macroLatest, isLoading: latestLoading } = useMacroLatest();
-  // Note: macroHistory sera utilisé pour les graphiques temporels (Phase future)
-  // const { data: macroHistory, isLoading: historyLoading } = useMacro({ limit: 30 });
+  const { data: regimeData, isLoading: regimeLoading } = useRegime();
 
   return (
     <div className="space-y-6">
@@ -27,9 +26,17 @@ export default function MarketPage() {
         </p>
       </div>
 
-      {/* Régime actuel (mock) */}
+      {/* Régime actuel */}
       <div className="grid gap-4 md:grid-cols-4">
-        <RegimeIndicator regime="bull" confidence={0.87} className="md:col-span-2" />
+        {regimeLoading ? (
+          <Skeleton className="h-32 md:col-span-2" />
+        ) : (
+          <RegimeIndicator
+            regime={regimeData?.regime ?? 'stable'}
+            confidence={regimeData?.confidence ?? 0}
+            className="md:col-span-2"
+          />
+        )}
 
         {latestLoading ? (
           <>
@@ -63,11 +70,45 @@ export default function MarketPage() {
             />
             <StatCard
               title="Dernière mise à jour"
-              value={macroLatest?.as_of_date ?? '-'}
+              value={regimeData?.as_of_date ?? macroLatest?.as_of_date ?? '-'}
             />
           </>
         )}
       </div>
+
+      {/* Probabilités des régimes */}
+      {regimeData && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Probabilités des Régimes</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 md:grid-cols-4">
+              {Object.entries(regimeData.probabilities).map(([regime, prob]) => (
+                <div key={regime} className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="capitalize font-medium">{regime}</span>
+                    <span className="text-muted-foreground">
+                      {(prob * 100).toFixed(1)}%
+                    </span>
+                  </div>
+                  <div className="h-2 bg-muted rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all ${
+                        regime === 'bull' ? 'bg-green-500' :
+                        regime === 'bear' ? 'bg-red-500' :
+                        regime === 'volatile' ? 'bg-amber-500' :
+                        'bg-blue-500'
+                      }`}
+                      style={{ width: `${prob * 100}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Taux d'intérêt */}
       <Card>
@@ -136,7 +177,7 @@ export default function MarketPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <DollarSign className="h-5 w-5" />
-            Matières Premières & Devises
+            Matières Premières
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -153,9 +194,8 @@ export default function MarketPage() {
                   subtitle="USD par baril"
                 />
                 <StatCard
-                  title="USD/EUR"
-                  value="~1.00"
-                  subtitle="Taux de change"
+                  title="Date des données"
+                  value={macroLatest?.as_of_date ?? '-'}
                 />
               </>
             )}

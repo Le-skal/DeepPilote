@@ -5,3 +5,4 @@
 export * from './useETFs';
 export * from './useMacro';
 export * from './useAnalysis';
+export * from './useML';

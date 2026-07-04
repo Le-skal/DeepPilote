@@ -17,7 +17,9 @@ Theme **Cyberpunk Finance** :
 
 ## Objectif
 
-Créer une application Next.js 14 pour visualiser les données du projet DeepPilot (ETF, indicateurs macro, portfolio).
+Créer une application Next.js 14 pour visualiser les données du projet DeepPilot (ETF, indicateurs macro, régimes ML, portfolio optimisé).
+
+**Important** : Toutes les données sont dynamiques (pas de hardcoding/mock). L'application consomme les endpoints API en temps réel.
 
 ---
 
@@ -39,12 +41,12 @@ Créer une application Next.js 14 pour visualiser les données du projet DeepPil
 
 | Page | Route | Description |
 |------|-------|-------------|
-| Dashboard | `/` | Vue d'ensemble (régime, VIX, stats ETF) |
+| Dashboard | `/` | Vue d'ensemble (régime ML, VIX, stats ETF) |
 | ETFs | `/etfs` | Liste des 8 ETF + 2 benchmarks |
 | Détail ETF | `/etfs/[ticker]` | Prix historique, stats, features ML |
-| Market | `/market` | Indicateurs macro, régimes de marché |
+| Market | `/market` | Indicateurs macro, régimes de marché, probabilités |
 | Analysis | `/analysis` | Matrice de corrélation, statistiques |
-| Portfolio | `/portfolio` | Allocations recommandées (mock) |
+| Portfolio | `/portfolio` | Allocations optimales (calculées par ML) |
 | About | `/about` | Disclaimer légal obligatoire |
 
 ---
@@ -58,9 +60,9 @@ web/
 │   ├── etfs/
 │   │   ├── page.tsx       # Liste ETF
 │   │   └── [ticker]/page.tsx  # Détail ETF
-│   ├── market/page.tsx    # Indicateurs macro
+│   ├── market/page.tsx    # Indicateurs macro + régime
 │   ├── analysis/page.tsx  # Corrélations
-│   ├── portfolio/page.tsx # Allocations
+│   ├── portfolio/page.tsx # Allocations ML
 │   └── about/page.tsx     # Disclaimer
 │
 ├── components/
@@ -72,14 +74,16 @@ web/
 ├── hooks/
 │   ├── useETFs.ts         # ETF data hooks
 │   ├── useMacro.ts        # Macro indicators hooks
-│   └── useAnalysis.ts     # Stats/correlations hooks
+│   ├── useAnalysis.ts     # Stats/correlations hooks
+│   └── useML.ts           # Régime + Portfolio hooks
 │
 ├── lib/
 │   ├── api/
 │   │   ├── client.ts      # Fetch wrapper
 │   │   ├── etfs.ts        # ETF API functions
 │   │   ├── macro.ts       # Macro API functions
-│   │   └── analysis.ts    # Analysis API functions
+│   │   ├── analysis.ts    # Analysis API functions
+│   │   └── ml.ts          # ML API functions (régime, portfolio)
 │   └── utils/
 │       ├── constants.ts   # ETF_TICKERS, REGIME_COLORS
 │       └── formatters.ts  # formatPercent, formatCurrency
@@ -93,25 +97,66 @@ web/
 
 ---
 
-## Composants clés
+## Nouveaux endpoints ML (backend)
 
-### StatCard
-Carte réutilisable pour afficher une métrique avec titre, valeur, sous-titre et tendance optionnelle.
+### `GET /api/v1/ml/regime`
 
-### RegimeIndicator
-Badge coloré indiquant le régime de marché actuel (bull/bear/volatile/stable) avec niveau de confiance.
+Retourne le régime de marché détecté par le modèle HMM :
 
-### ETFCard
-Carte résumé d'un ETF avec ticker, nom, classe d'actifs et stats principales.
+```json
+{
+  "regime": "bull",
+  "regime_id": 0,
+  "confidence": 0.87,
+  "as_of_date": "2026-07-04",
+  "probabilities": {
+    "bull": 0.87,
+    "bear": 0.05,
+    "volatile": 0.03,
+    "stable": 0.05
+  }
+}
+```
 
-### PriceChart
-Graphique Recharts (LineChart) pour afficher l'historique des prix d'un ETF.
+### `GET /api/v1/ml/portfolio`
+
+Retourne les poids optimaux calculés par Markowitz :
+
+```json
+{
+  "weights": {
+    "SPY": 0.25,
+    "TLT": 0.20,
+    "GLD": 0.15,
+    "EFA": 0.12,
+    "VNQ": 0.10,
+    "EEM": 0.08,
+    "HYG": 0.05,
+    "SH": 0.05
+  },
+  "expected_return": 0.0847,
+  "volatility": 0.1256,
+  "sharpe_ratio": 0.62,
+  "regime": "bull",
+  "as_of_date": "2026-07-04"
+}
+```
+
+---
+
+## Fichiers API créés
+
+| Fichier | Description |
+|---------|-------------|
+| `api/models/ml.py` | Schemas Pydantic (RegimeResponse, PortfolioWeights) |
+| `api/routers/ml.py` | Router FastAPI pour `/api/v1/ml/*` |
+| `api/services/ml_service.py` | Service ML (charge données, entraîne HMM, optimise) |
 
 ---
 
 ## Intégration API
 
-L'application consomme l'API FastAPI existante via React Query :
+L'application consomme l'API FastAPI via React Query :
 
 | Endpoint | Hook | Usage |
 |----------|------|-------|
@@ -122,6 +167,8 @@ L'application consomme l'API FastAPI existante via React Query :
 | `GET /api/v1/macro/latest` | `useMacroLatest()` | Derniers indicateurs |
 | `GET /api/v1/analysis/correlations` | `useCorrelations()` | Matrice corrélation |
 | `GET /api/v1/analysis/stats` | `useAllStats()` | Stats tous ETF |
+| `GET /api/v1/ml/regime` | `useRegime()` | Régime actuel (HMM) |
+| `GET /api/v1/ml/portfolio` | `usePortfolio()` | Poids optimaux (Markowitz) |
 
 ---
 
@@ -130,8 +177,11 @@ L'application consomme l'API FastAPI existante via React Query :
 ### Variables d'environnement
 
 ```env
-# web/.env.local
+# web/.env.local (développement)
 NEXT_PUBLIC_API_URL=http://localhost:8000
+
+# Vercel (production)
+NEXT_PUBLIC_API_URL=https://deeppilote.onrender.com
 ```
 
 ### Lancement
@@ -148,76 +198,28 @@ npm run dev
 
 ---
 
-## Points d'attention
-
-1. **Mock data** : La page Portfolio utilise des données mock car les endpoints ML (`/api/v1/ml/portfolio/weights`) ne sont pas encore exposés.
-
-2. **Régime de marché** : Affiché avec valeur mock (bull, 87% confiance). L'intégration réelle viendra avec l'exposition de l'endpoint HMM.
-
-3. **Disclaimer légal** : Page `/about` obligatoire (voir CLAUDE.md section 11).
-
-4. **Responsive** : L'application utilise les breakpoints Tailwind (md, lg) pour s'adapter aux différentes tailles d'écran.
-
----
-
-## Build
-
-```bash
-cd web
-npm run build
-```
-
-Build réussi avec 7 pages :
-- 6 pages statiques (pre-rendered)
-- 1 page dynamique (`/etfs/[ticker]`)
-
----
-
----
-
 ## Déploiement
 
-### Option 1 : Vercel (Recommandé - Gratuit)
+### Frontend : Vercel
 
-1. **Push ton code sur GitHub** (si pas déjà fait)
+1. Connecter le repo GitHub
+2. Root Directory : `web`
+3. Variable : `NEXT_PUBLIC_API_URL=https://deeppilote.onrender.com`
+4. Deploy
 
-2. **Va sur https://vercel.com** et connecte-toi avec GitHub
+**URL** : https://deep-pilote.vercel.app
 
-3. **Import le projet** :
-   - "Add New Project"
-   - Sélectionne le repo `deepilot`
-   - Root Directory : `web`
-   - Framework : Next.js (auto-détecté)
+### Backend : Render
 
-4. **Configure les variables d'environnement** :
-   ```
-   NEXT_PUBLIC_API_URL=https://ton-api.onrender.com
-   ```
+1. Connecter le repo GitHub
+2. Build Command : `pip install -r requirements.txt`
+3. Start Command : `uvicorn api.main:app --host 0.0.0.0 --port $PORT`
+4. Variables :
+   - `SUPABASE_URL`
+   - `SUPABASE_KEY`
+   - `SUPABASE_DB_URL`
 
-5. **Deploy** - Vercel build et déploie automatiquement
-
-**URL** : `https://deepilot.vercel.app` (ou custom domain)
-
-### Option 2 : API Backend sur Render
-
-Pour que le frontend fonctionne en prod, l'API doit être accessible publiquement.
-
-1. **Va sur https://render.com**
-
-2. **New Web Service** :
-   - Connecte ton repo GitHub
-   - Root Directory : `.` (racine)
-   - Build Command : `pip install -r requirements.txt`
-   - Start Command : `uvicorn api.main:app --host 0.0.0.0 --port $PORT`
-
-3. **Variables d'environnement** :
-   ```
-   SUPABASE_URL=https://xxx.supabase.co
-   SUPABASE_KEY=eyJ...
-   SUPABASE_DB_URL=postgresql://postgres.xxx:password@aws-0-eu-west-1.pooler.supabase.com:5432/postgres
-   ```
-
-4. **Free tier** : L'API dort après 15min d'inactivité (cold start ~30s)
+**URL** : https://deeppilote.onrender.com
 
 ### Architecture Production
 
@@ -234,10 +236,9 @@ Pour que le frontend fonctionne en prod, l'API doit être accessible publiquemen
 ## Prochaines étapes (Phase 7)
 
 1. CI/CD avec GitHub Actions
-2. Déploiement Vercel + Render
-3. Monitoring Sentry
-4. UptimeRobot pour surveillance
-5. Procédures d'incident
+2. Monitoring Sentry
+3. UptimeRobot pour surveillance
+4. Procédures d'incident
 
 ---
 
@@ -245,7 +246,7 @@ Pour que le frontend fonctionne en prod, l'API doit être accessible publiquemen
 
 | Code | Compétence | Validation |
 |------|------------|------------|
-| C10 | Intégrer l'API d'un modèle d'IA dans une application | React Query + FastAPI |
+| C10 | Intégrer l'API d'un modèle d'IA dans une application | React Query + FastAPI ML endpoints |
 | C14 | Analyser le besoin d'application | Pages et fonctionnalités définies |
 | C15 | Concevoir le cadre technique | Architecture Next.js + API |
 | C17 | Développer les composants et interfaces | 7 pages + composants réutilisables |

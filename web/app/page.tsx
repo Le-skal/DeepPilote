@@ -4,7 +4,7 @@ import { StatCard } from '@/components/cards/StatCard';
 import { RegimeIndicator } from '@/components/cards/RegimeIndicator';
 import { ETFCard } from '@/components/cards/ETFCard';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useETFs, useAllStats, useMacroLatest } from '@/hooks';
+import { useETFs, useAllStats, useMacroLatest, useRegime } from '@/hooks';
 import { TrendingUp, Activity, BarChart2 } from 'lucide-react';
 import { formatPercent } from '@/lib/utils/formatters';
 import { ETF_TICKERS } from '@/lib/utils/constants';
@@ -13,6 +13,7 @@ export default function DashboardPage() {
   const { data: etfsData, isLoading: etfsLoading } = useETFs();
   const { data: statsData, isLoading: statsLoading } = useAllStats();
   const { data: macroData, isLoading: macroLoading } = useMacroLatest();
+  const { data: regimeData, isLoading: regimeLoading } = useRegime();
 
   // Trouver les stats pour les ETFs principaux
   const portfolioStats = statsData?.stats.filter((s) =>
@@ -44,8 +45,15 @@ export default function DashboardPage() {
 
       {/* Stats principales */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {/* Régime de marché (mock pour l'instant) */}
-        <RegimeIndicator regime="bull" confidence={0.87} />
+        {/* Régime de marché */}
+        {regimeLoading ? (
+          <Skeleton className="h-32" />
+        ) : (
+          <RegimeIndicator
+            regime={regimeData?.regime ?? 'stable'}
+            confidence={regimeData?.confidence ?? 0}
+          />
+        )}
 
         {/* VIX */}
         {macroLoading ? (

@@ -18,7 +18,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from api.config import get_settings
 from api.database import check_db_connection
 from api.models.analysis import HealthResponse
-from api.routers import analysis, etf, macro
+from api.routers import analysis, etf, macro, ml
 
 
 class CORSErrorMiddleware(BaseHTTPMiddleware):
@@ -80,6 +80,7 @@ app = FastAPI(
         {"name": "ETF", "description": "Données des ETF (prix, features)"},
         {"name": "Macro", "description": "Indicateurs macro-économiques"},
         {"name": "Analysis", "description": "Analyses (corrélations, statistiques)"},
+        {"name": "ML", "description": "Modèles ML (régime, portfolio)"},
         {"name": "Health", "description": "Statut de l'API"},
     ],
 )
@@ -104,6 +105,7 @@ app.add_middleware(
 app.include_router(etf.router, prefix="/api/v1")
 app.include_router(macro.router, prefix="/api/v1")
 app.include_router(analysis.router, prefix="/api/v1")
+app.include_router(ml.router, prefix="/api/v1")
 
 
 # Endpoints racine

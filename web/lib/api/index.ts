@@ -6,3 +6,4 @@ export * from './client';
 export * from './etfs';
 export * from './macro';
 export * from './analysis';
+export * from './ml';
