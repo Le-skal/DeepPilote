@@ -66,6 +66,9 @@ Thumbs.db
 # Google Cloud credentials (ne jamais commit)
 *.json
 !package.json
+!package-lock.json
+!tsconfig.json
+!components.json
 
 # Coverage
 .coverage
