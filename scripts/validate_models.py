@@ -21,20 +21,23 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import numpy as np
 import pandas as pd
-from sklearn.metrics import silhouette_score, accuracy_score, roc_auc_score
+from sklearn.metrics import accuracy_score, roc_auc_score
 
 from mlops.config import PERFORMANCE_THRESHOLDS
 
 
 def validate_hmm() -> tuple[bool, dict]:
     """
-    Valide le modèle HMM de détection de régimes.
+    Valide le modèle HMM de détection de régimes avec métriques économiques.
+
+    Phase 4.5 : Utilise des métriques économiques (crisis_recall, séparation
+    rendement/volatilité) au lieu du silhouette score.
 
     Returns:
         Tuple (success, metrics)
     """
     print("\n" + "=" * 60)
-    print("VALIDATION HMM - Détection de régimes")
+    print("VALIDATION HMM - Détection de régimes (métriques économiques)")
     print("=" * 60)
 
     try:
@@ -46,20 +49,44 @@ def validate_hmm() -> tuple[bool, dict]:
         from data.extractors.extract_yfinance import download_etf_prices, ETF_TICKERS
         from ml.features import prepare_regime_features
         from ml.models.regime_hmm import RegimeHMM
+        from ml.evaluation.regime_validation import (
+            validate_hmm_economic,
+            print_validation_report,
+        )
 
         load_dotenv()
 
         # Charger les données
         print("Chargement des données...")
-        prices = download_etf_prices(ETF_TICKERS, start_date="2015-01-01", end_date=datetime.now().strftime("%Y-%m-%d"))
+        prices = download_etf_prices(ETF_TICKERS, start_date="2008-01-01", end_date=datetime.now().strftime("%Y-%m-%d"))
 
-        # Charger macro depuis DB
+        # Charger macro (DB ou fichier local en fallback)
+        macro_df = None
         DATABASE_URL = os.getenv("SUPABASE_DB_URL")
-        engine = create_engine(DATABASE_URL)
 
-        query_macro = "SELECT date, vix, credit_spread_hy, yield_curve_10y2y FROM macro_indicator ORDER BY date"
-        macro_df = pd.read_sql(query_macro, engine, parse_dates=['date'])
-        macro_df = macro_df.set_index('date')
+        if DATABASE_URL:
+            try:
+                from sqlalchemy import create_engine
+                engine = create_engine(DATABASE_URL)
+                query_macro = "SELECT date, vix, credit_spread_hy, yield_curve_10y2y FROM macro_indicator ORDER BY date"
+                macro_df = pd.read_sql(query_macro, engine, parse_dates=['date'])
+                macro_df = macro_df.set_index('date')
+                print("Données macro chargées depuis Supabase")
+            except Exception as e:
+                print(f"Supabase indisponible, fallback sur fichier local: {e}")
+
+        # Fallback sur fichier CSV local
+        if macro_df is None or macro_df.empty:
+            from pathlib import Path
+            macro_file = Path(__file__).parent.parent / "data" / "raw" / "macro_20260515.csv"
+            if macro_file.exists():
+                macro_df = pd.read_csv(macro_file, parse_dates=['Date'])
+                macro_df = macro_df.rename(columns={'Date': 'date'})
+                macro_df = macro_df.set_index('date')
+                print(f"Données macro chargées depuis {macro_file}")
+            else:
+                print(f"ERREUR: Fichier macro introuvable: {macro_file}")
+                return False, {}
 
         if macro_df['credit_spread_hy'].isna().any():
             macro_df['credit_spread_hy'] = macro_df['credit_spread_hy'].ffill().bfill().fillna(4.5)
@@ -81,38 +108,37 @@ def validate_hmm() -> tuple[bool, dict]:
         hmm = RegimeHMM(n_regimes=4, n_iter=50, random_state=42)
         hmm.fit(X)
 
-        # Prédire
-        regimes = hmm.predict(X)
+        # Prédire les régimes
+        regimes = hmm.predict_series(X)
 
-        # Calculer les métriques
-        silhouette = silhouette_score(X, regimes)
-        regime_changes = np.sum(np.diff(regimes) != 0)
-        stability = 1 - (regime_changes / len(regimes))
+        # Validation économique (Phase 4.5)
+        thresholds = {
+            "crisis_recall_min": PERFORMANCE_THRESHOLDS['regime']['crisis_recall_min'],
+            "stability_min": PERFORMANCE_THRESHOLDS['regime']['stability_min'],
+        }
+        validation = validate_hmm_economic(regimes, prices, spy_col="SPY", thresholds=thresholds)
 
+        # Afficher le rapport
+        print_validation_report(validation)
+
+        # Extraire les métriques pour le résumé
         metrics = {
-            "silhouette": silhouette,
-            "stability": stability,
+            "crisis_recall": validation["summary"]["crisis_recall"],
+            "return_separation": validation["summary"]["return_separation"],
+            "vol_separation": validation["summary"]["vol_separation"],
+            "stability": validation["summary"]["stability"],
+            "checks_passed": f"{validation['checks_passed']}/{validation['checks_total']}",
         }
 
-        print(f"\nMétriques:")
-        print(f"  Silhouette: {silhouette:.4f} (seuil: {PERFORMANCE_THRESHOLDS['regime']['silhouette_min']})")
-        print(f"  Stability: {stability:.4f} (seuil: {PERFORMANCE_THRESHOLDS['regime']['stability_min']})")
-
-        # Vérifier les seuils
-        thresholds = PERFORMANCE_THRESHOLDS['regime']
-        success = (
-            silhouette >= thresholds['silhouette_min'] and
-            stability >= thresholds['stability_min']
-        )
+        success = validation["valid"]
 
         if success:
-            print("\n[OK] HMM VALIDÉ")
+            print("\n[OK] HMM VALIDÉ (métriques économiques)")
         else:
             print("\n[FAIL] HMM ÉCHOUÉ")
-            if silhouette < thresholds['silhouette_min']:
-                print(f"   Silhouette trop faible: {silhouette:.4f} < {thresholds['silhouette_min']}")
-            if stability < thresholds['stability_min']:
-                print(f"   Stabilité trop faible: {stability:.4f} < {thresholds['stability_min']}")
+            for name, check in validation["checks"].items():
+                if not check["passed"]:
+                    print(f"   {name}: {check['value']} (seuil: {check['threshold']})")
 
         return success, metrics
 

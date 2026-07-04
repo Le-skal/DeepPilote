@@ -58,12 +58,18 @@ deeppilot/
 │   ├── models/         # Modèles ML (HMM, GMM, K-Means, RF, XGBoost)
 │   ├── features/       # Feature engineering
 │   ├── portfolio/      # Optimisation et backtesting
-│   └── evaluation/     # Métriques et comparaisons
+│   ├── evaluation/     # Métriques et comparaisons
+│   └── sentiment/      # Analyse de sentiment (Mistral API)
 ├── mlops/
 │   ├── tracking.py     # MLflow tracking
 │   ├── registry.py     # Model registry
 │   └── monitoring.py   # Drift detection
 ├── api/                # API FastAPI (RGPD compliant)
+├── web/                # Application Next.js 14
+│   ├── app/            # Pages (App Router)
+│   ├── components/     # Composants React
+│   ├── hooks/          # React Query hooks
+│   └── lib/            # API client, utils
 ├── analysis/           # Notebooks d'exploration (01-09)
 ├── tests/              # Tests unitaires (182 tests)
 └── docs/               # Documentation
@@ -89,6 +95,31 @@ cd deeppilot
 python -m mlflow ui --port 5000
 # Ouvrir http://localhost:5000
 ```
+
+## Application Web
+
+```bash
+# Lancer l'API backend
+python scripts/run_api.py
+
+# Dans un autre terminal, lancer le frontend
+cd web
+npm install
+npm run dev
+# Ouvrir http://localhost:3000
+```
+
+### Pages disponibles
+
+| Page | Description |
+|------|-------------|
+| `/` | Dashboard (régime, VIX, stats clés) |
+| `/etfs` | Liste des 8 ETF du portefeuille |
+| `/etfs/[ticker]` | Détail ETF (prix, stats, features) |
+| `/market` | Indicateurs macroéconomiques |
+| `/analysis` | Corrélations et statistiques |
+| `/portfolio` | Allocation recommandée |
+| `/about` | Disclaimer légal |
 
 ## Résultats
 

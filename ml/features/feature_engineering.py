@@ -114,6 +114,7 @@ def prepare_prediction_features(
     df: pd.DataFrame,
     ticker: str,
     regime_series: Optional[pd.Series] = None,
+    sentiment_scores: Optional[pd.Series] = None,
 ) -> pd.DataFrame:
     """
     Prépare les features pour la prédiction de rendement d'un ETF.
@@ -125,11 +126,13 @@ def prepare_prediction_features(
     - macd_signal_ratio : Ratio MACD/Signal
     - bb_position : Position dans les bandes de Bollinger
     - regime : Régime de marché (si fourni)
+    - sentiment_* : Features de sentiment (si fourni)
 
     Args:
         df: DataFrame avec les prix et features
         ticker: Symbole de l'ETF
         regime_series: Série des régimes (optionnel)
+        sentiment_scores: Série de scores de sentiment [-1, 1] (optionnel)
 
     Returns:
         DataFrame avec les features de prédiction
@@ -176,6 +179,35 @@ def prepare_prediction_features(
         features["regime"] = regime_series
     else:
         features["regime"] = 0  # Régime par défaut
+
+    # Features de sentiment (si fourni) - Phase 5
+    if sentiment_scores is not None:
+        # Aligner les index
+        aligned_sentiment = sentiment_scores.reindex(features.index)
+
+        # Score brut (shifted pour éviter look-ahead)
+        features["sentiment_score"] = aligned_sentiment.shift(1)
+
+        # SMA du sentiment
+        features["sentiment_sma_5"] = (
+            aligned_sentiment.rolling(window=5, min_periods=1).mean().shift(1)
+        )
+        features["sentiment_sma_20"] = (
+            aligned_sentiment.rolling(window=20, min_periods=5).mean().shift(1)
+        )
+
+        # Volatilité du sentiment (écart-type rolling)
+        features["sentiment_volatility"] = (
+            aligned_sentiment.rolling(window=20, min_periods=5).std().shift(1)
+        )
+
+        # Changement de sentiment
+        features["sentiment_change"] = aligned_sentiment.diff().shift(1)
+
+        # Remplir les NaN des features sentiment
+        for col in ["sentiment_score", "sentiment_sma_5", "sentiment_sma_20",
+                    "sentiment_volatility", "sentiment_change"]:
+            features[col] = features[col].fillna(0.0)
 
     return features.dropna()
 

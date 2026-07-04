@@ -122,15 +122,17 @@ def add_recession_labels(
     return labels
 
 
-def get_crisis_periods() -> dict[str, tuple[str, str]]:
+def get_crisis_periods(include_pre_2010: bool = False) -> dict[str, tuple[str, str]]:
     """
     Retourne les périodes de crise majeures pour annotation.
+
+    Args:
+        include_pre_2010: Inclure GFC_2008 (données macro pas toujours disponibles)
 
     Returns:
         Dict {nom_crise: (start_date, end_date)}
     """
-    return {
-        "GFC_2008": ("2008-09-01", "2009-03-31"),
+    crises = {
         "Flash_Crash_2010": ("2010-05-06", "2010-05-06"),
         "Euro_Crisis_2011": ("2011-07-01", "2011-10-31"),
         "China_Fears_2015": ("2015-08-01", "2015-09-30"),
@@ -138,6 +140,11 @@ def get_crisis_periods() -> dict[str, tuple[str, str]]:
         "COVID_2020": ("2020-02-20", "2020-03-31"),
         "Rate_Hikes_2022": ("2022-01-01", "2022-10-31"),
     }
+
+    if include_pre_2010:
+        crises["GFC_2008"] = ("2008-09-01", "2009-03-31")
+
+    return crises
 
 
 def evaluate_regime_labels(

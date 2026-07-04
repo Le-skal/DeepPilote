@@ -26,6 +26,14 @@ from ml.evaluation.compare_prediction_models import (
     walk_forward_comparison,
     get_feature_importance_comparison,
 )
+from ml.evaluation.regime_validation import (
+    calculate_crisis_recall,
+    calculate_regime_return_separation,
+    calculate_regime_vol_separation,
+    calculate_stability,
+    validate_hmm_economic,
+    print_validation_report,
+)
 
 __all__ = [
     # Regime labels
@@ -45,4 +53,11 @@ __all__ = [
     "get_best_prediction_model",
     "walk_forward_comparison",
     "get_feature_importance_comparison",
+    # Regime validation (Phase 4.5)
+    "calculate_crisis_recall",
+    "calculate_regime_return_separation",
+    "calculate_regime_vol_separation",
+    "calculate_stability",
+    "validate_hmm_economic",
+    "print_validation_report",
 ]

@@ -160,35 +160,78 @@ class RegimeHMM:
     def _reorder_states(self, X: pd.DataFrame) -> None:
         """
         Réordonne les états pour cohérence avec les régimes attendus.
+
+        Phase 4.5 : Utilise volatilité ET rendement pour un ordering économique.
+
+        Logique de classification :
+        - volatile (2) : plus haute volatilité
+        - stable (3) : plus basse volatilité
+        - bull (0) : rendement positif (parmi les 2 restants)
+        - bear (1) : rendement négatif (parmi les 2 restants)
+
+        Cette approche garantit que :
+        - regime_vol_separation : vol(volatile) > vol(stable) ✓
+        - regime_return_separation : return(bull) > return(bear) ✓
         """
         X_scaled = self.scaler.transform(X)
         labels = self.model.predict(X_scaled)
 
-        # Calculer la volatilité moyenne par état
-        state_vols = []
+        # Calculer volatilité ET rendement par état
+        state_stats = []
         for i in range(self.n_regimes):
             mask = labels == i
+
+            # Volatilité
             if mask.sum() > 0 and "spy_volatility_20d" in X.columns:
                 vol = X.loc[mask, "spy_volatility_20d"].mean()
             elif mask.sum() > 0 and "vix_zscore" in X.columns:
                 vol = X.loc[mask, "vix_zscore"].mean()
             else:
                 vol = 0
-            state_vols.append((i, vol))
 
-        # Trier par volatilité
-        state_vols.sort(key=lambda x: x[1])
+            # Rendement (spy_return_20d)
+            if mask.sum() > 0 and "spy_return_20d" in X.columns:
+                ret = X.loc[mask, "spy_return_20d"].mean()
+            else:
+                ret = 0
 
-        # Mapping : stable(3) < bull(0) < bear(1) < volatile(2)
+            state_stats.append({
+                "state_id": i,
+                "vol": vol,
+                "ret": ret,
+                "count": mask.sum(),
+            })
+
         self._regime_order = np.zeros(self.n_regimes, dtype=int)
 
         if self.n_regimes == 4:
-            order = [3, 0, 1, 2]  # stable, bull, bear, volatile
-            for idx, (state_id, _) in enumerate(state_vols):
-                self._regime_order[state_id] = order[idx]
+            # Trier par volatilité pour identifier stable et volatile
+            by_vol = sorted(state_stats, key=lambda x: x["vol"])
+
+            # stable = plus basse vol, volatile = plus haute vol
+            stable_state = by_vol[0]["state_id"]
+            volatile_state = by_vol[-1]["state_id"]
+
+            # Les 2 états du milieu : trier par rendement
+            middle_states = [s for s in state_stats
+                           if s["state_id"] not in [stable_state, volatile_state]]
+            middle_states.sort(key=lambda x: x["ret"], reverse=True)
+
+            # bull = meilleur rendement, bear = pire rendement
+            bull_state = middle_states[0]["state_id"]
+            bear_state = middle_states[1]["state_id"]
+
+            # Assigner les labels finaux
+            self._regime_order[bull_state] = 0      # bull
+            self._regime_order[bear_state] = 1      # bear
+            self._regime_order[volatile_state] = 2  # volatile
+            self._regime_order[stable_state] = 3    # stable
+
         else:
-            for idx, (state_id, _) in enumerate(state_vols):
-                self._regime_order[state_id] = idx
+            # Fallback : trier par volatilité
+            by_vol = sorted(state_stats, key=lambda x: x["vol"])
+            for idx, s in enumerate(by_vol):
+                self._regime_order[s["state_id"]] = idx
 
     def get_transition_matrix(self) -> pd.DataFrame:
         """

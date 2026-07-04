@@ -112,5 +112,6 @@ def check_db_connection() -> bool:
         with get_db_context() as db:
             db.execute(text("SELECT 1"))
         return True
-    except Exception:
+    except Exception as e:
+        print(f"[DB ERROR] Connection failed: {e}")
         return False

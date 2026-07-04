@@ -9,15 +9,38 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import RedirectResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from api.config import get_settings
 from api.database import check_db_connection
 from api.models.analysis import HealthResponse
 from api.routers import analysis, etf, macro
+
+
+class CORSErrorMiddleware(BaseHTTPMiddleware):
+    """Middleware pour ajouter CORS headers meme sur les erreurs 500."""
+
+    async def dispatch(self, request: Request, call_next):
+        try:
+            response = await call_next(request)
+            return response
+        except Exception as e:
+            # Log l'erreur
+            print(f"[ERROR] {request.method} {request.url.path}: {e}")
+            # Retourner une reponse JSON avec headers CORS
+            return JSONResponse(
+                status_code=500,
+                content={"detail": str(e)},
+                headers={
+                    "Access-Control-Allow-Origin": "*",
+                    "Access-Control-Allow-Methods": "GET, OPTIONS",
+                    "Access-Control-Allow-Headers": "*",
+                },
+            )
 
 
 # Rate limiter
@@ -65,12 +88,15 @@ app = FastAPI(
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
+# Middleware pour CORS sur les erreurs (doit etre avant CORSMiddleware)
+app.add_middleware(CORSErrorMiddleware)
+
 # CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
     allow_credentials=True,
-    allow_methods=["GET"],  # API read-only
+    allow_methods=["GET", "OPTIONS"],  # API read-only + preflight
     allow_headers=["*"],
 )
 

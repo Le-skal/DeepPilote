@@ -77,8 +77,8 @@ Raphaël Martin (alias Skal / Le-skal), 3e année Bachelor Data & IA à l'ECE Pa
 | HMM | hmmlearn | Détection de régime |
 | Optimisation portefeuille | scipy.optimize.minimize | Plus simple que cvxpy, suffisant pour Markowitz contraint |
 | Tracking ML | MLflow | Registry + métriques |
-| API | FastAPI | À venir, pas dans la phase actuelle |
-| Front | Next.js 14 + Tailwind + shadcn/ui | À venir, pas dans la phase actuelle |
+| API | FastAPI | Phase 2 terminée |
+| Front | Next.js 14 + Tailwind + shadcn/ui + React Query | Phase 6 terminée |
 | CI/CD | GitHub Actions | Gratuit |
 | Monitoring | Sentry + UptimeRobot | Gratuit |
 | Service IA tiers | Mistral API | Sentiment news, EU-based, pas cher |
@@ -166,7 +166,7 @@ Raphaël Martin (alias Skal / Le-skal), 3e année Bachelor Data & IA à l'ECE Pa
 
 ## 6. Architecture du projet
 
-### 6.1 Structure dossiers (Phase 4 — complète)
+### 6.1 Structure dossiers (Phase 6 — complète)
 
 ```
 deeppilot/
@@ -189,7 +189,8 @@ deeppilot/
 │   ├── models/                # modèles ML (HMM, GMM, K-Means, RF, XGBoost)
 │   ├── features/              # feature engineering
 │   ├── portfolio/             # optimisation Markowitz, backtesting
-│   └── evaluation/            # métriques et comparaisons
+│   ├── evaluation/            # métriques et comparaisons
+│   └── sentiment/             # analyse sentiment Mistral API
 │
 ├── mlops/
 │   ├── config.py              # configuration MLflow
@@ -199,26 +200,34 @@ deeppilot/
 │
 ├── api/                       # API FastAPI RGPD-compliant
 │
+├── web/                       # Application Next.js 14
+│   ├── app/                   # Pages (App Router)
+│   ├── components/            # Composants React (cards, charts, layout)
+│   ├── hooks/                 # React Query hooks
+│   ├── lib/                   # API client, utils, formatters
+│   ├── types/                 # Types TypeScript (miroir Pydantic)
+│   └── providers/             # QueryProvider
+│
 ├── analysis/                  # notebooks d'exploration (01-09)
 │   ├── 01-04                  # exploration données
 │   ├── 05-07                  # modèles ML et backtest
 │   └── 08-09                  # MLOps (tracking, monitoring)
 │
-├── tests/                     # 182 tests (data, ML, MLOps, API)
+├── tests/                     # 242 tests (data, ML, MLOps, API, sentiment)
 │
 ├── scripts/                   # scripts utilitaires
 │
 └── docs/                      # documentation
 ```
 
-### 6.2 Dossiers ajoutés (Phases 2-4)
+### 6.2 Dossiers ajoutés (Phases 2-6)
 
 Les dossiers suivants ont été créés au fil des phases :
 - `/ml/` : modèles ML (HMM, RF), features, portfolio, backtest (Phase 3)
 - `/mlops/` : tracking MLflow, registry, monitoring (Phase 4)
 - `/api/` : API FastAPI RGPD-compliant (Phase 2)
-
-**À venir (Phase 6)** : `/web/` pour l'application Next.js
+- `/ml/sentiment/` : analyse de sentiment avec Mistral AI (Phase 5)
+- `/web/` : application Next.js 14 + Tailwind + shadcn/ui (Phase 6)
 
 ---
 
@@ -284,13 +293,13 @@ Tu ne dois PAS modifier CLAUDE.md sans validation.
 | Phase 2 | ✅ Terminé | API REST data + RGPD | C4 (complet), C5 |
 | Phase 3 | ✅ Terminé | Modèles ML (HMM, RF, backtest) | C9, C12 |
 | Phase 4 | ✅ Terminé | MLOps (MLflow, CI/CD ML) + monitoring | C11, C13 |
-| **Phase 4.5** | **À faire** | **Validation HMM améliorée (métriques éco.)** | C13 (renforcement) |
-| Phase 5 | À faire | Service IA tiers (Mistral) + sentiment | C6, C7, C8 |
-| Phase 6 | À faire | Application Next.js + intégration API ML | C10, C14, C15, C17 |
+| Phase 4.5 | ✅ Terminé | Validation HMM améliorée (métriques éco.) | C13 (renforcement) |
+| Phase 5 | ✅ Terminé | Service IA tiers (Mistral) + sentiment | C6, C7, C8 |
+| Phase 6 | ✅ Terminé | Application Next.js + intégration API ML | C10, C14, C15, C17 |
 | Phase 7 | À faire | CI/CD app + monitoring + incidents | C18, C19, C20, C21 |
 | Phase 8 | À faire | Rapports pro + soutenance | C16 transverse |
 
-**Phase actuelle : Phase 4.5 à faire.** Prochaine étape : Améliorer validation HMM, puis Phase 5.
+**Phase actuelle : Phase 6 terminée.** Prochaine étape : Phase 7 (CI/CD app, monitoring Sentry, procédures d'incident).
 
 ### 9.1 Détail des compétences par bloc
 
@@ -392,4 +401,4 @@ Le projet est purement éducatif. Il ne constitue pas un conseil en investisseme
 
 ---
 
-**Dernière mise à jour : 16 mai 2026**
+**Dernière mise à jour : 4 juillet 2026**

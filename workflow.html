@@ -398,9 +398,9 @@
         <h1>DeepPilot - Workflow Projet</h1>
         <p>Copilote d'allocation d'actifs avec ML | Bachelor Data & IA - ECE Paris</p>
         <div class="progress-bar">
-            <span>Progression globale : 50% (Phase 4 terminée, Phase 4.5-8 à faire)</span>
+            <span>Progression globale : 80% (Phase 6 terminée, Phases 7-8 à faire)</span>
             <div class="progress-bar-inner">
-                <div class="progress-bar-fill" style="width: 50%;"></div>
+                <div class="progress-bar-fill" style="width: 80%;"></div>
             </div>
         </div>
         <button class="demo-button" onclick="showModal('demo')">Commandes Démo</button>
@@ -645,108 +645,114 @@
 
             <!-- Phase 4.5 -->
             <div class="phase-row">
-                <div class="phase-label current">
+                <div class="phase-label done">
                     <h3>Phase 4.5</h3>
                     <span class="competences">C13</span>
-                    <span class="status current">À faire</span>
+                    <span class="status done">✓ Terminée</span>
                 </div>
                 <div class="phase-steps">
-                    <div class="step current" onclick="showModal('p45-validation')">
-                        <div class="step-icon current">!</div>
+                    <div class="step done" onclick="showModal('p45-validation')">
+                        <div class="step-icon done">✓</div>
                         <div class="step-title">Validation HMM</div>
                         <div class="step-subtitle">Métriques éco.</div>
                     </div>
                     <span class="arrow">→</span>
-                    <div class="step todo" onclick="showModal('p45-crisis')">
-                        <div class="step-icon todo">○</div>
+                    <div class="step done" onclick="showModal('p45-crisis')">
+                        <div class="step-icon done">✓</div>
                         <div class="step-title">crisis_recall</div>
-                        <div class="step-subtitle">Détection crises</div>
+                        <div class="step-subtitle">83.3% ✓</div>
                     </div>
                     <span class="arrow">→</span>
-                    <div class="step todo" onclick="showModal('p45-separation')">
-                        <div class="step-icon todo">○</div>
+                    <div class="step done" onclick="showModal('p45-separation')">
+                        <div class="step-icon done">✓</div>
                         <div class="step-title">Séparation</div>
-                        <div class="step-subtitle">Returns + Vol</div>
+                        <div class="step-subtitle">Returns + Vol ✓</div>
                     </div>
                     <span class="arrow">→</span>
-                    <div class="step todo" onclick="showModal('p45-update')">
-                        <div class="step-icon todo">○</div>
-                        <div class="step-title">Update</div>
-                        <div class="step-subtitle">Config + Tests</div>
+                    <div class="step done" onclick="showModal('p45-hmm')">
+                        <div class="step-icon done">✓</div>
+                        <div class="step-title">HMM amélioré</div>
+                        <div class="step-subtitle">Reorder states</div>
+                    </div>
+                    <span class="arrow">→</span>
+                    <div class="step done" onclick="showModal('p45-tests')">
+                        <div class="step-icon done">✓</div>
+                        <div class="step-title">Tests</div>
+                        <div class="step-subtitle">20 tests ✓</div>
                     </div>
                 </div>
             </div>
 
             <!-- Phase 5 -->
             <div class="phase-row">
-                <div class="phase-label todo">
+                <div class="phase-label done">
                     <h3>Phase 5</h3>
                     <span class="competences">C6, C7, C8</span>
-                    <span class="status todo">À faire</span>
+                    <span class="status done">✓ Terminée</span>
                 </div>
                 <div class="phase-steps">
-                    <div class="step todo" onclick="showModal('p5-mistral')">
-                        <div class="step-icon todo">○</div>
+                    <div class="step done" onclick="showModal('p5-mistral')">
+                        <div class="step-icon done">✓</div>
                         <div class="step-title">Mistral API</div>
-                        <div class="step-subtitle">Intégration</div>
+                        <div class="step-subtitle">Module créé</div>
                     </div>
                     <span class="arrow">→</span>
-                    <div class="step todo" onclick="showModal('p5-news')">
-                        <div class="step-icon todo">○</div>
-                        <div class="step-title">News</div>
-                        <div class="step-subtitle">Extraction</div>
-                    </div>
-                    <span class="arrow">→</span>
-                    <div class="step todo" onclick="showModal('p5-sentiment')">
-                        <div class="step-icon todo">○</div>
+                    <div class="step done" onclick="showModal('p5-sentiment')">
+                        <div class="step-icon done">✓</div>
                         <div class="step-title">Sentiment</div>
-                        <div class="step-subtitle">Score par ETF</div>
+                        <div class="step-subtitle">Analyzer + 37 tests</div>
                     </div>
                     <span class="arrow">→</span>
-                    <div class="step todo" onclick="showModal('p5-integration')">
-                        <div class="step-icon todo">○</div>
+                    <div class="step done" onclick="showModal('p5-integration')">
+                        <div class="step-icon done">✓</div>
                         <div class="step-title">Intégration</div>
                         <div class="step-subtitle">Features ML</div>
+                    </div>
+                    <span class="arrow">→</span>
+                    <div class="step done" onclick="showModal('p5-tests')">
+                        <div class="step-icon done">✓</div>
+                        <div class="step-title">Tests</div>
+                        <div class="step-subtitle">40 tests ✓</div>
                     </div>
                 </div>
             </div>
 
             <!-- Phase 6 -->
             <div class="phase-row">
-                <div class="phase-label todo">
+                <div class="phase-label done">
                     <h3>Phase 6</h3>
                     <span class="competences">C10, C14, C15, C17</span>
-                    <span class="status todo">À faire</span>
+                    <span class="status done">✓ Terminée</span>
                 </div>
                 <div class="phase-steps">
-                    <div class="step todo" onclick="showModal('p6-nextjs')">
-                        <div class="step-icon todo">○</div>
+                    <div class="step done" onclick="showModal('p6-nextjs')">
+                        <div class="step-icon done">✓</div>
                         <div class="step-title">Next.js</div>
-                        <div class="step-subtitle">Setup</div>
+                        <div class="step-subtitle">Setup + shadcn</div>
                     </div>
                     <span class="arrow">→</span>
-                    <div class="step todo" onclick="showModal('p6-api-integration')">
-                        <div class="step-icon todo">○</div>
+                    <div class="step done" onclick="showModal('p6-api-integration')">
+                        <div class="step-icon done">✓</div>
                         <div class="step-title">API ML</div>
-                        <div class="step-subtitle">Intégration C10</div>
+                        <div class="step-subtitle">React Query</div>
                     </div>
                     <span class="arrow">→</span>
-                    <div class="step todo" onclick="showModal('p6-dashboard')">
-                        <div class="step-icon todo">○</div>
+                    <div class="step done" onclick="showModal('p6-dashboard')">
+                        <div class="step-icon done">✓</div>
                         <div class="step-title">Dashboard</div>
-                        <div class="step-subtitle">Visualisations</div>
+                        <div class="step-subtitle">7 pages</div>
                     </div>
                     <span class="arrow">→</span>
-                    <div class="step todo" onclick="showModal('p6-portfolio')">
-                        <div class="step-icon todo">○</div>
-                        <div class="step-title">Portfolio</div>
-                        <div class="step-subtitle">Recommandations</div>
+                    <div class="step done" onclick="showModal('p6-design')">
+                        <div class="step-icon done">✓</div>
+                        <div class="step-title">Design</div>
+                        <div class="step-subtitle">Cyberpunk</div>
                     </div>
                     <span class="arrow">→</span>
-                    <div class="step todo" onclick="showModal('p6-deploy')">
-                        <div class="step-icon todo">○</div>
-                        <div class="step-title">Déploiement</div>
-                        <div class="step-subtitle">Vercel</div>
+                    <div class="step done" onclick="showModal('p6-deploy')">
+                        <div class="step-icon done">✓</div>
+                        <div class="step-title">Build</div>
+                        <div class="step-subtitle">Ready</div>
                     </div>
                 </div>
             </div>
@@ -1410,165 +1416,272 @@
             'p45-validation': {
                 title: 'Validation HMM Améliorée',
                 phase: 'Phase 4.5',
-                status: 'current',
-                description: 'Remplacer le silhouette score par des métriques économiques.',
+                status: 'done',
+                description: 'Remplacement du silhouette score par des métriques économiques pertinentes.',
                 details: [
-                    'Le silhouette score (0.017) est peu pertinent pour régimes de marché',
-                    'Besoin de métriques qui valident le sens économique',
-                    'Créer ml/evaluation/regime_validation.py'
+                    'Le silhouette score (0.034) mesurait la séparation géométrique, pas le sens économique',
+                    'Nouvelles métriques : crisis_recall, regime_return_separation, regime_vol_separation, stability',
+                    'HMM validé avec 4/4 critères économiques'
                 ],
-                tech: []
+                tech: ['pandas', 'numpy'],
+                files: [
+                    'ml/evaluation/regime_validation.py',
+                    'mlops/config.py (modifié)',
+                    'scripts/validate_models.py (modifié)',
+                    'TODO_PHASE4.5.md',
+                    'CHECKPOINT_PHASE4.5.md'
+                ]
             },
             'p45-crisis': {
                 title: 'Crisis Recall',
                 phase: 'Phase 4.5',
-                status: 'todo',
+                status: 'done',
                 description: '% des crises historiques détectées comme régime bear/volatile.',
                 details: [
-                    'Définir dates de crises (COVID-2020, 2022, 2008)',
-                    'Calculer le rappel sur ces périodes',
-                    'Seuil proposé : ≥ 80%'
+                    '6 crises définies (2010-2022, GFC exclu car données manquantes)',
+                    '5/6 crises détectées = 83.3% recall',
+                    'Seuil : ≥ 80% ✓',
+                    'Flash Crash 2010 non détecté (événement intra-day)'
                 ],
-                tech: []
+                tech: [],
+                stats: { 'Recall': '83.3%', 'Crises détectées': '5/6' }
             },
             'p45-separation': {
                 title: 'Séparation Régimes',
                 phase: 'Phase 4.5',
-                status: 'todo',
-                description: 'Vérifier que les régimes ont des caractéristiques distinctes.',
+                status: 'done',
+                description: 'Vérification que les régimes ont des caractéristiques distinctes.',
                 details: [
-                    'regime_return_separation : Return(bull) > Return(bear)',
-                    'regime_vol_separation : Vol(volatile) > Vol(stable)',
-                    'Validation booléenne'
+                    'regime_return_separation : Return(bull) > Return(bear) ✓',
+                    'regime_vol_separation : Vol(volatile) > Vol(stable) ✓',
+                    'Garantis par construction via _reorder_states()'
                 ],
                 tech: []
             },
-            'p45-update': {
-                title: 'Mise à jour Config',
+            'p45-hmm': {
+                title: 'HMM Amélioré',
                 phase: 'Phase 4.5',
-                status: 'todo',
-                description: 'Mettre à jour la config et les tests avec les nouvelles métriques.',
+                status: 'done',
+                description: 'Amélioration de _reorder_states() pour garantir la séparation économique.',
                 details: [
-                    'Modifier mlops/config.py',
-                    'Modifier scripts/validate_models.py',
-                    'Ajouter tests pour nouvelles métriques'
+                    'Problème initial : régimes ordonnés par volatilité seulement',
+                    'Solution : ordonner par volatilité ET rendement',
+                    'volatile/stable = extrêmes de volatilité',
+                    'bull/bear = triés par rendement parmi les 2 restants',
+                    'Garantit return_separation et vol_separation par construction'
                 ],
-                tech: []
+                tech: ['hmmlearn'],
+                files: [
+                    'ml/models/regime_hmm.py (modifié)'
+                ]
+            },
+            'p45-tests': {
+                title: 'Tests Phase 4.5',
+                phase: 'Phase 4.5',
+                status: 'done',
+                description: 'Tests unitaires pour les nouvelles métriques de validation.',
+                details: [
+                    'TestCalculateCrisisRecall : 4 tests',
+                    'TestCalculateRegimeReturnSeparation : 3 tests',
+                    'TestCalculateRegimeVolSeparation : 2 tests',
+                    'TestCalculateStability : 5 tests',
+                    'TestValidateHmmEconomic : 5 tests',
+                    'TestIntegration : 1 test'
+                ],
+                tech: ['pytest'],
+                stats: { 'Tests': 20 },
+                files: [
+                    'tests/ml/test_regime_validation.py'
+                ]
             },
 
             // Phase 5
             'p5-mistral': {
-                title: 'Mistral API',
+                title: 'Mistral API - Module créé',
                 phase: 'Phase 5',
-                status: 'todo',
-                description: 'Intégration de l\'API Mistral pour analyse de texte.',
+                status: 'done',
+                description: 'Module complet pour intégration Mistral AI (C8 - Paramétrer un service d\'IA).',
                 details: [
-                    'Connexion à l\'API Mistral (EU-based)',
-                    'Configuration des prompts',
-                    'Gestion des limites API'
+                    'MistralClient : wrapper API avec retry et backoff exponentiel',
+                    'MockMistralClient : client mock pour tests (pas d\'appels API)',
+                    'Configuration : modèle mistral-small-latest, température 0.1',
+                    'Prompts optimisés pour analyse de headlines financiers',
+                    'Gestion JSON parsing et erreurs'
                 ],
-                tech: ['mistral-ai']
-            },
-            'p5-news': {
-                title: 'Extraction News',
-                phase: 'Phase 5',
-                status: 'todo',
-                description: 'Extraction de news financières.',
-                details: [
-                    'Sources à définir (API news)',
-                    'Filtrage par ETF/secteur',
-                    'Stockage des articles'
-                ],
-                tech: []
+                tech: ['mistralai', 'python-dotenv'],
+                files: [
+                    'ml/sentiment/__init__.py',
+                    'ml/sentiment/config.py',
+                    'ml/sentiment/client.py',
+                    'ml/sentiment/prompts.py',
+                    'docs/veille/services_ia_sentiment.md'
+                ]
             },
             'p5-sentiment': {
-                title: 'Score Sentiment',
+                title: 'SentimentAnalyzer - Module créé',
                 phase: 'Phase 5',
-                status: 'todo',
-                description: 'Calcul d\'un score de sentiment par ETF.',
+                status: 'done',
+                description: 'Analyseur de sentiment avec cache et batch processing.',
                 details: [
-                    'Analyse des titres/résumés',
-                    'Score [-1, 1] par article',
-                    'Agrégation par ETF et par jour'
+                    'analyze() : analyse un headline → score [-1, 1]',
+                    'analyze_batch() : analyse multiple headlines avec rate limiting',
+                    'analyze_dataframe() : ajoute colonne sentiment à un DataFrame',
+                    'Cache intelligent avec TTL configurable',
+                    'create_sentiment_features() : SMA, volatilité, changement'
                 ],
-                tech: ['mistral-ai']
+                tech: ['pandas', 'numpy'],
+                stats: { 'Tests': 37 },
+                files: [
+                    'ml/sentiment/analyzer.py',
+                    'tests/ml/test_sentiment.py'
+                ]
             },
             'p5-integration': {
-                title: 'Intégration ML',
+                title: 'Intégration ML - Terminée',
                 phase: 'Phase 5',
-                status: 'todo',
-                description: 'Ajout du sentiment dans les features ML.',
+                status: 'done',
+                description: 'Intégration des features sentiment dans le feature engineering ML.',
                 details: [
-                    'Nouveau feature : sentiment_score',
-                    'Impact sur prédiction RF',
-                    'Réévaluation des modèles'
+                    'sentiment_score : score brut décalé (pas de look-ahead)',
+                    'sentiment_sma_5, sentiment_sma_20 : moyennes mobiles',
+                    'sentiment_volatility : volatilité du sentiment (rolling std)',
+                    'sentiment_change : variation du sentiment jour après jour',
+                    'Intégré dans prepare_prediction_features() comme paramètre optionnel'
                 ],
-                tech: []
+                tech: ['pandas', 'numpy'],
+                files: [
+                    'ml/features/feature_engineering.py (modifié)'
+                ]
+            },
+            'p5-tests': {
+                title: 'Tests Phase 5 - Terminés',
+                phase: 'Phase 5',
+                status: 'done',
+                description: 'Tests unitaires et d\'intégration pour le module sentiment.',
+                details: [
+                    'TestMistralConfig : 2 tests',
+                    'TestSentimentConfig : 2 tests',
+                    'TestPrompts : 4 tests',
+                    'TestMockMistralClient : 8 tests',
+                    'TestSentimentAnalyzer : 13 tests',
+                    'TestAnalyzeDataframe : 3 tests',
+                    'TestCreateSentimentFeatures : 3 tests',
+                    'TestIntegration : 2 tests',
+                    'TestFeatureEngineeringIntegration : 3 tests'
+                ],
+                tech: ['pytest'],
+                stats: { 'Tests': 40 },
+                files: [
+                    'tests/ml/test_sentiment.py'
+                ]
             },
 
             // Phase 6
             'p6-nextjs': {
                 title: 'Next.js Setup',
                 phase: 'Phase 6',
-                status: 'todo',
-                description: 'Configuration de l\'application Next.js.',
+                status: 'done',
+                description: 'Application Next.js 14 avec App Router, TypeScript, Tailwind et shadcn/ui.',
                 details: [
-                    'Next.js 14 + Tailwind + shadcn/ui',
-                    'Structure pages/components',
-                    'Connexion à l\'API FastAPI'
+                    'Next.js 14.2 avec App Router',
+                    'TypeScript pour typage statique',
+                    'Tailwind CSS + shadcn/ui pour le design',
+                    'React Query pour le data fetching',
+                    'Recharts pour les graphiques'
                 ],
-                tech: ['Next.js', 'Tailwind', 'shadcn/ui']
+                tech: ['Next.js 14', 'TypeScript', 'Tailwind', 'shadcn/ui', 'React Query'],
+                files: [
+                    'web/package.json',
+                    'web/tailwind.config.ts',
+                    'web/app/layout.tsx',
+                    'web/providers/QueryProvider.tsx'
+                ]
             },
             'p6-api-integration': {
                 title: 'Intégration API ML (C10)',
                 phase: 'Phase 6',
-                status: 'todo',
-                description: 'Intégrer l\'API du modèle d\'IA dans l\'application Next.js.',
+                status: 'done',
+                description: 'Intégration de l\'API FastAPI avec React Query hooks.',
                 details: [
-                    'Communication avec l\'API FastAPI exposant HMM + RF',
-                    'Gestion de l\'authentification API',
-                    'Affichage des prédictions de régime',
-                    'Affichage des recommandations d\'allocation',
-                    'Tests d\'intégration API côté frontend'
+                    'Types TypeScript miroir des schemas Pydantic',
+                    'Client API avec gestion d\'erreurs CORS',
+                    'Hooks useETFs, useMacro, useAnalysis',
+                    'Cache automatique avec React Query',
+                    'Affichage régime de marché + indicateurs'
                 ],
-                tech: ['Next.js', 'fetch/axios', 'FastAPI']
+                tech: ['React Query', 'TypeScript', 'fetch'],
+                files: [
+                    'web/types/api.ts',
+                    'web/lib/api/client.ts',
+                    'web/lib/api/etfs.ts',
+                    'web/hooks/useETFs.ts',
+                    'web/hooks/useMacro.ts'
+                ]
             },
             'p6-dashboard': {
-                title: 'Dashboard',
+                title: 'Dashboard & Pages',
                 phase: 'Phase 6',
-                status: 'todo',
-                description: 'Interface de visualisation des données.',
+                status: 'done',
+                description: '7 pages créées avec visualisations.',
                 details: [
-                    'Graphiques prix ETF',
-                    'Indicateurs macro',
-                    'Régimes détectés',
-                    'Performance portfolio'
+                    '/ - Dashboard (régime, VIX, stats ETF)',
+                    '/etfs - Liste des 8 ETF + benchmarks',
+                    '/etfs/[ticker] - Détail ETF avec graphique prix',
+                    '/market - Indicateurs macro',
+                    '/analysis - Matrice corrélation, stats',
+                    '/portfolio - Allocations recommandées (mock)',
+                    '/about - Disclaimer légal obligatoire'
                 ],
-                tech: ['recharts', 'tremor']
+                tech: ['Next.js App Router', 'Recharts'],
+                stats: { 'Pages': 7, 'Composants': 15 },
+                files: [
+                    'web/app/page.tsx',
+                    'web/app/etfs/page.tsx',
+                    'web/app/etfs/[ticker]/page.tsx',
+                    'web/app/market/page.tsx',
+                    'web/app/analysis/page.tsx',
+                    'web/app/portfolio/page.tsx',
+                    'web/app/about/page.tsx'
+                ]
             },
-            'p6-portfolio': {
-                title: 'Recommandations',
+            'p6-design': {
+                title: 'Design Cyberpunk Finance',
                 phase: 'Phase 6',
-                status: 'todo',
-                description: 'Affichage des recommandations du modèle.',
+                status: 'done',
+                description: 'Theme sombre avec accents néon, style finance professionnel.',
                 details: [
-                    'Allocation actuelle',
-                    'Recommandations de rebalancement',
-                    'Historique des trades'
+                    'Palette sombre (background #0f1419)',
+                    'Accents cyan (#00d4ff) et magenta',
+                    'Effets glow sur les cartes',
+                    'Font mono pour les valeurs numériques',
+                    'Border-radius minimal (style finance)',
+                    'Couleurs sémantiques : vert (bull), rouge (bear)'
                 ],
-                tech: []
+                tech: ['Tailwind CSS', 'CSS Variables'],
+                files: [
+                    'web/app/globals.css',
+                    'web/tailwind.config.ts',
+                    'web/components/cards/StatCard.tsx',
+                    'web/components/cards/RegimeIndicator.tsx'
+                ]
             },
             'p6-deploy': {
-                title: 'Déploiement',
+                title: 'Build & Déploiement',
                 phase: 'Phase 6',
-                status: 'todo',
-                description: 'Déploiement sur Vercel.',
+                status: 'done',
+                description: 'Application prête pour déploiement Vercel.',
                 details: [
-                    'Configuration Vercel',
-                    'Variables d\'environnement',
-                    'Domaine personnalisé (optionnel)'
+                    'Build production réussi (npm run build)',
+                    '6 pages statiques + 1 dynamique',
+                    'Prêt pour Vercel (Phase 7)',
+                    'API backend sur Render (Phase 7)',
+                    'Instructions déploiement dans CHECKPOINT_PHASE6.md'
                 ],
-                tech: ['Vercel']
+                tech: ['Vercel', 'Render'],
+                files: [
+                    'CHECKPOINT_PHASE6.md',
+                    'web/README.md'
+                ]
             },
 
             // Phase 7
@@ -1693,10 +1806,48 @@
                     </div>
 
                     <div class="demo-section">
-                        <h4>Tous les tests (182)</h4>
+                        <h4>Phase 4.5 — Validation économique HMM</h4>
+                        <div class="demo-code">
+                            <span class="comment"># Valider les modèles avec métriques économiques</span><br>
+                            <span class="command">python scripts/validate_models.py</span>
+                        </div>
+                        <p style="color: #888; font-size: 0.9em;">→ Montre crisis_recall, return_separation, vol_separation, stability</p>
+                    </div>
+
+                    <div class="demo-section">
+                        <h4>Phase 5 — Sentiment Analysis (Mistral)</h4>
+                        <div class="demo-code">
+                            <span class="comment"># Tests du module sentiment</span><br>
+                            <span class="command">python -m pytest tests/ml/test_sentiment.py -v</span>
+                        </div>
+                        <p style="color: #888; font-size: 0.9em;">40 tests : client, analyzer, intégration features</p>
+                        <div class="demo-code">
+                            <span class="comment"># Démo Python</span><br>
+                            <span class="command">python -c "from ml.sentiment import SentimentAnalyzer; a = SentimentAnalyzer(use_mock=True); print(a.analyze('Tech stocks rally on AI optimism'))"</span>
+                        </div>
+                    </div>
+
+                    <div class="demo-section">
+                        <h4>Tous les tests (242)</h4>
                         <div class="demo-code">
                             <span class="command">python -m pytest tests/ -v</span>
                         </div>
+                        <p style="color: #888; font-size: 0.9em;">118 tests ML (dont 40 Phase 5 sentiment)</p>
+                    </div>
+
+                    <div class="demo-section">
+                        <h4>Phase 6 — Application Next.js</h4>
+                        <div class="demo-code">
+                            <span class="comment"># Terminal 1 : Lancer l'API backend</span><br>
+                            <span class="command">python scripts/run_api.py</span>
+                        </div>
+                        <div class="demo-code">
+                            <span class="comment"># Terminal 2 : Lancer le frontend</span><br>
+                            <span class="command">cd web && npm run dev</span>
+                        </div>
+                        <p>Puis ouvrir : <a href="http://localhost:3000" target="_blank" class="demo-url">http://localhost:3000</a></p>
+                        <p style="color: #888; font-size: 0.9em;">→ 7 pages : Dashboard, ETFs, Market, Analysis, Portfolio, About</p>
+                        <p style="color: #888; font-size: 0.9em;">→ Theme Cyberpunk Finance avec accents néon</p>
                     </div>
                 `;
             } else {

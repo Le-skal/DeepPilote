@@ -1,0 +1,100 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* Theme Cyberpunk Finance - Dark by default */
+  :root {
+    --background: 220 20% 6%;
+    --foreground: 210 20% 90%;
+    --card: 220 20% 8%;
+    --card-foreground: 210 20% 90%;
+    --popover: 220 20% 10%;
+    --popover-foreground: 210 20% 90%;
+    --primary: 180 100% 50%;
+    --primary-foreground: 220 20% 6%;
+    --secondary: 220 20% 14%;
+    --secondary-foreground: 210 20% 90%;
+    --muted: 220 15% 15%;
+    --muted-foreground: 215 15% 55%;
+    --accent: 280 100% 65%;
+    --accent-foreground: 210 20% 98%;
+    --destructive: 0 85% 55%;
+    --destructive-foreground: 210 20% 98%;
+    --border: 220 15% 18%;
+    --input: 220 15% 18%;
+    --ring: 180 100% 50%;
+    --radius: 0.25rem;
+
+    /* Custom colors for finance */
+    --success: 145 80% 42%;
+    --warning: 38 95% 50%;
+    --chart-bull: 145 80% 42%;
+    --chart-bear: 0 85% 55%;
+    --chart-neutral: 220 15% 50%;
+    --neon-cyan: 180 100% 50%;
+    --neon-magenta: 300 100% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Scrollbar cyberpunk */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--background));
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 2px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--primary));
+  }
+}
+
+@layer components {
+  /* Glow effects for cards */
+  .glow-cyan {
+    box-shadow: 0 0 20px -5px hsl(180 100% 50% / 0.3);
+  }
+
+  .glow-success {
+    box-shadow: 0 0 20px -5px hsl(145 80% 42% / 0.3);
+  }
+
+  .glow-danger {
+    box-shadow: 0 0 20px -5px hsl(0 85% 55% / 0.3);
+  }
+
+  /* Gradient text */
+  .text-gradient {
+    background: linear-gradient(135deg, hsl(180 100% 50%), hsl(280 100% 65%));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Border glow on hover */
+  .border-glow {
+    transition: box-shadow 0.2s ease;
+  }
+
+  .border-glow:hover {
+    box-shadow: 0 0 0 1px hsl(180 100% 50% / 0.5);
+  }
+}
