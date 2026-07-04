@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeepPilot - Architecture Production</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f1419 0%, #1a1a2e 100%);
+            color: #eee;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 2.2em;
+            background: linear-gradient(90deg, #00d4ff, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: #888;
+            margin-top: 10px;
+        }
+
+        .urls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .url-badge {
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85em;
+        }
+
+        .url-badge a {
+            color: #00d4ff;
+            text-decoration: none;
+        }
+
+        .url-badge a:hover {
+            text-decoration: underline;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Architecture Diagram */
+        .architecture {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        @media (max-width: 1000px) {
+            .architecture {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .layer {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .layer-title {
+            text-align: center;
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid;
+        }
+
+        .layer.frontend .layer-title { border-color: #3B82F6; color: #3B82F6; }
+        .layer.backend .layer-title { border-color: #10B981; color: #10B981; }
+        .layer.data .layer-title { border-color: #F59E0B; color: #F59E0B; }
+
+        .service {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 3px solid;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .service:hover {
+            transform: translateX(5px);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .service.vercel { border-color: #fff; }
+        .service.render { border-color: #46E3B7; }
+        .service.supabase { border-color: #3ECF8E; }
+        .service.sentry { border-color: #FB4226; }
+        .service.uptime { border-color: #3BD671; }
+        .service.github { border-color: #fff; }
+
+        .service-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .service-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .service.vercel .service-icon { background: #000; color: #fff; }
+        .service.render .service-icon { background: #46E3B7; color: #000; }
+        .service.supabase .service-icon { background: #3ECF8E; color: #fff; }
+        .service.sentry .service-icon { background: #FB4226; color: #fff; }
+        .service.uptime .service-icon { background: #3BD671; color: #fff; }
+        .service.github .service-icon { background: #24292e; color: #fff; }
+
+        .service-name {
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+
+        .service-desc {
+            font-size: 0.8em;
+            color: #888;
+            margin-bottom: 8px;
+        }
+
+        .service-details {
+            font-size: 0.75em;
+            color: #666;
+        }
+
+        .service-details code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Consolas', monospace;
+            color: #aaa;
+        }
+
+        /* Flow Diagram */
+        .flow-section {
+            margin-top: 40px;
+        }
+
+        .flow-title {
+            text-align: center;
+            font-size: 1.3em;
+            margin-bottom: 30px;
+            color: #00d4ff;
+        }
+
+        .flow-container {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 15px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow-x: auto;
+        }
+
+        .flow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            min-width: 900px;
+            flex-wrap: nowrap;
+        }
+
+        .flow-step {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            padding: 15px 20px;
+            text-align: center;
+            min-width: 120px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .flow-step.highlight {
+            background: rgba(0, 212, 255, 0.15);
+            border-color: rgba(0, 212, 255, 0.3);
+        }
+
+        .flow-step-title {
+            font-weight: 600;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .flow-step-detail {
+            font-size: 0.75em;
+            color: #888;
+        }
+
+        .flow-arrow {
+            color: #00d4ff;
+            font-size: 1.5em;
+        }
+
+        /* ML Retraining Section */
+        .ml-section {
+            margin-top: 40px;
+        }
+
+        .ml-container {
+            background: linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, rgba(0, 212, 255, 0.1) 100%);
+            border-radius: 15px;
+            padding: 30px;
+            border: 1px solid rgba(124, 58, 237, 0.3);
+        }
+
+        .ml-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .ml-card {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .ml-card-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #a78bfa;
+        }
+
+        .ml-card-content {
+            font-size: 0.85em;
+            color: #ccc;
+            line-height: 1.6;
+        }
+
+        .ml-card-content code {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Consolas', monospace;
+            color: #00d4ff;
+        }
+
+        .ml-card ul {
+            margin-left: 15px;
+            margin-top: 8px;
+        }
+
+        .ml-card li {
+            margin-bottom: 5px;
+        }
+
+        /* Endpoints Section */
+        .endpoints-section {
+            margin-top: 40px;
+        }
+
+        .endpoints-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+        }
+
+        .endpoint {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .endpoint-method {
+            background: #10B981;
+            color: #000;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.7em;
+            font-weight: bold;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .endpoint-method.post {
+            background: #F59E0B;
+        }
+
+        .endpoint-path {
+            font-family: 'Consolas', monospace;
+            font-size: 0.85em;
+            color: #00d4ff;
+            flex: 1;
+        }
+
+        .endpoint-desc {
+            font-size: 0.75em;
+            color: #888;
+        }
+
+        /* Stats */
+        .stats-section {
+            margin-top: 40px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            background: linear-gradient(90deg, #00d4ff, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            font-size: 0.8em;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        /* Timeline */
+        .timeline-section {
+            margin-top: 40px;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, #00d4ff, #7c3aed);
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-bottom: 25px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -24px;
+            top: 5px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #00d4ff;
+            border: 2px solid #0f1419;
+        }
+
+        .timeline-time {
+            font-size: 0.8em;
+            color: #00d4ff;
+            margin-bottom: 5px;
+        }
+
+        .timeline-content {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 12px 15px;
+            border-left: 3px solid #7c3aed;
+        }
+
+        .timeline-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .timeline-desc {
+            font-size: 0.85em;
+            color: #aaa;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px;
+            color: #666;
+            font-size: 0.85em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>DeepPilot - Architecture Production</h1>
+            <p>Comment l'application fonctionne en ligne</p>
+            <div class="urls">
+                <div class="url-badge">
+                    <a href="https://deep-pilote.vercel.app" target="_blank">Frontend: deep-pilote.vercel.app</a>
+                </div>
+                <div class="url-badge">
+                    <a href="https://deeppilote.onrender.com/docs" target="_blank">API: deeppilote.onrender.com</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Architecture Overview -->
+        <div class="architecture">
+            <!-- Frontend Layer -->
+            <div class="layer frontend">
+                <div class="layer-title">Frontend (Vercel)</div>
+
+                <div class="service vercel">
+                    <div class="service-header">
+                        <div class="service-icon">V</div>
+                        <div class="service-name">Next.js 14</div>
+                    </div>
+                    <div class="service-desc">Application React avec App Router</div>
+                    <div class="service-details">
+                        <code>deep-pilote.vercel.app</code><br>
+                        Auto-deploy on push to main
+                    </div>
+                </div>
+
+                <div class="service github">
+                    <div class="service-header">
+                        <div class="service-icon">GH</div>
+                        <div class="service-name">GitHub Actions</div>
+                    </div>
+                    <div class="service-desc">CI/CD Frontend</div>
+                    <div class="service-details">
+                        <code>frontend_ci.yml</code><br>
+                        Lint + Type-check + Build
+                    </div>
+                </div>
+            </div>
+
+            <!-- Backend Layer -->
+            <div class="layer backend">
+                <div class="layer-title">Backend (Render)</div>
+
+                <div class="service render">
+                    <div class="service-header">
+                        <div class="service-icon">R</div>
+                        <div class="service-name">FastAPI</div>
+                    </div>
+                    <div class="service-desc">API REST + ML Service</div>
+                    <div class="service-details">
+                        <code>deeppilote.onrender.com</code><br>
+                        Free tier (sleep après 15min)
+                    </div>
+                </div>
+
+                <div class="service sentry">
+                    <div class="service-header">
+                        <div class="service-icon">S</div>
+                        <div class="service-name">Sentry</div>
+                    </div>
+                    <div class="service-desc">Error Tracking + Tracing</div>
+                    <div class="service-details">
+                        10% traces sample rate<br>
+                        Alertes sur exceptions
+                    </div>
+                </div>
+
+                <div class="service uptime">
+                    <div class="service-header">
+                        <div class="service-icon">U</div>
+                        <div class="service-name">UptimeRobot</div>
+                    </div>
+                    <div class="service-desc">Monitoring Uptime</div>
+                    <div class="service-details">
+                        3 monitors (5-15 min)<br>
+                        Alertes email
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Layer -->
+            <div class="layer data">
+                <div class="layer-title">Data (Supabase)</div>
+
+                <div class="service supabase">
+                    <div class="service-header">
+                        <div class="service-icon">S</div>
+                        <div class="service-name">PostgreSQL</div>
+                    </div>
+                    <div class="service-desc">Base de données principale</div>
+                    <div class="service-details">
+                        4 tables: etf, price, macro_indicator, feature<br>
+                        ~80k lignes
+                    </div>
+                </div>
+
+                <div class="service github">
+                    <div class="service-header">
+                        <div class="service-icon">GH</div>
+                        <div class="service-name">GitHub Actions</div>
+                    </div>
+                    <div class="service-desc">CI/CD ML + API</div>
+                    <div class="service-details">
+                        <code>ml_tests.yml</code> + <code>api_tests.yml</code><br>
+                        Tests automatiques
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Flow -->
+        <div class="flow-section">
+            <div class="flow-title">Flux Utilisateur</div>
+            <div class="flow-container">
+                <div class="flow">
+                    <div class="flow-step">
+                        <div class="flow-step-title">Utilisateur</div>
+                        <div class="flow-step-detail">Ouvre le site</div>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step">
+                        <div class="flow-step-title">Vercel CDN</div>
+                        <div class="flow-step-detail">Next.js SSR</div>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step highlight">
+                        <div class="flow-step-title">React Query</div>
+                        <div class="flow-step-detail">Cache 5min</div>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step">
+                        <div class="flow-step-title">API Render</div>
+                        <div class="flow-step-detail">FastAPI</div>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step highlight">
+                        <div class="flow-step-title">ML Service</div>
+                        <div class="flow-step-detail">TTL Cache 6h</div>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step">
+                        <div class="flow-step-title">Supabase</div>
+                        <div class="flow-step-detail">PostgreSQL</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ML Retraining -->
+        <div class="ml-section">
+            <div class="flow-title">Réentraînement ML Automatique</div>
+            <div class="ml-container">
+                <div class="ml-grid">
+                    <div class="ml-card">
+                        <div class="ml-card-title">TTL Cache (6 heures)</div>
+                        <div class="ml-card-content">
+                            Le modèle HMM est stocké en mémoire avec un cache TTL de 6h.
+                            <ul>
+                                <li>Après 6h → cache expire</li>
+                                <li>Prochain appel → réentraînement</li>
+                                <li>Environ 4 réentraînements/jour</li>
+                            </ul>
+                            <code>cachetools.TTLCache(maxsize=1, ttl=21600)</code>
+                        </div>
+                    </div>
+
+                    <div class="ml-card">
+                        <div class="ml-card-title">Cold Start Render</div>
+                        <div class="ml-card-content">
+                            Sur le free tier Render, le service dort après 15min d'inactivité.
+                            <ul>
+                                <li>Réveil → cache vide</li>
+                                <li>Premier appel → réentraînement</li>
+                                <li>~30 sec de latence</li>
+                            </ul>
+                            <code>cache_size: 0</code> au réveil
+                        </div>
+                    </div>
+
+                    <div class="ml-card">
+                        <div class="ml-card-title">Données Utilisées</div>
+                        <div class="ml-card-content">
+                            Le modèle utilise les 1500 derniers jours de données.
+                            <ul>
+                                <li>Prix ETF (8 tickers)</li>
+                                <li>Indicateurs macro (VIX, spreads, yields)</li>
+                                <li>Features calculées (z-scores, returns)</li>
+                            </ul>
+                            <code>get_macro_data(days=1500)</code>
+                        </div>
+                    </div>
+
+                    <div class="ml-card">
+                        <div class="ml-card-title">Force Refresh</div>
+                        <div class="ml-card-content">
+                            Endpoint pour forcer le réentraînement manuellement.
+                            <ul>
+                                <li><code>POST /api/v1/ml/refresh</code></li>
+                                <li>Vide le cache</li>
+                                <li>Prochain appel réentraîne</li>
+                            </ul>
+                            Rate limit: 2/minute
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ML Training Flow -->
+        <div class="flow-section">
+            <div class="flow-title">Flux d'Entraînement HMM</div>
+            <div class="flow-container">
+                <div class="flow">
+                    <div class="flow-step">
+                        <div class="flow-step-title">Cache Miss</div>
+                        <div class="flow-step-detail">TTL expiré</div>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step">
+                        <div class="flow-step-title">get_macro_data</div>
+                        <div class="flow-step-detail">SQL Supabase</div>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step">
+                        <div class="flow-step-title">get_etf_returns</div>
+                        <div class="flow-step-detail">SQL Supabase</div>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step highlight">
+                        <div class="flow-step-title">Features</div>
+                        <div class="flow-step-detail">VIX z-score, etc.</div>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step highlight">
+                        <div class="flow-step-title">HMM.fit()</div>
+                        <div class="flow-step-detail">4 régimes</div>
+                    </div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step">
+                        <div class="flow-step-title">Cache Store</div>
+                        <div class="flow-step-detail">TTL 6h</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Endpoints -->
+        <div class="endpoints-section">
+            <div class="flow-title">Endpoints API</div>
+            <div class="endpoints-grid">
+                <div class="endpoint">
+                    <div class="endpoint-method">GET</div>
+                    <div class="endpoint-path">/api/v1/ml/regime</div>
+                    <div class="endpoint-desc">Régime actuel (bull/bear/volatile/stable)</div>
+                </div>
+                <div class="endpoint">
+                    <div class="endpoint-method">GET</div>
+                    <div class="endpoint-path">/api/v1/ml/portfolio</div>
+                    <div class="endpoint-desc">Poids optimaux Markowitz</div>
+                </div>
+                <div class="endpoint">
+                    <div class="endpoint-method">GET</div>
+                    <div class="endpoint-path">/api/v1/ml/status</div>
+                    <div class="endpoint-desc">État du cache ML</div>
+                </div>
+                <div class="endpoint">
+                    <div class="endpoint-method post">POST</div>
+                    <div class="endpoint-path">/api/v1/ml/refresh</div>
+                    <div class="endpoint-desc">Force réentraînement</div>
+                </div>
+                <div class="endpoint">
+                    <div class="endpoint-method">GET</div>
+                    <div class="endpoint-path">/api/v1/etfs</div>
+                    <div class="endpoint-desc">Liste des 10 ETF</div>
+                </div>
+                <div class="endpoint">
+                    <div class="endpoint-method">GET</div>
+                    <div class="endpoint-path">/api/v1/etfs/{ticker}/prices</div>
+                    <div class="endpoint-desc">Prix historiques</div>
+                </div>
+                <div class="endpoint">
+                    <div class="endpoint-method">GET</div>
+                    <div class="endpoint-path">/api/v1/macro/latest</div>
+                    <div class="endpoint-desc">Derniers indicateurs macro</div>
+                </div>
+                <div class="endpoint">
+                    <div class="endpoint-method">GET</div>
+                    <div class="endpoint-path">/api/v1/analysis/correlations</div>
+                    <div class="endpoint-desc">Matrice de corrélation</div>
+                </div>
+                <div class="endpoint">
+                    <div class="endpoint-method">GET</div>
+                    <div class="endpoint-path">/health</div>
+                    <div class="endpoint-desc">Health check (UptimeRobot)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-section">
+            <div class="flow-title">Statistiques Production</div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value">7</div>
+                    <div class="stat-label">Pages Frontend</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">20+</div>
+                    <div class="stat-label">Endpoints API</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">80k+</div>
+                    <div class="stat-label">Lignes en base</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">6h</div>
+                    <div class="stat-label">Cache ML TTL</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">4</div>
+                    <div class="stat-label">Régimes HMM</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">8</div>
+                    <div class="stat-label">ETF Portfolio</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">3</div>
+                    <div class="stat-label">Workflows CI</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">242</div>
+                    <div class="stat-label">Tests Unitaires</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Daily Timeline -->
+        <div class="timeline-section">
+            <div class="flow-title">Cycle Journalier Type</div>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-time">00:00 - 06:00</div>
+                    <div class="timeline-content">
+                        <div class="timeline-title">Service en veille</div>
+                        <div class="timeline-desc">Render free tier dort après 15min d'inactivité. Cache ML vide.</div>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-time">~09:00</div>
+                    <div class="timeline-content">
+                        <div class="timeline-title">Premier utilisateur</div>
+                        <div class="timeline-desc">Cold start Render (~30s). Modèle HMM réentraîné avec données récentes.</div>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-time">09:00 - 15:00</div>
+                    <div class="timeline-content">
+                        <div class="timeline-title">Cache actif</div>
+                        <div class="timeline-desc">Réponses rapides (~200ms). Modèle en cache. Réentraînement toutes les 6h si actif.</div>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-time">~15:00</div>
+                    <div class="timeline-content">
+                        <div class="timeline-title">Cache expire</div>
+                        <div class="timeline-desc">Si cache TTL 6h expire, prochain appel déclenche réentraînement (~5s).</div>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-time">15:30 (US market close)</div>
+                    <div class="timeline-content">
+                        <div class="timeline-title">Nouvelles données disponibles</div>
+                        <div class="timeline-desc">yfinance/FRED ont les prix du jour. Prochaine extraction mettra à jour Supabase.</div>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-time">Nuit</div>
+                    <div class="timeline-content">
+                        <div class="timeline-title">Extraction données (manuel)</div>
+                        <div class="timeline-desc">Scripts d'extraction + load_to_db.py pour mettre à jour Supabase.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            DeepPilot - Bachelor Data & IA - ECE Paris | Raphaël Martin | Juillet 2026
+        </footer>
+    </div>
+</body>
+</html>
