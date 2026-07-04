@@ -768,7 +768,7 @@
                     <div class="step done" onclick="showModal('p7-cicd')">
                         <div class="step-icon done">✓</div>
                         <div class="step-title">CI/CD App</div>
-                        <div class="step-subtitle">3 workflows</div>
+                        <div class="step-subtitle">4 workflows</div>
                     </div>
                     <span class="arrow">→</span>
                     <div class="step done" onclick="showModal('p7-monitoring')">
@@ -1695,18 +1695,20 @@
                 title: 'CI/CD Application',
                 phase: 'Phase 7',
                 status: 'done',
-                description: '3 workflows GitHub Actions pour tests automatisés.',
+                description: '4 workflows GitHub Actions pour tests et extraction automatisés.',
                 details: [
                     'ml_tests.yml : Tests ML + MLOps (push sur ml/, tests/ml/)',
                     'api_tests.yml : Tests API + lint Python (black, ruff)',
                     'frontend_ci.yml : Lint + type-check + build Next.js',
+                    'data_refresh.yml : Extraction automatique quotidienne (22h UTC, Lun-Ven)',
                     'Tous les workflows exécutés avec succès'
                 ],
-                tech: ['GitHub Actions', 'pytest', 'ruff', 'black'],
+                tech: ['GitHub Actions', 'pytest', 'ruff', 'black', 'yfinance', 'fredapi'],
                 files: [
                     '.github/workflows/ml_tests.yml',
                     '.github/workflows/api_tests.yml',
-                    '.github/workflows/frontend_ci.yml'
+                    '.github/workflows/frontend_ci.yml',
+                    '.github/workflows/data_refresh.yml'
                 ]
             },
             'p7-monitoring': {
@@ -1894,8 +1896,8 @@
                     </div>
 
                     <div class="demo-section">
-                        <h4>Phase 7 — CI/CD + Monitoring</h4>
-                        <p style="color: #888; font-size: 0.9em;">→ GitHub Actions : <a href="https://github.com/Le-skal/DeepPilote/actions" target="_blank" class="demo-url">Voir les workflows</a></p>
+                        <h4>Phase 7 — CI/CD + Monitoring + Data Refresh</h4>
+                        <p style="color: #888; font-size: 0.9em;">→ GitHub Actions : <a href="https://github.com/Le-skal/DeepPilote/actions" target="_blank" class="demo-url">Voir les 4 workflows</a></p>
                         <p style="color: #888; font-size: 0.9em;">→ Sentry Dashboard : <a href="https://sentry.io" target="_blank" class="demo-url">sentry.io</a></p>
                         <p style="color: #888; font-size: 0.9em;">→ UptimeRobot : <a href="https://uptimerobot.com" target="_blank" class="demo-url">uptimerobot.com</a></p>
                         <div class="demo-code">
@@ -1906,6 +1908,11 @@
                             <span class="comment"># Voir les runbooks d'incidents</span><br>
                             <span class="command">cat docs/incidents/README.md</span>
                         </div>
+                        <div class="demo-code">
+                            <span class="comment"># Extraction automatique (cron 22h UTC Lun-Ven)</span><br>
+                            <span class="command">cat .github/workflows/data_refresh.yml</span>
+                        </div>
+                        <p style="color: #888; font-size: 0.9em;">→ Extrait yfinance + FRED → charge dans Supabase automatiquement</p>
                     </div>
                 `;
             } else {

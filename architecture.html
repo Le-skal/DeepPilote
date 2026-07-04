@@ -550,6 +550,18 @@
                         Tests automatiques
                     </div>
                 </div>
+
+                <div class="service github" style="border-color: #F59E0B;">
+                    <div class="service-header">
+                        <div class="service-icon" style="background: #F59E0B;">⏰</div>
+                        <div class="service-name">Data Refresh</div>
+                    </div>
+                    <div class="service-desc">Extraction automatique quotidienne</div>
+                    <div class="service-details">
+                        <code>data_refresh.yml</code><br>
+                        Cron 22h UTC (Lun-Ven)
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -770,7 +782,7 @@
                     <div class="stat-label">ETF Portfolio</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-value">3</div>
+                    <div class="stat-value">4</div>
                     <div class="stat-label">Workflows CI</div>
                 </div>
                 <div class="stat-card">
@@ -820,10 +832,10 @@
                     </div>
                 </div>
                 <div class="timeline-item">
-                    <div class="timeline-time">Nuit</div>
+                    <div class="timeline-time">22:00 UTC (Lun-Ven)</div>
                     <div class="timeline-content">
-                        <div class="timeline-title">Extraction données (manuel)</div>
-                        <div class="timeline-desc">Scripts d'extraction + load_to_db.py pour mettre à jour Supabase.</div>
+                        <div class="timeline-title">Extraction automatique (GitHub Actions)</div>
+                        <div class="timeline-desc">Workflow <code>data_refresh.yml</code> extrait yfinance + FRED → charge dans Supabase.</div>
                     </div>
                 </div>
             </div>

@@ -1,0 +1,163 @@
+# Workflow d'extraction automatique des données
+#
+# Ce workflow s'exécute tous les jours à 22h UTC (minuit Paris en hiver, 00h en été)
+# après la clôture de la bourse NYSE (16h30 EST = 21h30 UTC).
+#
+# Il extrait les données fraîches de yfinance et FRED, puis les charge dans Supabase.
+# Les modèles ML utilisent automatiquement les nouvelles données via le TTL cache (6h).
+
+name: Data Refresh
+
+on:
+  schedule:
+    # Tous les jours à 22h UTC (après clôture NYSE)
+    # Cron: minute heure jour mois jour-semaine
+    - cron: '0 22 * * 1-5'  # Lun-Ven seulement (pas de données weekend)
+
+  workflow_dispatch:  # Permet de lancer manuellement
+    inputs:
+      full_reload:
+        description: 'Recharger toutes les données (2010-aujourd''hui)'
+        required: false
+        default: 'false'
+        type: boolean
+
+env:
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  extract-data:
+    name: Extract & Load Data
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pandas numpy yfinance fredapi python-dotenv sqlalchemy psycopg2-binary
+
+      - name: Extract ETF prices (yfinance)
+        run: |
+          echo "📈 Extraction des prix ETF depuis Yahoo Finance..."
+          python -m data.extractors.extract_yfinance
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+
+      - name: Extract macro data (FRED)
+        run: |
+          echo "📊 Extraction des indicateurs macro depuis FRED..."
+          python -m data.extractors.extract_fred
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+
+      - name: Run aggregation pipeline
+        run: |
+          echo "🔧 Agrégation et calcul des features..."
+          python -m data.pipeline.aggregate
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+
+      - name: Load to Supabase
+        run: |
+          echo "☁️ Chargement vers Supabase..."
+          python -m data.pipeline.load_to_db
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+
+      - name: Verify data freshness
+        run: |
+          echo "✅ Vérification des données..."
+          python -c "
+          import os
+          from datetime import datetime
+          from sqlalchemy import create_engine, text
+
+          engine = create_engine(os.environ['SUPABASE_DB_URL'])
+          with engine.connect() as conn:
+              # Dernière date de prix
+              result = conn.execute(text('SELECT MAX(date) FROM price'))
+              latest_price = result.scalar()
+
+              # Dernière date macro
+              result = conn.execute(text('SELECT MAX(date) FROM macro_indicator'))
+              latest_macro = result.scalar()
+
+              # Comptages
+              result = conn.execute(text('SELECT COUNT(*) FROM price'))
+              price_count = result.scalar()
+
+              result = conn.execute(text('SELECT COUNT(*) FROM macro_indicator'))
+              macro_count = result.scalar()
+
+          print(f'📅 Derniers prix: {latest_price}')
+          print(f'📅 Dernière macro: {latest_macro}')
+          print(f'📊 Total prix: {price_count} lignes')
+          print(f'📊 Total macro: {macro_count} lignes')
+
+          # Alerte si données pas fraîches
+          today = datetime.now().date()
+          if latest_price and (today - latest_price).days > 3:
+              print(f'⚠️ ATTENTION: Données prix datent de {(today - latest_price).days} jours')
+          "
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+
+      - name: Summary
+        run: |
+          echo "## 🚀 Data Refresh Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Date:** $(date -u '+%Y-%m-%d %H:%M UTC')" >> $GITHUB_STEP_SUMMARY
+          echo "- **Trigger:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Les modèles ML utiliseront automatiquement ces nouvelles données" >> $GITHUB_STEP_SUMMARY
+          echo "lors de leur prochain retraining (TTL cache 6h)." >> $GITHUB_STEP_SUMMARY
+
+  notify-on-failure:
+    name: Notify on Failure
+    runs-on: ubuntu-latest
+    needs: extract-data
+    if: failure()
+
+    steps:
+      - name: Create issue on failure
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = `🚨 Data Refresh Failed - ${new Date().toISOString().split('T')[0]}`;
+            const body = `
+            ## Data Refresh Workflow Failed
+
+            **Run:** [${context.runId}](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})
+            **Date:** ${new Date().toISOString()}
+
+            ### Actions requises
+            1. Vérifier les logs du workflow
+            2. Vérifier que les secrets sont configurés (FRED_API_KEY, SUPABASE_DB_URL)
+            3. Vérifier la disponibilité de yfinance et FRED API
+
+            ### Impact
+            - Les modèles ML utiliseront les données existantes (cache 6h)
+            - Pas de nouvelles prédictions jusqu'à résolution
+
+            /label bug,urgent
+            `;
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['bug', 'data-pipeline']
+            });
