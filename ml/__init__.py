@@ -4,6 +4,8 @@ Module ML DeepPilot.
 Contient les modèles de détection de régime, prédiction de rendement,
 et optimisation de portefeuille.
 
+# Phase 7 - CI/CD validated (4 juillet 2026)
+
 Structure :
 - config: Constantes et paramètres
 - features: Feature engineering et time splits

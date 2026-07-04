@@ -1,5 +1,7 @@
 /**
  * Constantes de l'application DeepPilot.
+ *
+ * Phase 7 - CI/CD validated (4 juillet 2026)
  */
 
 import { RegimeName } from '@/types/api';
