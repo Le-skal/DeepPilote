@@ -10,7 +10,6 @@ from typing import Optional
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-
 # Métadonnées des ETF (statiques)
 ETF_METADATA = {
     "SPY": {
@@ -73,10 +72,7 @@ def get_all_etfs() -> list[dict]:
     Returns:
         Liste de dictionnaires avec ticker, name, asset_class, description
     """
-    return [
-        {"ticker": ticker, **metadata}
-        for ticker, metadata in ETF_METADATA.items()
-    ]
+    return [{"ticker": ticker, **metadata} for ticker, metadata in ETF_METADATA.items()]
 
 
 def get_etf_by_ticker(ticker: str) -> Optional[dict]:

@@ -11,7 +11,6 @@ import numpy as np
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-
 # Liste des ETF du portefeuille (sans benchmarks)
 PORTFOLIO_TICKERS = ["SPY", "EFA", "EEM", "TLT", "HYG", "GLD", "VNQ", "SH"]
 
@@ -101,11 +100,13 @@ def get_correlation_matrix(
     pairs = []
     for i in range(n):
         for j in range(i + 1, n):
-            pairs.append({
-                "ticker_1": tickers[i],
-                "ticker_2": tickers[j],
-                "correlation": round(float(corr_matrix[i, j]), 4),
-            })
+            pairs.append(
+                {
+                    "ticker_1": tickers[i],
+                    "ticker_2": tickers[j],
+                    "correlation": round(float(corr_matrix[i, j]), 4),
+                }
+            )
 
     # Trier par corrélation (plus faible = plus intéressant pour diversification)
     pairs.sort(key=lambda x: x["correlation"])
@@ -186,8 +187,16 @@ def get_etf_stats(
     max_drawdown = np.min(drawdowns) * 100
 
     # Distribution
-    skewness = float(np.mean(((returns - np.mean(returns)) / np.std(returns)) ** 3)) if np.std(returns) > 0 else 0
-    kurtosis = float(np.mean(((returns - np.mean(returns)) / np.std(returns)) ** 4) - 3) if np.std(returns) > 0 else 0
+    skewness = (
+        float(np.mean(((returns - np.mean(returns)) / np.std(returns)) ** 3))
+        if np.std(returns) > 0
+        else 0
+    )
+    kurtosis = (
+        float(np.mean(((returns - np.mean(returns)) / np.std(returns)) ** 4) - 3)
+        if np.std(returns) > 0
+        else 0
+    )
 
     positive_days = np.sum(returns > 0) / len(returns) * 100
     best_day = np.max(returns) * 100

@@ -21,7 +21,6 @@ from api.database import check_db_connection
 from api.models.analysis import HealthResponse
 from api.routers import analysis, etf, macro, ml
 
-
 # Initialiser Sentry (si DSN configuré)
 _settings = get_settings()
 if _settings.sentry_dsn:

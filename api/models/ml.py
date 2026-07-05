@@ -12,9 +12,7 @@ class RegimeResponse(BaseModel):
     regime_id: int = Field(..., description="ID du régime (0-3)")
     confidence: float = Field(..., ge=0, le=1, description="Confiance de la prédiction")
     as_of_date: str = Field(..., description="Date de la dernière donnée")
-    probabilities: dict[str, float] = Field(
-        ..., description="Probabilités pour chaque régime"
-    )
+    probabilities: dict[str, float] = Field(..., description="Probabilités pour chaque régime")
 
 
 class PortfolioWeights(BaseModel):

@@ -15,7 +15,6 @@ from ml.config import ETF_TICKERS, REGIME_NAMES
 from ml.models.regime_hmm import RegimeHMM
 from ml.portfolio.optimizer import PortfolioOptimizer
 
-
 # Cache avec TTL de 6 heures (21600 secondes)
 # Le modèle sera réentraîné automatiquement après expiration
 MODEL_CACHE_TTL = 6 * 60 * 60  # 6 heures
@@ -232,8 +231,7 @@ def get_current_regime() -> dict:
     confidence = float(proba[regime_id])
 
     probabilities = {
-        REGIME_NAMES.get(i, f"regime_{i}"): round(float(proba[i]), 3)
-        for i in range(4)
+        REGIME_NAMES.get(i, f"regime_{i}"): round(float(proba[i]), 3) for i in range(4)
     }
 
     return {
@@ -289,10 +287,7 @@ def get_portfolio_weights() -> dict:
     )
 
     # Formater les poids
-    weights = {
-        ticker: round(float(w), 4)
-        for ticker, w in result["weights_dict"].items()
-    }
+    weights = {ticker: round(float(w), 4) for ticker, w in result["weights_dict"].items()}
 
     # Compléter les ETF manquants avec 0
     for ticker in ETF_TICKERS:

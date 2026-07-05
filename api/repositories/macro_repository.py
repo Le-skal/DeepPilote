@@ -10,7 +10,6 @@ from typing import Optional
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-
 # Mapping des noms de colonnes vers les noms API
 MACRO_COLUMNS = {
     "vix": "vix",
