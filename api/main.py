@@ -110,7 +110,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
     allow_credentials=False,
-    allow_methods=["GET", "OPTIONS"],  # API read-only + preflight
+    allow_methods=["GET", "HEAD", "OPTIONS"],  # API read-only + HEAD pour monitoring
     allow_headers=["*"],
 )
 
@@ -128,16 +128,17 @@ def root():
     return RedirectResponse(url="/docs")
 
 
-@app.get(
+@app.api_route(
     "/health",
+    methods=["GET", "HEAD"],
     response_model=HealthResponse,
     tags=["Health"],
     summary="Health check",
-    description="Vérifie que l'API et la base de données fonctionnent.",
+    description="Vérifie que l'API et la base de données fonctionnent. Supporte GET et HEAD.",
 )
-@limiter.limit("10/minute")
+@limiter.limit("30/minute")
 def health_check(request: Request) -> HealthResponse:
-    """Health check endpoint."""
+    """Health check endpoint (GET et HEAD pour monitoring UptimeRobot)."""
     db_status = "ok" if check_db_connection() else "error"
     return HealthResponse(
         status="ok",

@@ -65,14 +65,15 @@ def get_portfolio(request: Request) -> PortfolioWeights:
     return PortfolioWeights(**result)
 
 
-@router.get(
+@router.api_route(
     "/status",
+    methods=["GET", "HEAD"],
     summary="État du cache ML",
-    description="Retourne les informations sur le cache du modèle HMM.",
+    description="Retourne les informations sur le cache du modèle HMM. Supporte GET et HEAD.",
 )
-@limiter.limit("10/minute")
+@limiter.limit("30/minute")
 def get_ml_status(request: Request) -> dict:
-    """Retourne l'état du cache ML."""
+    """Retourne l'état du cache ML (GET et HEAD pour monitoring)."""
     return get_cache_info()
 
 
