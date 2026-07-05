@@ -1,6 +1,6 @@
 # DeepPilot — TODO Principal
 
-> **Phase actuelle : Phase 8 à faire**
+> **Phase actuelle : Phase 8 à faire** (mise à jour: 5 juillet 2026)
 > Prochaine étape : Rapports professionnels + soutenance
 
 ---
@@ -149,12 +149,18 @@ cd web && npm run dev
 
 ## Phase 7 — CI/CD + Monitoring ✅
 
-**Terminée le 4 juillet 2026.**
+**Terminée le 5 juillet 2026.**
 
-### CI/CD GitHub Actions
+### CI/CD GitHub Actions (4 workflows)
 - `ml_tests.yml` - Tests ML + MLOps
 - `api_tests.yml` - Tests API + lint Python
 - `frontend_ci.yml` - Build + lint Next.js
+- `data_refresh.yml` - **Extraction automatique quotidienne** (22h UTC, Lun-Ven)
+
+### Extraction automatique
+Le workflow `data_refresh.yml` extrait les données fraîches chaque jour ouvré :
+- yfinance (prix ETF) → FRED (indicateurs macro) → Supabase
+- Les modèles ML utilisent automatiquement les nouvelles données (TTL 6h)
 
 ### Monitoring
 - **Sentry** : Tracking erreurs backend (FastAPI)

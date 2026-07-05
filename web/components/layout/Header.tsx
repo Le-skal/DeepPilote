@@ -18,15 +18,23 @@ export function Header() {
   const pathname = usePathname();
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/90 backdrop-blur-xl">
       <div className="container flex h-16 items-center justify-between">
-        {/* Logo */}
+        {/* Logo avec glow violet */}
         <Link href="/" className="flex items-center space-x-3 group">
           <div className="relative">
-            <Zap className="h-7 w-7 text-primary transition-all group-hover:drop-shadow-[0_0_8px_hsl(180,100%,50%)]" />
+            <Zap
+              className={cn(
+                'h-7 w-7 text-primary transition-all duration-300',
+                'group-hover:drop-shadow-[0_0_12px_hsl(271,91%,65%)]',
+                'group-hover:scale-110'
+              )}
+            />
+            {/* Subtle glow background */}
+            <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           </div>
           <span className="font-bold text-xl tracking-tight">
-            <span className="text-primary">Deep</span>
+            <span className="text-gradient">Deep</span>
             <span className="text-foreground">Pilot</span>
           </span>
         </Link>
@@ -44,13 +52,13 @@ export function Header() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  'flex items-center space-x-2 px-3 py-2 text-sm font-medium transition-all',
+                  'flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200',
                   isActive
-                    ? 'text-primary bg-primary/10 border-b-2 border-primary'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
+                    ? 'text-primary bg-primary/10 shadow-[0_0_15px_-5px_hsl(271,91%,65%)]'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-secondary/60'
                 )}
               >
-                <Icon className="h-4 w-4" />
+                <Icon className={cn('h-4 w-4', isActive && 'text-primary')} />
                 <span>{item.label}</span>
               </Link>
             );

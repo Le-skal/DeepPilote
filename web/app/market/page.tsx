@@ -94,11 +94,11 @@ export default function MarketPage() {
                   </div>
                   <div className="h-2 bg-muted rounded-full overflow-hidden">
                     <div
-                      className={`h-full rounded-full transition-all ${
+                      className={`h-full rounded-full transition-all duration-500 ${
                         regime === 'bull' ? 'bg-green-500' :
                         regime === 'bear' ? 'bg-red-500' :
                         regime === 'volatile' ? 'bg-amber-500' :
-                        'bg-blue-500'
+                        'bg-violet-500'
                       }`}
                       style={{ width: `${prob * 100}%` }}
                     />
@@ -245,7 +245,7 @@ export default function MarketPage() {
               </div>
             </div>
             <div className="flex items-start space-x-3">
-              <div className="w-4 h-4 rounded-full bg-blue-500 mt-1" />
+              <div className="w-4 h-4 rounded-full bg-violet-500 mt-1" />
               <div>
                 <p className="font-medium">Stable</p>
                 <p className="text-sm text-muted-foreground">

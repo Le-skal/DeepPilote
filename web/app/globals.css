@@ -3,37 +3,37 @@
 @tailwind utilities;
 
 @layer base {
-  /* Theme Cyberpunk Finance - Dark by default */
+  /* Theme Cyberpunk Violet - Dark by default */
   :root {
-    --background: 220 20% 6%;
-    --foreground: 210 20% 90%;
-    --card: 220 20% 8%;
-    --card-foreground: 210 20% 90%;
-    --popover: 220 20% 10%;
-    --popover-foreground: 210 20% 90%;
-    --primary: 180 100% 50%;
-    --primary-foreground: 220 20% 6%;
-    --secondary: 220 20% 14%;
-    --secondary-foreground: 210 20% 90%;
-    --muted: 220 15% 15%;
-    --muted-foreground: 215 15% 55%;
-    --accent: 280 100% 65%;
-    --accent-foreground: 210 20% 98%;
+    --background: 260 30% 6%;
+    --foreground: 250 20% 92%;
+    --card: 260 25% 10%;
+    --card-foreground: 250 20% 92%;
+    --popover: 260 25% 12%;
+    --popover-foreground: 250 20% 92%;
+    --primary: 271 91% 65%;
+    --primary-foreground: 260 30% 6%;
+    --secondary: 260 20% 16%;
+    --secondary-foreground: 250 20% 92%;
+    --muted: 260 20% 14%;
+    --muted-foreground: 260 15% 55%;
+    --accent: 280 87% 69%;
+    --accent-foreground: 260 30% 6%;
     --destructive: 0 85% 55%;
     --destructive-foreground: 210 20% 98%;
-    --border: 220 15% 18%;
-    --input: 220 15% 18%;
-    --ring: 180 100% 50%;
-    --radius: 0.25rem;
+    --border: 260 20% 18%;
+    --input: 260 20% 18%;
+    --ring: 271 91% 65%;
+    --radius: 0.375rem;
 
     /* Custom colors for finance */
     --success: 145 80% 42%;
     --warning: 38 95% 50%;
     --chart-bull: 145 80% 42%;
     --chart-bear: 0 85% 55%;
-    --chart-neutral: 220 15% 50%;
-    --neon-cyan: 180 100% 50%;
-    --neon-magenta: 300 100% 60%;
+    --chart-neutral: 260 20% 50%;
+    --neon-violet: 271 91% 65%;
+    --neon-fuchsia: 292 91% 73%;
   }
 }
 
@@ -47,7 +47,7 @@
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 
-  /* Scrollbar cyberpunk */
+  /* Scrollbar cyberpunk violet */
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -58,8 +58,8 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    background: hsl(var(--border));
-    border-radius: 2px;
+    background: hsl(260 20% 25%);
+    border-radius: 3px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
@@ -68,33 +68,112 @@
 }
 
 @layer components {
-  /* Glow effects for cards */
-  .glow-cyan {
-    box-shadow: 0 0 20px -5px hsl(180 100% 50% / 0.3);
+  /* Glow effects - Violet theme */
+  .glow-violet {
+    box-shadow: 0 0 25px -5px hsl(271 91% 65% / 0.4);
+  }
+
+  .glow-primary {
+    box-shadow: 0 0 25px -5px hsl(271 91% 65% / 0.35);
   }
 
   .glow-success {
-    box-shadow: 0 0 20px -5px hsl(145 80% 42% / 0.3);
+    box-shadow: 0 0 20px -5px hsl(145 80% 42% / 0.35);
   }
 
   .glow-danger {
-    box-shadow: 0 0 20px -5px hsl(0 85% 55% / 0.3);
+    box-shadow: 0 0 20px -5px hsl(0 85% 55% / 0.35);
   }
 
-  /* Gradient text */
+  .glow-warning {
+    box-shadow: 0 0 20px -5px hsl(38 95% 50% / 0.35);
+  }
+
+  /* Gradient text - Violet to Fuchsia */
   .text-gradient {
-    background: linear-gradient(135deg, hsl(180 100% 50%), hsl(280 100% 65%));
+    background: linear-gradient(135deg, hsl(271 91% 65%), hsl(292 91% 73%));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
-  /* Border glow on hover */
+  .text-gradient-accent {
+    background: linear-gradient(135deg, hsl(280 87% 69%), hsl(330 85% 70%));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Border glow on hover - Violet */
   .border-glow {
-    transition: box-shadow 0.2s ease;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
   }
 
   .border-glow:hover {
-    box-shadow: 0 0 0 1px hsl(180 100% 50% / 0.5);
+    box-shadow: 0 0 0 1px hsl(271 91% 65% / 0.5),
+                0 0 20px -5px hsl(271 91% 65% / 0.3);
   }
+
+  /* Card hover effect */
+  .card-hover {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px -10px hsl(271 91% 65% / 0.25);
+  }
+
+  /* Neon text effect */
+  .neon-text {
+    text-shadow: 0 0 10px hsl(271 91% 65% / 0.5),
+                 0 0 20px hsl(271 91% 65% / 0.3),
+                 0 0 40px hsl(271 91% 65% / 0.2);
+  }
+
+  /* Chart tooltip style */
+  .chart-tooltip {
+    background: hsl(260 25% 10%) !important;
+    border: 1px solid hsl(271 91% 65% / 0.3) !important;
+    border-radius: 8px !important;
+    box-shadow: 0 0 20px -5px hsl(271 91% 65% / 0.3) !important;
+    padding: 12px !important;
+  }
+
+  /* Subtle grid pattern for backgrounds */
+  .grid-pattern {
+    background-image:
+      linear-gradient(hsl(271 91% 65% / 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(271 91% 65% / 0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
+  }
+}
+
+/* Custom animations */
+@keyframes pulse-violet {
+  0%, 100% {
+    box-shadow: 0 0 15px -5px hsl(271 91% 65% / 0.4);
+  }
+  50% {
+    box-shadow: 0 0 25px -5px hsl(271 91% 65% / 0.6);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-pulse-violet {
+  animation: pulse-violet 2s ease-in-out infinite;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
 }
