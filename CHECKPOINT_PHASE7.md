@@ -1,6 +1,6 @@
 # Checkpoint Phase 7 — CI/CD + Monitoring + Incidents
 
-**Date** : 4 juillet 2026
+**Date** : 5 juillet 2026
 **Status** : ✅ Terminée
 **Compétences validées** : C18, C19, C20, C21
 
@@ -21,6 +21,7 @@ Mettre en place la chaîne CI/CD complète, le monitoring et les procédures d'i
 | ML Tests | `ml_tests.yml` | Push sur `ml/`, `tests/ml/` | Tests pytest ML + MLOps |
 | API Tests | `api_tests.yml` | Push sur `api/`, `tests/api/` | Tests pytest API + lint |
 | Frontend CI | `frontend_ci.yml` | Push sur `web/` | Lint + type-check + build |
+| Data Refresh | `data_refresh.yml` | Cron 22h UTC (Lun-Ven) | Extraction données + Backtest |
 
 ### Structure
 
@@ -28,7 +29,22 @@ Mettre en place la chaîne CI/CD complète, le monitoring et les procédures d'i
 .github/workflows/
 ├── ml_tests.yml      # Tests ML (Phase 4)
 ├── api_tests.yml     # Tests API + lint Python
-└── frontend_ci.yml   # Build + lint Next.js
+├── frontend_ci.yml   # Build + lint Next.js
+└── data_refresh.yml  # Extraction yfinance/FRED + Backtest quotidien
+```
+
+### Data Refresh Workflow
+
+Le workflow `data_refresh.yml` s'exécute automatiquement chaque jour ouvré (Lun-Ven) à 22h UTC :
+
+1. **Job extract-data** : Extrait les prix ETF (SPY, QQQ, etc.) via yfinance + données macro via FRED
+2. **Job regenerate-backtest** : Régénère le backtest DeepPilot avec les nouvelles données
+3. **Auto-commit** : Le fichier `data/backtest_results.json` est commité automatiquement
+
+```yaml
+on:
+  schedule:
+    - cron: '0 22 * * 1-5'  # Lun-Ven à 22h UTC
 ```
 
 ---
@@ -114,6 +130,43 @@ docs/incidents/
 
 ---
 
+## Page Performance (Backtest Comparison)
+
+### Nouvelle page `/performance`
+
+Compare DeepPilot ML aux benchmarks classiques :
+- **DeepPilot** : Notre stratégie ML (HMM + RF + Markowitz)
+- **SPY** : S&P 500
+- **QQQ** : NASDAQ 100
+- **60/40** : 60% SPY + 40% TLT
+- **Equal Weight** : 12.5% chaque ETF
+
+### Fonctionnalités
+
+- Sélecteur de période (1Y, 3Y, 5Y, 10Y)
+- Métriques par benchmark : Total Return, CAGR, Sharpe, Volatilité, Max Drawdown
+- Graphique performance cumulée (base 100)
+- Tableau des returns annuels
+
+### Endpoints API
+
+| Endpoint | Description |
+|----------|-------------|
+| `GET /api/v1/backtest/compare?years=5` | Métriques + courbes cumulées |
+| `GET /api/v1/backtest/yearly?years=10` | Returns annuels par benchmark |
+
+### Fichiers
+
+```
+api/services/backtest_service.py   # Service backtest
+api/routers/backtest.py            # Endpoints API
+web/app/performance/page.tsx       # Page frontend
+scripts/run_backtest.py            # Script génération backtest
+data/backtest_results.json         # Résultats pré-calculés
+```
+
+---
+
 ## Compétences validées
 
 | Code | Compétence | Validation |
@@ -128,24 +181,30 @@ docs/incidents/
 ## Architecture finale
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                        GitHub                                │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐          │
-│  │ ml_tests.yml│  │api_tests.yml│  │frontend_ci  │          │
-│  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘          │
-└─────────┼────────────────┼────────────────┼─────────────────┘
-          │                │                │
-          ▼                ▼                ▼
-    ┌───────────┐    ┌───────────┐    ┌───────────┐
-    │  Render   │    │  Render   │    │  Vercel   │
-    │ (Backend) │    │ (Backend) │    │(Frontend) │
-    └─────┬─────┘    └─────┬─────┘    └─────┬─────┘
-          │                │                │
-          ▼                ▼                ▼
-    ┌───────────┐    ┌───────────┐    ┌───────────┐
-    │  Sentry   │    │ Supabase  │    │UptimeRobot│
-    │ (Erreurs) │    │   (DB)    │    │ (Uptime)  │
-    └───────────┘    └───────────┘    └───────────┘
+┌──────────────────────────────────────────────────────────────────────────┐
+│                              GitHub Actions                               │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌──────────────────┐ │
+│  │ ml_tests.yml│  │api_tests.yml│  │frontend_ci  │  │ data_refresh.yml │ │
+│  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘  └────────┬─────────┘ │
+└─────────┼────────────────┼────────────────┼──────────────────┼───────────┘
+          │                │                │                  │
+          ▼                ▼                ▼                  ▼
+    ┌───────────┐    ┌───────────┐    ┌───────────┐    ┌──────────────┐
+    │  Render   │    │  Render   │    │  Vercel   │    │  yfinance +  │
+    │ (Backend) │    │ (Backend) │    │(Frontend) │    │  FRED API    │
+    └─────┬─────┘    └─────┬─────┘    └─────┬─────┘    └──────┬───────┘
+          │                │                │                  │
+          ▼                ▼                ▼                  ▼
+    ┌───────────┐    ┌───────────┐    ┌───────────┐    ┌──────────────┐
+    │  Sentry   │    │ Supabase  │    │UptimeRobot│    │  Backtest    │
+    │ (Erreurs) │    │   (DB)    │    │ (Uptime)  │    │  (JSON)      │
+    └───────────┘    └───────────┘    └───────────┘    └──────────────┘
+```
+
+### Cycle quotidien automatisé (Lun-Ven 22h UTC)
+
+```
+yfinance/FRED → Supabase DB → run_backtest.py → backtest_results.json → git push
 ```
 
 ---

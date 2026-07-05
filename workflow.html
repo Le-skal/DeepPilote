@@ -1628,24 +1628,26 @@
                 title: 'Dashboard & Pages',
                 phase: 'Phase 6',
                 status: 'done',
-                description: '7 pages créées avec visualisations.',
+                description: '8 pages créées avec visualisations.',
                 details: [
                     '/ - Dashboard (régime, VIX, stats ETF)',
                     '/etfs - Liste des 8 ETF + benchmarks',
                     '/etfs/[ticker] - Détail ETF avec graphique prix',
                     '/market - Indicateurs macro',
                     '/analysis - Matrice corrélation, stats',
-                    '/portfolio - Allocations recommandées (mock)',
+                    '/performance - DeepPilot vs Benchmarks (SPY, QQQ, 60/40)',
+                    '/portfolio - Allocations recommandées',
                     '/about - Disclaimer légal obligatoire'
                 ],
                 tech: ['Next.js App Router', 'Recharts'],
-                stats: { 'Pages': 7, 'Composants': 15 },
+                stats: { 'Pages': 8, 'Composants': 18 },
                 files: [
                     'web/app/page.tsx',
                     'web/app/etfs/page.tsx',
                     'web/app/etfs/[ticker]/page.tsx',
                     'web/app/market/page.tsx',
                     'web/app/analysis/page.tsx',
+                    'web/app/performance/page.tsx',
                     'web/app/portfolio/page.tsx',
                     'web/app/about/page.tsx'
                 ]
@@ -1700,7 +1702,8 @@
                     'ml_tests.yml : Tests ML + MLOps (push sur ml/, tests/ml/)',
                     'api_tests.yml : Tests API + lint Python (black, ruff)',
                     'frontend_ci.yml : Lint + type-check + build Next.js',
-                    'data_refresh.yml : Extraction automatique quotidienne (22h UTC, Lun-Ven)',
+                    'data_refresh.yml : Extraction données + Régénération backtest quotidienne (22h UTC, Lun-Ven)',
+                    'Backtest DeepPilot auto-commité après chaque extraction',
                     'Tous les workflows exécutés avec succès'
                 ],
                 tech: ['GitHub Actions', 'pytest', 'ruff', 'black', 'yfinance', 'fredapi'],
@@ -1708,7 +1711,8 @@
                     '.github/workflows/ml_tests.yml',
                     '.github/workflows/api_tests.yml',
                     '.github/workflows/frontend_ci.yml',
-                    '.github/workflows/data_refresh.yml'
+                    '.github/workflows/data_refresh.yml',
+                    'scripts/run_backtest.py'
                 ]
             },
             'p7-monitoring': {
@@ -1891,8 +1895,9 @@
                             <span class="command">cd web && npm run dev</span>
                         </div>
                         <p>Puis ouvrir : <a href="http://localhost:3000" target="_blank" class="demo-url">http://localhost:3000</a></p>
-                        <p style="color: #888; font-size: 0.9em;">→ 7 pages : Dashboard, ETFs, Market, Analysis, Portfolio, About</p>
-                        <p style="color: #888; font-size: 0.9em;">→ Theme Cyberpunk Finance avec accents néon</p>
+                        <p style="color: #888; font-size: 0.9em;">→ 8 pages : Dashboard, ETFs, Market, Analysis, Performance, Portfolio, About</p>
+                        <p style="color: #888; font-size: 0.9em;">→ Theme Cyberpunk Violet avec accents néon</p>
+                        <p style="color: #888; font-size: 0.9em;">→ Page Performance : DeepPilot vs SPY, QQQ, 60/40, Equal Weight</p>
                     </div>
 
                     <div class="demo-section">

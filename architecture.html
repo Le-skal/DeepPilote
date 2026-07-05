@@ -556,10 +556,11 @@
                         <div class="service-icon" style="background: #F59E0B;">⏰</div>
                         <div class="service-name">Data Refresh</div>
                     </div>
-                    <div class="service-desc">Extraction automatique quotidienne</div>
+                    <div class="service-desc">Extraction + Backtest quotidiens</div>
                     <div class="service-details">
                         <code>data_refresh.yml</code><br>
-                        Cron 22h UTC (Lun-Ven)
+                        Cron 22h UTC (Lun-Ven)<br>
+                        ETF + Macro → Backtest DeepPilot
                     </div>
                 </div>
             </div>
@@ -747,6 +748,16 @@
                 </div>
                 <div class="endpoint">
                     <div class="endpoint-method">GET</div>
+                    <div class="endpoint-path">/api/v1/backtest/compare</div>
+                    <div class="endpoint-desc">DeepPilot vs Benchmarks</div>
+                </div>
+                <div class="endpoint">
+                    <div class="endpoint-method">GET</div>
+                    <div class="endpoint-path">/api/v1/backtest/yearly</div>
+                    <div class="endpoint-desc">Returns annuels</div>
+                </div>
+                <div class="endpoint">
+                    <div class="endpoint-method">GET</div>
                     <div class="endpoint-path">/health</div>
                     <div class="endpoint-desc">Health check (UptimeRobot)</div>
                 </div>
@@ -758,11 +769,11 @@
             <div class="flow-title">Statistiques Production</div>
             <div class="stats-grid">
                 <div class="stat-card">
-                    <div class="stat-value">7</div>
+                    <div class="stat-value">8</div>
                     <div class="stat-label">Pages Frontend</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-value">20+</div>
+                    <div class="stat-value">22+</div>
                     <div class="stat-label">Endpoints API</div>
                 </div>
                 <div class="stat-card">
@@ -836,6 +847,13 @@
                     <div class="timeline-content">
                         <div class="timeline-title">Extraction automatique (GitHub Actions)</div>
                         <div class="timeline-desc">Workflow <code>data_refresh.yml</code> extrait yfinance + FRED → charge dans Supabase.</div>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-time">~22:05 UTC (Lun-Ven)</div>
+                    <div class="timeline-content">
+                        <div class="timeline-title">Régénération Backtest DeepPilot</div>
+                        <div class="timeline-desc">Backtest ML recalculé avec nouvelles données SPY/QQQ → <code>backtest_results.json</code> mis à jour et commité.</div>
                     </div>
                 </div>
             </div>

@@ -296,12 +296,12 @@ Tu ne dois PAS modifier CLAUDE.md sans validation.
 | Phase 4.5 | ✅ Terminé | Validation HMM améliorée (métriques éco.) | C13 (renforcement) |
 | Phase 5 | ✅ Terminé | Service IA tiers (Mistral) + sentiment | C6, C7, C8 |
 | Phase 6 | ✅ Terminé | Application Next.js + intégration API ML | C10, C14, C15, C17 |
-| Phase 7 | ✅ Terminé | CI/CD app + monitoring + incidents + data refresh auto | C18, C19, C20, C21 |
+| Phase 7 | ✅ Terminé | CI/CD app + monitoring + incidents + data refresh + backtest auto | C18, C19, C20, C21 |
 | Phase 8 | À faire | Rapports pro + soutenance | C16 transverse |
 
 **Phase actuelle : Phase 7 terminée.** Prochaine étape : Phase 8 (rapport final, soutenance).
 
-> **Note Phase 7** : Inclut le workflow `data_refresh.yml` pour extraction automatique quotidienne (22h UTC, Lun-Ven).
+> **Note Phase 7** : Inclut le workflow `data_refresh.yml` pour extraction automatique quotidienne (22h UTC, Lun-Ven) + régénération automatique du backtest DeepPilot. Page Performance ajoutée pour comparer DeepPilot vs benchmarks (SPY, QQQ, 60/40).
 
 ### 9.1 Détail des compétences par bloc
 
