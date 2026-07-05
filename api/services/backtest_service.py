@@ -2,18 +2,46 @@
 Service de backtest pour comparer DeepPilot aux benchmarks.
 
 Compare la stratégie ML aux benchmarks classiques :
+- DeepPilot (notre stratégie ML)
 - SPY (S&P 500)
 - QQQ (NASDAQ 100)
 - 60/40 (SPY/TLT)
 - Equal Weight (8 ETF)
 """
 
+import json
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
 from api.database import get_engine
 from ml.config import ETF_TICKERS
+
+# Chemin vers les résultats du backtest DeepPilot pré-calculés
+BACKTEST_RESULTS_PATH = Path(__file__).parent.parent.parent / "data" / "backtest_results.json"
+
+
+def load_deeppilot_results() -> dict | None:
+    """
+    Charge les résultats du backtest DeepPilot pré-calculés.
+
+    Returns:
+        Dict avec métriques et cumulative_returns, ou None si non disponible
+    """
+    if not BACKTEST_RESULTS_PATH.exists():
+        return None
+
+    try:
+        with open(BACKTEST_RESULTS_PATH) as f:
+            data = json.load(f)
+
+        if data.get("error") or data.get("metrics") is None:
+            return None
+
+        return data
+    except Exception:
+        return None
 
 
 def get_historical_prices(years: int = 5) -> pd.DataFrame:
@@ -183,6 +211,16 @@ def get_backtest_comparison(years: int = 5) -> dict:
             {"date": d.strftime("%Y-%m-%d"), "value": round(v, 2)} for d, v in cumret_weekly.items()
         ]
 
+    # Ajouter DeepPilot si les résultats sont disponibles
+    deeppilot_data = load_deeppilot_results()
+    if deeppilot_data and deeppilot_data.get("metrics"):
+        # Ajouter les métriques DeepPilot
+        benchmarks.append(deeppilot_data["metrics"])
+
+        # Ajouter les returns cumulés DeepPilot
+        if deeppilot_data.get("cumulative_returns"):
+            cumulative_data["DeepPilot"] = deeppilot_data["cumulative_returns"]
+
     # Trier par Sharpe ratio décroissant
     benchmarks.sort(key=lambda x: x["sharpe"], reverse=True)
 
@@ -224,8 +262,6 @@ def get_yearly_returns(years: int = 10) -> dict:
         yearly_data[name] = {str(year): round(val, 2) for year, val in yearly.items()}
 
     # Liste des années
-    all_years = sorted(
-        {y for data in yearly_data.values() for y in data.keys()}, reverse=True
-    )
+    all_years = sorted({y for data in yearly_data.values() for y in data.keys()}, reverse=True)
 
     return {"years": all_years, "benchmarks": yearly_data}

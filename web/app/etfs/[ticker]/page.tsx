@@ -101,7 +101,7 @@ function StatCardWithExplanation({
             )}
           </div>
           {Icon && (
-            <div className="p-2 rounded-md bg-primary/10">
+            <div className="p-2  bg-primary/10">
               <Icon className="h-4 w-4 text-primary" />
             </div>
           )}

@@ -55,7 +55,7 @@ function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
 
   return (
     <div
-      className="rounded-lg p-3 backdrop-blur-sm animate-fade-in"
+      className="p-3 backdrop-blur-sm animate-fade-in"
       style={{
         background: CHART_CONFIG.tooltipBg,
         border: `1px solid ${CHART_CONFIG.tooltipBorder}`,

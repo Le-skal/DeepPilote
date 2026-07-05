@@ -32,10 +32,11 @@ import {
 
 // Couleurs pour les benchmarks
 const BENCHMARK_COLORS: Record<string, string> = {
+  DeepPilot: '#A855F7', // Violet - Notre stratégie ML
   SPY: '#22C55E', // Vert
   QQQ: '#3B82F6', // Bleu
   '60/40': '#F59E0B', // Orange
-  'Equal Weight': '#A855F7', // Violet
+  'Equal Weight': '#6B7280', // Gris
 };
 
 /**
@@ -59,12 +60,14 @@ function BenchmarkCard({
 }) {
   const color = BENCHMARK_COLORS[name] || '#A855F7';
   const isTopPerformer = rank === 1;
+  const isDeepPilot = name === 'DeepPilot';
 
   return (
     <Card
       className={cn(
         'relative overflow-hidden transition-all',
-        isTopPerformer && 'ring-2 ring-primary'
+        isTopPerformer && 'ring-2 ring-yellow-500',
+        isDeepPilot && 'ring-2 ring-primary bg-primary/5'
       )}
     >
       {isTopPerformer && (
@@ -75,10 +78,15 @@ function BenchmarkCard({
       <CardHeader className="pb-2">
         <div className="flex items-center gap-2">
           <div
-            className="w-3 h-3 rounded-sm"
+            className="w-3 h-3"
             style={{ backgroundColor: color }}
           />
-          <CardTitle className="text-lg">{name}</CardTitle>
+          <CardTitle className="text-lg">
+            {name}
+            {isDeepPilot && (
+              <span className="ml-2 text-xs text-primary font-normal">(Notre IA)</span>
+            )}
+          </CardTitle>
         </div>
       </CardHeader>
       <CardContent className="space-y-3">

@@ -86,7 +86,7 @@ function HeroCard({
               <p className="text-xs text-muted-foreground/70">{subtitle}</p>
             )}
           </div>
-          <div className="p-3 rounded-xl bg-primary/10">
+          <div className="p-3  bg-primary/10">
             <Icon className="h-6 w-6 text-primary" />
           </div>
         </div>
@@ -183,7 +183,7 @@ export default function DashboardPage() {
                 </div>
                 <div
                   className={cn(
-                    'p-3 rounded-xl',
+                    'p-3 ',
                     regimeData?.regime === 'bull' && 'bg-green-500/10',
                     regimeData?.regime === 'bear' && 'bg-red-500/10',
                     regimeData?.regime === 'volatile' && 'bg-amber-500/10',
@@ -273,7 +273,7 @@ export default function DashboardPage() {
           </div>
           <Link
             href="/portfolio"
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+            className="flex items-center gap-2 px-4 py-2  bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
           >
             Portfolio
             <ArrowRight className="h-4 w-4" />
