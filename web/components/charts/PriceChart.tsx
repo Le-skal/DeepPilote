@@ -10,8 +10,21 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { ETFPrice } from '@/types/api';
-import { formatCurrency, formatDateShort } from '@/lib/utils/formatters';
-import { ETF_COLORS, CHART_CONFIG, CHART_COLORS } from '@/lib/utils/constants';
+import {
+  formatCurrency,
+  formatDateShort,
+  formatReturnWithContext,
+  getValueColor,
+} from '@/lib/utils/formatters';
+import {
+  ETF_COLORS,
+  CHART_CONFIG,
+  CHART_COLORS,
+  TimePeriod,
+  PERIOD_LABELS,
+} from '@/lib/utils/constants';
+import { TimePeriodSelector } from './TimePeriodSelector';
+import { cn } from '@/lib/utils';
 
 interface PriceChartProps {
   data: ETFPrice[];
@@ -19,6 +32,13 @@ interface PriceChartProps {
   height?: number;
   showGrid?: boolean;
   animated?: boolean;
+  // Nouvelles props pour le header
+  showHeader?: boolean;
+  period?: TimePeriod;
+  onPeriodChange?: (period: TimePeriod) => void;
+  periodReturn?: number;
+  periodStartDate?: string;
+  title?: string;
 }
 
 interface CustomTooltipProps {
@@ -56,9 +76,15 @@ export function PriceChart({
   height = 350,
   showGrid = true,
   animated = true,
+  showHeader = false,
+  period,
+  onPeriodChange,
+  periodReturn,
+  periodStartDate,
+  title,
 }: PriceChartProps) {
   const color = ETF_COLORS[ticker] || CHART_COLORS.primary;
-  const gradientId = `gradient-${ticker}`;
+  const gradientId = `gradient-${ticker}-${Math.random().toString(36).slice(2)}`;
 
   // Format data for Recharts
   const chartData = data.map((item) => ({
@@ -66,8 +92,55 @@ export function PriceChart({
     price: item.close,
   }));
 
+  // Calculate return from data if not provided
+  const calculatedReturn =
+    periodReturn ??
+    (chartData.length > 1
+      ? ((chartData[chartData.length - 1].price - chartData[0].price) /
+          chartData[0].price) *
+        100
+      : undefined);
+
+  const startDate = periodStartDate ?? chartData[0]?.date;
+
   return (
     <div className="w-full animate-fade-in">
+      {/* Header with period selector and return */}
+      {showHeader && (
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+          <div>
+            {title && (
+              <h3 className="text-sm font-medium text-muted-foreground mb-1">
+                {title}
+              </h3>
+            )}
+            {calculatedReturn !== undefined && startDate && (
+              <div className="flex items-baseline gap-2">
+                <span
+                  className={cn(
+                    'text-2xl font-bold font-mono',
+                    getValueColor(calculatedReturn)
+                  )}
+                >
+                  {formatReturnWithContext(calculatedReturn, startDate)}
+                </span>
+                {period && period !== 'MAX' && (
+                  <span className="text-xs text-muted-foreground">
+                    ({PERIOD_LABELS[period]})
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+          {onPeriodChange && (
+            <TimePeriodSelector
+              selected={period ?? 'MAX'}
+              onChange={onPeriodChange}
+            />
+          )}
+        </div>
+      )}
+
       <ResponsiveContainer width="100%" height={height}>
         <AreaChart
           data={chartData}
@@ -165,8 +238,8 @@ export function MiniPriceChart({
   data,
   ticker,
   height = 80,
-}: Omit<PriceChartProps, 'showGrid' | 'animated'>) {
-  const gradientId = `mini-gradient-${ticker}`;
+}: Omit<PriceChartProps, 'showGrid' | 'animated' | 'showHeader' | 'period' | 'onPeriodChange' | 'periodReturn' | 'periodStartDate' | 'title'>) {
+  const gradientId = `mini-gradient-${ticker}-${Math.random().toString(36).slice(2)}`;
 
   const chartData = data.slice(-30).map((item) => ({
     date: item.date,
