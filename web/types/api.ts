@@ -166,6 +166,43 @@ export interface PortfolioResponse {
 }
 
 // ============================================================
+// Backtest Types (Comparaison aux benchmarks)
+// ============================================================
+
+export interface BenchmarkMetrics {
+  name: string;
+  total_return: number;
+  cagr: number;
+  volatility: number;
+  sharpe: number;
+  max_drawdown: number;
+  win_rate: number;
+}
+
+export interface CumulativeDataPoint {
+  date: string;
+  value: number;
+}
+
+export interface BacktestPeriod {
+  start: string | null;
+  end: string | null;
+  years: number;
+  days?: number;
+}
+
+export interface BacktestResponse {
+  benchmarks: BenchmarkMetrics[];
+  cumulative_returns: Record<string, CumulativeDataPoint[]>;
+  period: BacktestPeriod;
+}
+
+export interface YearlyReturnsResponse {
+  years: string[];
+  benchmarks: Record<string, Record<string, number>>;
+}
+
+// ============================================================
 // Health Check
 // ============================================================
 

@@ -7,6 +7,10 @@ from slowapi import Limiter
 from slowapi.util import get_remote_address
 
 from api.models.ml import PortfolioWeights, RegimeResponse
+from api.services.backtest_service import (
+    get_backtest_comparison,
+    get_yearly_returns,
+)
 from api.services.ml_service import (
     clear_cache,
     get_cache_info,
@@ -87,3 +91,35 @@ def refresh_model(request: Request) -> dict:
     """Force le réentraînement du modèle."""
     clear_cache()
     return {"message": "Cache cleared, model will be retrained on next request"}
+
+
+@router.get(
+    "/backtest",
+    summary="Comparaison aux benchmarks",
+    description="""
+    Compare la performance de différentes stratégies sur une période donnée.
+
+    Benchmarks comparés :
+    - **SPY** : S&P 500 Buy & Hold
+    - **QQQ** : NASDAQ 100 Buy & Hold
+    - **60/40** : 60% SPY + 40% TLT (rebalancé)
+    - **Equal Weight** : Poids égaux sur les 8 ETF
+
+    Retourne les métriques (Sharpe, CAGR, Max Drawdown) et les courbes cumulées.
+    """,
+)
+@limiter.limit("10/minute")
+def get_backtest(request: Request, years: int = 5) -> dict:
+    """Retourne la comparaison aux benchmarks."""
+    return get_backtest_comparison(years)
+
+
+@router.get(
+    "/yearly-returns",
+    summary="Returns annuels par benchmark",
+    description="Retourne les returns annuels pour chaque benchmark.",
+)
+@limiter.limit("10/minute")
+def get_yearly(request: Request, years: int = 10) -> dict:
+    """Retourne les returns annuels."""
+    return get_yearly_returns(years)

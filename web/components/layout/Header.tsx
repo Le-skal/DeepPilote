@@ -2,15 +2,15 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { TrendingUp, BarChart2, PieChart, Activity, Info, Zap } from 'lucide-react';
+import { TrendingUp, BarChart2, PieChart, Activity, Info, Zap, Trophy } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
   { href: '/', label: 'Dashboard', icon: TrendingUp },
+  { href: '/performance', label: 'Performance', icon: Trophy },
   { href: '/etfs', label: 'ETFs', icon: BarChart2 },
   { href: '/portfolio', label: 'Portfolio', icon: PieChart },
   { href: '/market', label: 'Marché', icon: Activity },
-  { href: '/analysis', label: 'Analyse', icon: BarChart2 },
   { href: '/about', label: 'À propos', icon: Info },
 ];
 
