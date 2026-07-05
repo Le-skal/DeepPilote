@@ -70,6 +70,7 @@ Thumbs.db
 !tsconfig.json
 !components.json
 !data/backtest_results.json
+!web/.eslintrc.json
 
 # Coverage
 .coverage
