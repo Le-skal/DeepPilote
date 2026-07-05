@@ -5,7 +5,6 @@ Encapsule les requêtes SQL pour les prix et métadonnées ETF.
 """
 
 from datetime import date
-from typing import Optional
 
 from sqlalchemy import text
 from sqlalchemy.orm import Session
@@ -75,7 +74,7 @@ def get_all_etfs() -> list[dict]:
     return [{"ticker": ticker, **metadata} for ticker, metadata in ETF_METADATA.items()]
 
 
-def get_etf_by_ticker(ticker: str) -> Optional[dict]:
+def get_etf_by_ticker(ticker: str) -> dict | None:
     """
     Retourne les métadonnées d'un ETF.
 
@@ -94,8 +93,8 @@ def get_etf_by_ticker(ticker: str) -> Optional[dict]:
 def get_prices(
     db: Session,
     ticker: str,
-    start_date: Optional[date] = None,
-    end_date: Optional[date] = None,
+    start_date: date | None = None,
+    end_date: date | None = None,
     limit: int = 1000,
 ) -> list[dict]:
     """
@@ -145,7 +144,7 @@ def get_prices(
     ]
 
 
-def get_price_date_range(db: Session, ticker: str) -> tuple[Optional[date], Optional[date]]:
+def get_price_date_range(db: Session, ticker: str) -> tuple[date | None, date | None]:
     """
     Retourne la plage de dates disponible pour un ETF.
 

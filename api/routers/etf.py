@@ -9,7 +9,6 @@ Endpoints:
 """
 
 from datetime import date
-from typing import Optional
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
@@ -65,8 +64,8 @@ def get_etf(ticker: str) -> ETFBase:
 )
 def get_prices(
     ticker: str,
-    start_date: Optional[date] = Query(None, description="Date de début (YYYY-MM-DD)"),
-    end_date: Optional[date] = Query(None, description="Date de fin (YYYY-MM-DD)"),
+    start_date: date | None = Query(None, description="Date de début (YYYY-MM-DD)"),
+    end_date: date | None = Query(None, description="Date de fin (YYYY-MM-DD)"),
     limit: int = Query(1000, ge=1, le=10000, description="Nombre max de résultats"),
     db: Session = Depends(get_db),
 ) -> ETFPriceList:
@@ -104,8 +103,8 @@ def get_prices(
 )
 def get_features(
     ticker: str,
-    start_date: Optional[date] = Query(None, description="Date de début (YYYY-MM-DD)"),
-    end_date: Optional[date] = Query(None, description="Date de fin (YYYY-MM-DD)"),
+    start_date: date | None = Query(None, description="Date de début (YYYY-MM-DD)"),
+    end_date: date | None = Query(None, description="Date de fin (YYYY-MM-DD)"),
     limit: int = Query(1000, ge=1, le=10000, description="Nombre max de résultats"),
     db: Session = Depends(get_db),
 ) -> ETFFeatureList:

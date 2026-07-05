@@ -5,7 +5,6 @@ Encapsule les requêtes SQL pour les features ML des ETF.
 """
 
 from datetime import date
-from typing import Optional
 
 from sqlalchemy import text
 from sqlalchemy.orm import Session
@@ -14,8 +13,8 @@ from sqlalchemy.orm import Session
 def get_features(
     db: Session,
     ticker: str,
-    start_date: Optional[date] = None,
-    end_date: Optional[date] = None,
+    start_date: date | None = None,
+    end_date: date | None = None,
     limit: int = 1000,
 ) -> list[dict]:
     """
@@ -78,7 +77,7 @@ def get_features(
     ]
 
 
-def get_latest_features(db: Session, ticker: str) -> Optional[dict]:
+def get_latest_features(db: Session, ticker: str) -> dict | None:
     """
     Récupère les dernières features pour un ETF.
 

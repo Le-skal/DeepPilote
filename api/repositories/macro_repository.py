@@ -5,7 +5,6 @@ Encapsule les requêtes SQL pour les données macro (FRED).
 """
 
 from datetime import date
-from typing import Optional
 
 from sqlalchemy import text
 from sqlalchemy.orm import Session
@@ -26,8 +25,8 @@ MACRO_COLUMNS = {
 
 def get_macro_indicators(
     db: Session,
-    start_date: Optional[date] = None,
-    end_date: Optional[date] = None,
+    start_date: date | None = None,
+    end_date: date | None = None,
     limit: int = 1000,
 ) -> list[dict]:
     """
@@ -80,7 +79,7 @@ def get_macro_indicators(
     ]
 
 
-def get_latest_macro(db: Session) -> Optional[dict]:
+def get_latest_macro(db: Session) -> dict | None:
     """
     Récupère les dernières valeurs connues des indicateurs macro.
 
@@ -113,7 +112,7 @@ def get_latest_macro(db: Session) -> Optional[dict]:
     return None
 
 
-def get_macro_stats(db: Session, indicator: str) -> Optional[dict]:
+def get_macro_stats(db: Session, indicator: str) -> dict | None:
     """
     Calcule les statistiques pour un indicateur macro.
 

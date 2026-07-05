@@ -4,8 +4,8 @@ Connexion à la base de données Supabase/PostgreSQL.
 Utilise SQLAlchemy pour les requêtes et un pool de connexions.
 """
 
+from collections.abc import Generator
 from contextlib import contextmanager
-from typing import Generator
 
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import Engine

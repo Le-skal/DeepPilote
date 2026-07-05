@@ -21,6 +21,14 @@ exclude = '''
 [tool.ruff]
 line-length = 100
 target-version = "py311"
+exclude = [
+    ".git",
+    ".venv",
+    "__pycache__",
+    "data/raw",
+]
+
+[tool.ruff.lint]
 select = [
     "E",   # pycodestyle errors
     "W",   # pycodestyle warnings
@@ -32,16 +40,11 @@ select = [
 ]
 ignore = [
     "E501",  # line too long (géré par black)
-]
-exclude = [
-    ".git",
-    ".venv",
-    "__pycache__",
-    "data/raw",
+    "B008",  # function call in default argument (faux positif pour FastAPI Query/Depends)
 ]
 
-[tool.ruff.isort]
-known-first-party = ["data", "analysis"]
+[tool.ruff.lint.isort]
+known-first-party = ["data", "analysis", "api", "ml", "mlops"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -5,9 +5,10 @@ Utilise les données en base pour fournir des prédictions en temps réel.
 Le modèle HMM est réentraîné automatiquement toutes les 6 heures (TTL cache).
 """
 
-import pandas as pd
-import numpy as np
 from datetime import datetime
+
+import numpy as np
+import pandas as pd
 from cachetools import TTLCache
 
 from api.database import get_engine

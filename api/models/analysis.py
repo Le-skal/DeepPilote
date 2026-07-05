@@ -5,7 +5,6 @@ Définit les modèles de réponse pour les endpoints /analysis/*
 """
 
 from datetime import date as date_type
-from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -46,7 +45,7 @@ class ETFStats(BaseModel):
     total_return: float = Field(..., description="Return total (%)")
     annualized_return: float = Field(..., description="Return annualisé (%)")
     annualized_volatility: float = Field(..., description="Volatilité annualisée (%)")
-    sharpe_ratio: Optional[float] = Field(None, description="Sharpe ratio (risk-free = T3MO)")
+    sharpe_ratio: float | None = Field(None, description="Sharpe ratio (risk-free = T3MO)")
 
     # Risque
     max_drawdown: float = Field(..., description="Max drawdown (%)")

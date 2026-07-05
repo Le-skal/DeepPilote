@@ -5,7 +5,6 @@ Calcule les métriques d'analyse à partir des données brutes.
 """
 
 from datetime import date
-from typing import Optional
 
 import numpy as np
 from sqlalchemy import text
@@ -17,9 +16,9 @@ PORTFOLIO_TICKERS = ["SPY", "EFA", "EEM", "TLT", "HYG", "GLD", "VNQ", "SH"]
 
 def get_correlation_matrix(
     db: Session,
-    start_date: Optional[date] = None,
-    end_date: Optional[date] = None,
-    tickers: Optional[list[str]] = None,
+    start_date: date | None = None,
+    end_date: date | None = None,
+    tickers: list[str] | None = None,
 ) -> dict:
     """
     Calcule la matrice de corrélation des returns.
@@ -123,9 +122,9 @@ def get_correlation_matrix(
 def get_etf_stats(
     db: Session,
     ticker: str,
-    start_date: Optional[date] = None,
-    end_date: Optional[date] = None,
-) -> Optional[dict]:
+    start_date: date | None = None,
+    end_date: date | None = None,
+) -> dict | None:
     """
     Calcule les statistiques pour un ETF.
 
@@ -226,8 +225,8 @@ def get_etf_stats(
 
 def get_all_etf_stats(
     db: Session,
-    start_date: Optional[date] = None,
-    end_date: Optional[date] = None,
+    start_date: date | None = None,
+    end_date: date | None = None,
 ) -> list[dict]:
     """
     Calcule les stats pour tous les ETF du portefeuille.

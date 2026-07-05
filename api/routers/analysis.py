@@ -7,7 +7,6 @@ Endpoints:
 """
 
 from datetime import date
-from typing import Optional
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
@@ -27,8 +26,8 @@ router = APIRouter(prefix="/analysis", tags=["Analysis"])
     description="Calcule la matrice de corrélation des returns entre les ETF.",
 )
 def get_correlations(
-    start_date: Optional[date] = Query(None, description="Date de début (YYYY-MM-DD)"),
-    end_date: Optional[date] = Query(None, description="Date de fin (YYYY-MM-DD)"),
+    start_date: date | None = Query(None, description="Date de début (YYYY-MM-DD)"),
+    end_date: date | None = Query(None, description="Date de fin (YYYY-MM-DD)"),
     db: Session = Depends(get_db),
 ) -> CorrelationMatrix:
     """Calcule la matrice de corrélation."""
@@ -64,8 +63,8 @@ def get_correlations(
     description="Calcule les statistiques descriptives pour chaque ETF (returns, volatilité, Sharpe, drawdown, etc.).",
 )
 def get_stats(
-    start_date: Optional[date] = Query(None, description="Date de début (YYYY-MM-DD)"),
-    end_date: Optional[date] = Query(None, description="Date de fin (YYYY-MM-DD)"),
+    start_date: date | None = Query(None, description="Date de début (YYYY-MM-DD)"),
+    end_date: date | None = Query(None, description="Date de fin (YYYY-MM-DD)"),
     db: Session = Depends(get_db),
 ) -> StatsResponse:
     """Calcule les statistiques pour tous les ETF."""
@@ -97,8 +96,8 @@ def get_stats(
 )
 def get_etf_stats(
     ticker: str,
-    start_date: Optional[date] = Query(None, description="Date de début (YYYY-MM-DD)"),
-    end_date: Optional[date] = Query(None, description="Date de fin (YYYY-MM-DD)"),
+    start_date: date | None = Query(None, description="Date de début (YYYY-MM-DD)"),
+    end_date: date | None = Query(None, description="Date de fin (YYYY-MM-DD)"),
     db: Session = Depends(get_db),
 ) -> ETFStats:
     """Calcule les statistiques pour un ETF."""

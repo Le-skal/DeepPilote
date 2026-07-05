@@ -5,7 +5,6 @@ Définit les modèles de réponse pour les endpoints /etfs/*
 """
 
 from datetime import date as date_type
-from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -16,7 +15,7 @@ class ETFBase(BaseModel):
     ticker: str = Field(..., description="Symbole de l'ETF (ex: SPY)")
     name: str = Field(..., description="Nom complet de l'ETF")
     asset_class: str = Field(..., description="Classe d'actifs")
-    description: Optional[str] = Field(None, description="Description du rôle dans le portefeuille")
+    description: str | None = Field(None, description="Description du rôle dans le portefeuille")
 
     model_config = {"from_attributes": True}
 
@@ -26,11 +25,11 @@ class ETFPrice(BaseModel):
 
     date: date_type = Field(..., description="Date du prix (YYYY-MM-DD)")
     ticker: str = Field(..., description="Symbole de l'ETF")
-    open: Optional[float] = Field(None, description="Prix d'ouverture")
-    high: Optional[float] = Field(None, description="Prix le plus haut")
-    low: Optional[float] = Field(None, description="Prix le plus bas")
+    open: float | None = Field(None, description="Prix d'ouverture")
+    high: float | None = Field(None, description="Prix le plus haut")
+    low: float | None = Field(None, description="Prix le plus bas")
     close: float = Field(..., description="Prix de clôture ajusté")
-    volume: Optional[int] = Field(None, description="Volume échangé")
+    volume: int | None = Field(None, description="Volume échangé")
 
     model_config = {"from_attributes": True}
 
@@ -52,23 +51,23 @@ class ETFFeature(BaseModel):
     ticker: str = Field(..., description="Symbole de l'ETF")
 
     # Returns
-    return_1d: Optional[float] = Field(None, description="Return 1 jour (%)")
-    return_5d: Optional[float] = Field(None, description="Return 5 jours (%)")
-    return_20d: Optional[float] = Field(None, description="Return 20 jours (%)")
-    return_60d: Optional[float] = Field(None, description="Return 60 jours (%)")
+    return_1d: float | None = Field(None, description="Return 1 jour (%)")
+    return_5d: float | None = Field(None, description="Return 5 jours (%)")
+    return_20d: float | None = Field(None, description="Return 20 jours (%)")
+    return_60d: float | None = Field(None, description="Return 60 jours (%)")
 
     # Volatilité
-    volatility_20d: Optional[float] = Field(None, description="Volatilité 20 jours")
-    volatility_60d: Optional[float] = Field(None, description="Volatilité 60 jours")
+    volatility_20d: float | None = Field(None, description="Volatilité 20 jours")
+    volatility_60d: float | None = Field(None, description="Volatilité 60 jours")
 
     # Indicateurs techniques
-    sma_20: Optional[float] = Field(None, description="SMA 20 jours")
-    sma_50: Optional[float] = Field(None, description="SMA 50 jours")
-    sma_200: Optional[float] = Field(None, description="SMA 200 jours")
-    rsi_14: Optional[float] = Field(None, description="RSI 14 jours")
-    macd: Optional[float] = Field(None, description="MACD")
-    macd_signal: Optional[float] = Field(None, description="Signal MACD")
-    bb_position: Optional[float] = Field(None, description="Position Bollinger (0-1)")
+    sma_20: float | None = Field(None, description="SMA 20 jours")
+    sma_50: float | None = Field(None, description="SMA 50 jours")
+    sma_200: float | None = Field(None, description="SMA 200 jours")
+    rsi_14: float | None = Field(None, description="RSI 14 jours")
+    macd: float | None = Field(None, description="MACD")
+    macd_signal: float | None = Field(None, description="Signal MACD")
+    bb_position: float | None = Field(None, description="Position Bollinger (0-1)")
 
     model_config = {"from_attributes": True}
 

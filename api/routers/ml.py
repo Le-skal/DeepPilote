@@ -6,12 +6,12 @@ from fastapi import APIRouter, Request
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 
-from api.models.ml import RegimeResponse, PortfolioWeights
+from api.models.ml import PortfolioWeights, RegimeResponse
 from api.services.ml_service import (
-    get_current_regime,
-    get_portfolio_weights,
     clear_cache,
     get_cache_info,
+    get_current_regime,
+    get_portfolio_weights,
 )
 
 router = APIRouter(prefix="/ml", tags=["ML"])
