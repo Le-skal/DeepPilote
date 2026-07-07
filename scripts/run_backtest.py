@@ -139,21 +139,22 @@ def calculate_metrics(returns: pd.Series, risk_free_rate: float = 0.04) -> dict:
 
 
 def main():
-    print("Chargement des données...")
-    df_prices, df_macro = load_data_from_db(years=15)
+    output_path = ROOT_DIR / "data" / "backtest_results.json"
+    output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    print(f"Données prix: {df_prices.index[0]} -> {df_prices.index[-1]}")
-    print(f"Données macro: {df_macro.index[0]} -> {df_macro.index[-1]}")
-
-    # Dates de backtest
-    # On utilise les 10 dernières années pour le backtest (3 ans pour training)
-    end_date = df_prices.index[-1].strftime("%Y-%m-%d")
-    start_date = (df_prices.index[-1] - pd.DateOffset(years=10)).strftime("%Y-%m-%d")
-
-    print(f"\nPériode de backtest: {start_date} -> {end_date}")
-
-    # Exécuter le backtest DeepPilot
     try:
+        print("Chargement des données...")
+        df_prices, df_macro = load_data_from_db(years=15)
+
+        print(f"Données prix: {df_prices.index[0]} -> {df_prices.index[-1]}")
+        print(f"Données macro: {df_macro.index[0]} -> {df_macro.index[-1]}")
+
+        # Dates de backtest
+        # On utilise les 10 dernières années pour le backtest (3 ans pour training)
+        end_date = df_prices.index[-1].strftime("%Y-%m-%d")
+        start_date = (df_prices.index[-1] - pd.DateOffset(years=10)).strftime("%Y-%m-%d")
+
+        print(f"\nPériode de backtest: {start_date} -> {end_date}")
         result = run_deeppilot_backtest(
             df_prices,
             df_macro,
@@ -205,20 +206,22 @@ def main():
 
         traceback.print_exc()
 
-        # Créer un fichier vide pour éviter les erreurs dans l'API
+        # Créer un fichier avec l'erreur pour éviter les problèmes dans l'API
         output = {
             "metrics": None,
             "cumulative_returns": [],
-            "period": {"start": start_date, "end": end_date},
+            "period": {"start": "unknown", "end": "unknown"},
             "error": str(e),
             "generated_at": datetime.now().isoformat(),
         }
 
-        output_path = ROOT_DIR / "data" / "backtest_results.json"
-        output_path.parent.mkdir(parents=True, exist_ok=True)
-
         with open(output_path, "w") as f:
             json.dump(output, f, indent=2)
+
+        # Exit avec code 0 pour ne pas bloquer le workflow
+        # L'erreur est loguée et le fichier JSON contient l'info
+        print("\nFichier JSON créé avec erreur, workflow continue...")
+        sys.exit(0)
 
 
 if __name__ == "__main__":

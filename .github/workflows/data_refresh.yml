@@ -25,6 +25,11 @@ on:
 env:
   PYTHON_VERSION: '3.11'
 
+# Permissions nécessaires pour push et créer des issues
+permissions:
+  contents: write    # Pour push les backtest results
+  issues: write      # Pour créer des issues en cas d'échec
+
 jobs:
   extract-data:
     name: Extract & Load Data
