@@ -15,13 +15,13 @@ from api.models.sentiment import (
     SentimentResponse,
     SentimentStats,
 )
+from api.services.rss_service import analyze_market_sentiment_from_rss
 from api.services.sentiment_service import (
     analyze_headlines,
     clear_sentiment_cache,
     get_market_sentiment,
     get_sentiment_stats,
 )
-from api.services.rss_service import analyze_market_sentiment_from_rss
 
 router = APIRouter(prefix="/sentiment", tags=["Sentiment"])
 limiter = Limiter(key_func=get_remote_address)

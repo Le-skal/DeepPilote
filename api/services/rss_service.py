@@ -6,8 +6,6 @@ Utilise le flux RSS de L'AGEFI pour avoir des news financières françaises.
 
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
-from functools import lru_cache
-from typing import Optional
 
 import httpx
 
@@ -33,8 +31,8 @@ class RSSItem:
         self,
         title: str,
         link: str,
-        pub_date: Optional[datetime] = None,
-        description: Optional[str] = None,
+        pub_date: datetime | None = None,
+        description: str | None = None,
     ):
         self.title = title
         self.link = link
@@ -42,7 +40,7 @@ class RSSItem:
         self.description = description
 
 
-def parse_rss_date(date_str: str) -> Optional[datetime]:
+def parse_rss_date(date_str: str) -> datetime | None:
     """Parse une date RSS (format RFC 822)."""
     formats = [
         "%a, %d %b %Y %H:%M:%S %z",

@@ -13,7 +13,7 @@ from datetime import datetime
 from functools import lru_cache
 
 from ml.sentiment.analyzer import SentimentAnalyzer
-from ml.sentiment.client import MistralClient, MockMistralClient
+from ml.sentiment.client import MistralClient
 
 logger = logging.getLogger(__name__)
 

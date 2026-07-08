@@ -2,7 +2,7 @@
 Modèles Pydantic pour les endpoints ML.
 """
 
-from enum import Enum
+from enum import StrEnum
 
 from pydantic import BaseModel, Field
 
@@ -21,7 +21,7 @@ TICKER_DISPLAY_NAMES = {
 }
 
 
-class SignalType(str, Enum):
+class SignalType(StrEnum):
     """Type de signal de trading."""
 
     STRONG_BUY = "STRONG_BUY"

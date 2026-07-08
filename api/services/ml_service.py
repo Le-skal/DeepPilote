@@ -344,14 +344,12 @@ def get_predictions() -> dict:
     from api.models.ml import (
         SIGNAL_CONFIG,
         TICKER_DISPLAY_NAMES,
-        SignalType,
         probability_to_signal,
     )
 
     # Récupérer le régime actuel
     regime_info = get_current_regime()
     regime = regime_info["regime"]
-    regime_proba = regime_info["probabilities"]
 
     # Récupérer les returns récents
     returns_df = get_etf_returns(days=60)
@@ -494,7 +492,7 @@ def get_model_track_record() -> dict:
         3: {"correct": 0, "total": 0},
     }
 
-    for regime, fwd_ret in zip(regimes_valid, forward_valid.values):
+    for regime, fwd_ret in zip(regimes_valid, forward_valid.values, strict=True):
         regime_stats[regime]["total"] += 1
 
         is_correct = False
