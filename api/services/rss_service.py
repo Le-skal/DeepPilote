@@ -72,7 +72,9 @@ async def fetch_rss_feed(feed_key: str = "agefi") -> list[RSSItem]:
     feed_config = RSS_FEEDS[feed_key]
     url = feed_config["url"]
 
-    async with httpx.AsyncClient(timeout=30.0) as client:
+    # User-Agent nécessaire sinon L'AGEFI renvoie 403
+    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
+    async with httpx.AsyncClient(timeout=30.0, headers=headers) as client:
         response = await client.get(url)
         response.raise_for_status()
 
