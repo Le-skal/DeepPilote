@@ -229,3 +229,57 @@ export interface DateRangeParams {
   end_date?: string;
   limit?: number;
 }
+
+// ============================================================
+// Predictions Types (Signaux de trading)
+// ============================================================
+
+export type SignalType = 'STRONG_BUY' | 'BUY' | 'HOLD' | 'SELL' | 'STRONG_SELL';
+
+export interface TickerPrediction {
+  ticker: string;
+  display_name: string;
+  probability: number;
+  signal: SignalType;
+  signal_label: string;
+  signal_emoji: string;
+  signal_explanation: string;
+}
+
+export interface PredictionsResponse {
+  predictions: TickerPrediction[];
+  top_picks: string[];
+  regime: RegimeName;
+  regime_explanation: string;
+  as_of: string;
+  model_info: {
+    regime_model: string;
+    prediction_model: string;
+    retrain_frequency: string;
+  };
+}
+
+// ============================================================
+// Sentiment Types (Analyse Mistral)
+// ============================================================
+
+export interface SentimentResult {
+  headline: string;
+  score: number;
+  label: 'positive' | 'negative' | 'neutral';
+  cached: boolean;
+}
+
+export interface SentimentResponse {
+  results: SentimentResult[];
+  model: string;
+  processed_at: string;
+}
+
+export interface MarketSentiment {
+  score: number;
+  label: 'optimiste' | 'pessimiste' | 'neutre';
+  interpretation: string;
+  confidence: 'high' | 'medium' | 'low';
+  as_of: string;
+}

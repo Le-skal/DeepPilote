@@ -3,12 +3,21 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
-import { getRegime, getPortfolio, getBacktest, getYearlyReturns } from '@/lib/api/ml';
+import {
+  getRegime,
+  getPortfolio,
+  getBacktest,
+  getYearlyReturns,
+  getPredictions,
+  getMarketSentiment,
+} from '@/lib/api/ml';
 import {
   RegimeResponse,
   PortfolioResponse,
   BacktestResponse,
   YearlyReturnsResponse,
+  PredictionsResponse,
+  MarketSentiment,
 } from '@/types/api';
 
 /**
@@ -54,5 +63,29 @@ export function useYearlyReturns(years: number = 10) {
     queryKey: ['yearly-returns', years],
     queryFn: () => getYearlyReturns(years),
     staleTime: 30 * 60 * 1000, // 30 minutes
+  });
+}
+
+/**
+ * Hook pour les prédictions et signaux par ETF.
+ */
+export function usePredictions() {
+  return useQuery<PredictionsResponse>({
+    queryKey: ['predictions'],
+    queryFn: getPredictions,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchInterval: 10 * 60 * 1000, // Refresh toutes les 10 minutes
+  });
+}
+
+/**
+ * Hook pour le sentiment global du marché.
+ */
+export function useMarketSentiment() {
+  return useQuery<MarketSentiment>({
+    queryKey: ['market-sentiment'],
+    queryFn: getMarketSentiment,
+    staleTime: 30 * 60 * 1000, // 30 minutes (sentiment change lentement)
+    refetchInterval: 60 * 60 * 1000, // Refresh toutes les heures
   });
 }

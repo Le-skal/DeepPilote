@@ -6,7 +6,7 @@ from fastapi import APIRouter, Request
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 
-from api.models.ml import PortfolioWeights, RegimeResponse
+from api.models.ml import PortfolioWeights, PredictionsResponse, RegimeResponse
 from api.services.backtest_service import (
     get_backtest_comparison,
     get_yearly_returns,
@@ -16,6 +16,7 @@ from api.services.ml_service import (
     get_cache_info,
     get_current_regime,
     get_portfolio_weights,
+    get_predictions,
 )
 
 router = APIRouter(prefix="/ml", tags=["ML"])
@@ -67,6 +68,35 @@ def get_portfolio(request: Request) -> PortfolioWeights:
     """Retourne les poids optimaux du portefeuille."""
     result = get_portfolio_weights()
     return PortfolioWeights(**result)
+
+
+@router.get(
+    "/predictions",
+    response_model=PredictionsResponse,
+    summary="Prédictions et signaux par ETF",
+    description="""
+    Retourne les prédictions de rendement et signaux de trading pour chaque ETF.
+
+    **Signaux :**
+    - 🚀 **STRONG_BUY** : Probabilité >= 70% - Tendance très haussière
+    - 📈 **BUY** : Probabilité >= 55% - Tendance favorable
+    - ⏸️ **HOLD** : Probabilité 45-55% - Pas de direction claire
+    - 📉 **SELL** : Probabilité 30-45% - Tendance défavorable
+    - 🔻 **STRONG_SELL** : Probabilité < 30% - Risque de baisse
+
+    Les prédictions sont basées sur :
+    - Le régime de marché actuel (HMM)
+    - Le momentum récent de chaque ETF
+    - Les caractéristiques de chaque classe d'actifs
+
+    **top_picks** : Les 3 ETF avec les meilleures probabilités.
+    """,
+)
+@limiter.limit("30/minute")
+def predictions(request: Request) -> PredictionsResponse:
+    """Retourne les prédictions et signaux."""
+    result = get_predictions()
+    return PredictionsResponse(**result)
 
 
 @router.api_route(

@@ -132,6 +132,93 @@ export const ASSET_CLASSES: Record<string, string> = {
 };
 
 /**
+ * Noms lisibles pour les tickers.
+ * Pour remplacer les codes cryptiques par du français clair.
+ */
+export const TICKER_DISPLAY_NAMES: Record<string, string> = {
+  SPY: 'S&P 500',
+  QQQ: 'NASDAQ 100',
+  EFA: 'Actions Internationales',
+  EEM: 'Marchés Émergents',
+  TLT: 'Obligations US Long Terme',
+  HYG: 'Obligations Haut Rendement',
+  GLD: 'Or',
+  VNQ: 'Immobilier US',
+  SH: 'Short S&P 500',
+  URTH: 'MSCI World',
+};
+
+/**
+ * Retourne le nom lisible d'un ticker.
+ */
+export function getTickerDisplayName(ticker: string): string {
+  return TICKER_DISPLAY_NAMES[ticker] || ticker;
+}
+
+/**
+ * Explications des stratégies/benchmarks.
+ */
+export const STRATEGY_EXPLANATIONS: Record<string, string> = {
+  'SPY': 'Acheter et garder le S&P 500 (les 500 plus grandes entreprises américaines).',
+  'QQQ': 'Acheter et garder le NASDAQ 100 (les 100 plus grandes entreprises tech).',
+  '60/40': 'La stratégie classique depuis 50 ans : 60% en actions (S&P 500) + 40% en obligations (Bons du Trésor). Simple et éprouvée.',
+  'Equal Weight': 'Investir la même somme dans chaque ETF (12.5% chacun). Diversification maximale.',
+  'DeepPilot': 'Notre IA analyse le marché et ajuste les 8 ETF chaque mois selon les conditions.',
+};
+
+/**
+ * Types de signaux de trading.
+ */
+export type SignalType = 'STRONG_BUY' | 'BUY' | 'HOLD' | 'SELL' | 'STRONG_SELL';
+
+/**
+ * Configuration des signaux de trading.
+ */
+export const SIGNAL_CONFIG: Record<SignalType, {
+  label: string;
+  emoji: string;
+  color: string;
+  bgColor: string;
+  explanation: string;
+}> = {
+  STRONG_BUY: {
+    label: 'Achat fort',
+    emoji: '🚀',
+    color: 'text-green-500',
+    bgColor: 'bg-green-500/10',
+    explanation: 'Signal très positif - Tendance haussière forte détectée',
+  },
+  BUY: {
+    label: 'Achat',
+    emoji: '📈',
+    color: 'text-green-400',
+    bgColor: 'bg-green-400/10',
+    explanation: 'Signal positif - Tendance favorable',
+  },
+  HOLD: {
+    label: 'Conserver',
+    emoji: '⏸️',
+    color: 'text-amber-400',
+    bgColor: 'bg-amber-400/10',
+    explanation: 'Signal neutre - Pas de direction claire',
+  },
+  SELL: {
+    label: 'Vente',
+    emoji: '📉',
+    color: 'text-red-400',
+    bgColor: 'bg-red-400/10',
+    explanation: 'Signal négatif - Tendance défavorable',
+  },
+  STRONG_SELL: {
+    label: 'Vente forte',
+    emoji: '🔻',
+    color: 'text-red-500',
+    bgColor: 'bg-red-500/10',
+    explanation: 'Signal très négatif - Risque de baisse élevé',
+  },
+};
+
+/**
  * Configuration des charts.
  */
 export const CHART_CONFIG = {

@@ -8,6 +8,8 @@ import {
   PortfolioResponse,
   BacktestResponse,
   YearlyReturnsResponse,
+  PredictionsResponse,
+  MarketSentiment,
 } from '@/types/api';
 
 /**
@@ -36,4 +38,18 @@ export async function getBacktest(years: number = 5): Promise<BacktestResponse> 
  */
 export async function getYearlyReturns(years: number = 10): Promise<YearlyReturnsResponse> {
   return fetchAPI<YearlyReturnsResponse>(`/api/v1/ml/yearly-returns?years=${years}`);
+}
+
+/**
+ * Récupère les prédictions et signaux par ETF.
+ */
+export async function getPredictions(): Promise<PredictionsResponse> {
+  return fetchAPI<PredictionsResponse>('/api/v1/ml/predictions');
+}
+
+/**
+ * Récupère le sentiment global du marché.
+ */
+export async function getMarketSentiment(): Promise<MarketSentiment> {
+  return fetchAPI<MarketSentiment>('/api/v1/sentiment/market');
 }

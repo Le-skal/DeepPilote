@@ -19,7 +19,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from api.config import get_settings
 from api.database import check_db_connection
 from api.models.analysis import HealthResponse
-from api.routers import analysis, etf, macro, ml
+from api.routers import analysis, etf, macro, ml, sentiment
 
 # Initialiser Sentry (si DSN configuré)
 _settings = get_settings()
@@ -49,7 +49,7 @@ class CORSErrorMiddleware(BaseHTTPMiddleware):
                 content={"detail": str(e)},
                 headers={
                     "Access-Control-Allow-Origin": "*",
-                    "Access-Control-Allow-Methods": "GET, OPTIONS",
+                    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
                     "Access-Control-Allow-Headers": "*",
                 },
             )
@@ -92,7 +92,8 @@ app = FastAPI(
         {"name": "ETF", "description": "Données des ETF (prix, features)"},
         {"name": "Macro", "description": "Indicateurs macro-économiques"},
         {"name": "Analysis", "description": "Analyses (corrélations, statistiques)"},
-        {"name": "ML", "description": "Modèles ML (régime, portfolio)"},
+        {"name": "ML", "description": "Modèles ML (régime, portfolio, prédictions)"},
+        {"name": "Sentiment", "description": "Analyse de sentiment (Mistral AI)"},
         {"name": "Health", "description": "Statut de l'API"},
     ],
 )
@@ -109,7 +110,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
     allow_credentials=False,
-    allow_methods=["GET", "HEAD", "OPTIONS"],  # API read-only + HEAD pour monitoring
+    allow_methods=["GET", "POST", "HEAD", "OPTIONS"],  # GET read-only + POST sentiment
     allow_headers=["*"],
 )
 
@@ -118,6 +119,7 @@ app.include_router(etf.router, prefix="/api/v1")
 app.include_router(macro.router, prefix="/api/v1")
 app.include_router(analysis.router, prefix="/api/v1")
 app.include_router(ml.router, prefix="/api/v1")
+app.include_router(sentiment.router, prefix="/api/v1")
 
 
 # Endpoints racine

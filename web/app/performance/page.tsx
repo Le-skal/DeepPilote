@@ -39,6 +39,28 @@ const BENCHMARK_COLORS: Record<string, string> = {
   'Equal Weight': '#6B7280', // Gris
 };
 
+// Noms affichables pour les benchmarks
+const BENCHMARK_DISPLAY_NAMES: Record<string, string> = {
+  DeepPilot: 'DeepPilot',
+  SPY: 'S&P 500',
+  QQQ: 'NASDAQ 100',
+  '60/40': '60/40',
+  'Equal Weight': 'Poids Égaux',
+};
+
+// Explications des benchmarks pour les tooltips
+const BENCHMARK_EXPLANATIONS: Record<string, string> = {
+  DeepPilot: 'Notre IA analyse le marché et répartit ton argent entre 8 ETF chaque mois.',
+  SPY: 'L\'indice S&P 500 : les 500 plus grandes entreprises américaines (Apple, Google, Amazon...).',
+  QQQ: 'L\'indice NASDAQ 100 : les 100 plus grandes entreprises tech (Apple, Microsoft, Nvidia...).',
+  '60/40': 'La stratégie classique : 60% en actions + 40% en obligations. Simple et éprouvée depuis 50 ans.',
+  'Equal Weight': 'Investir la même somme (12.5%) dans chacun des 8 ETF.',
+};
+
+function getBenchmarkDisplayName(name: string): string {
+  return BENCHMARK_DISPLAY_NAMES[name] || name;
+}
+
 /**
  * Carte de métriques pour un benchmark.
  */
@@ -81,11 +103,19 @@ function BenchmarkCard({
             className="w-3 h-3"
             style={{ backgroundColor: color }}
           />
-          <CardTitle className="text-lg">
-            {name}
+          <CardTitle className="text-lg flex items-center gap-2">
+            {getBenchmarkDisplayName(name)}
             {isDeepPilot && (
-              <span className="ml-2 text-xs text-primary font-normal">(Notre IA)</span>
+              <span className="text-xs text-primary font-normal">(Notre IA)</span>
             )}
+            <Tooltip>
+              <TooltipTrigger className="cursor-help">
+                <HelpCircle className="h-3.5 w-3.5 text-muted-foreground/50" />
+              </TooltipTrigger>
+              <TooltipContent side="top" className="max-w-xs">
+                <p className="text-sm">{BENCHMARK_EXPLANATIONS[name] || name}</p>
+              </TooltipContent>
+            </Tooltip>
           </CardTitle>
         </div>
       </CardHeader>
@@ -283,13 +313,20 @@ function YearlyReturnsTable({
             <th className="p-3 text-left font-medium">Année</th>
             {benchmarkNames.map((name) => (
               <th key={name} className="p-3 text-right font-medium">
-                <div className="flex items-center justify-end gap-2">
-                  <div
-                    className="w-2 h-2 rounded-sm"
-                    style={{ backgroundColor: BENCHMARK_COLORS[name] || '#A855F7' }}
-                  />
-                  {name}
-                </div>
+                <Tooltip>
+                  <TooltipTrigger className="cursor-help">
+                    <div className="flex items-center justify-end gap-2">
+                      <div
+                        className="w-2 h-2 rounded-sm"
+                        style={{ backgroundColor: BENCHMARK_COLORS[name] || '#A855F7' }}
+                      />
+                      {getBenchmarkDisplayName(name)}
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="text-sm">{BENCHMARK_EXPLANATIONS[name] || name}</p>
+                  </TooltipContent>
+                </Tooltip>
               </th>
             ))}
           </tr>

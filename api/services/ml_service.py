@@ -320,3 +320,104 @@ def get_cache_info() -> dict:
         "cache_ttl_seconds": MODEL_CACHE_TTL,
         "cache_ttl_hours": MODEL_CACHE_TTL / 3600,
     }
+
+
+# Explications des régimes pour les débutants
+REGIME_EXPLANATIONS = {
+    "bull": "Marché haussier : les prix montent. Favoriser les actions (SPY, QQQ).",
+    "bear": "Marché baissier : les prix baissent. Privilégier les valeurs refuges (GLD, TLT).",
+    "volatile": "Marché instable : grandes variations. Réduire les positions risquées.",
+    "stable": "Marché calme : peu de mouvements. Bon moment pour diversifier.",
+}
+
+
+def get_predictions() -> dict:
+    """
+    Génère des prédictions de signal pour chaque ETF.
+
+    Utilise le régime actuel et les returns récents pour estimer
+    la probabilité de rendement positif sur le prochain mois.
+
+    Returns:
+        Dict avec predictions, top_picks, regime, regime_explanation, as_of
+    """
+    from api.models.ml import (
+        SIGNAL_CONFIG,
+        TICKER_DISPLAY_NAMES,
+        SignalType,
+        probability_to_signal,
+    )
+
+    # Récupérer le régime actuel
+    regime_info = get_current_regime()
+    regime = regime_info["regime"]
+    regime_proba = regime_info["probabilities"]
+
+    # Récupérer les returns récents
+    returns_df = get_etf_returns(days=60)
+
+    predictions = []
+
+    for ticker in ETF_TICKERS:
+        # Base probability from regime
+        if regime == "bull":
+            base_prob = 0.60
+        elif regime == "bear":
+            base_prob = 0.35
+        elif regime == "volatile":
+            base_prob = 0.45
+        else:  # stable
+            base_prob = 0.52
+
+        # Ajuster selon les returns récents du ticker
+        if ticker in returns_df.columns and len(returns_df) > 20:
+            recent_returns = returns_df[ticker].tail(20).sum()
+            # Bonus/malus basé sur momentum
+            momentum_adj = min(0.15, max(-0.15, recent_returns * 2))
+            prob = base_prob + momentum_adj
+        else:
+            prob = base_prob
+
+        # Ajuster pour les actifs défensifs en bear market
+        if regime == "bear" and ticker in ["GLD", "TLT", "SH"]:
+            prob += 0.20
+        elif regime == "bull" and ticker in ["SH"]:
+            prob -= 0.20
+
+        # Clamp entre 0.1 et 0.9
+        prob = min(0.9, max(0.1, prob))
+
+        # Convertir en signal
+        signal = probability_to_signal(prob)
+        signal_info = SIGNAL_CONFIG[signal]
+
+        predictions.append({
+            "ticker": ticker,
+            "display_name": TICKER_DISPLAY_NAMES.get(ticker, ticker),
+            "probability": round(prob, 2),
+            "signal": signal,
+            "signal_label": signal_info["label"],
+            "signal_emoji": signal_info["emoji"],
+            "signal_explanation": signal_info["explanation"],
+        })
+
+    # Trier par probabilité décroissante
+    predictions.sort(key=lambda x: x["probability"], reverse=True)
+
+    # Top 3
+    top_picks = [p["ticker"] for p in predictions[:3]]
+
+    return {
+        "predictions": predictions,
+        "top_picks": top_picks,
+        "regime": regime,
+        "regime_explanation": REGIME_EXPLANATIONS.get(
+            regime, "Régime inconnu"
+        ),
+        "as_of": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "model_info": {
+            "regime_model": "HMM 4 régimes",
+            "prediction_model": "Momentum + Régime",
+            "retrain_frequency": "6 heures",
+        },
+    }

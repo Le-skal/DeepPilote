@@ -5,16 +5,42 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { StatCard } from '@/components/cards/StatCard';
 import { RegimeBadge } from '@/components/cards/RegimeIndicator';
-import { usePortfolio, useRegime } from '@/hooks';
-import { PieChart, TrendingUp } from 'lucide-react';
-import { ETF_COLORS } from '@/lib/utils/constants';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { usePortfolio, useRegime, usePredictions } from '@/hooks';
+import { PieChart, TrendingUp, HelpCircle } from 'lucide-react';
+import { ETF_COLORS, getTickerDisplayName, SIGNAL_CONFIG, SignalType } from '@/lib/utils/constants';
 import { formatPercent } from '@/lib/utils/formatters';
+import { cn } from '@/lib/utils';
+
+// Descriptions des ETF pour les tooltips
+const ETF_DESCRIPTIONS: Record<string, string> = {
+  SPY: 'S&P 500 : les 500 plus grandes entreprises américaines.',
+  QQQ: 'NASDAQ 100 : les géants de la tech (Apple, Google, Amazon...).',
+  EFA: 'Actions des pays développés hors USA (Europe, Japon, Australie).',
+  EEM: 'Actions des pays émergents (Chine, Inde, Brésil...).',
+  TLT: 'Obligations d\'État américaines à long terme. Refuge en temps de crise.',
+  HYG: 'Obligations d\'entreprises à haut rendement. Plus risqué mais mieux rémunéré.',
+  GLD: 'Or physique. Refuge contre l\'inflation et les crises.',
+  VNQ: 'Immobilier américain coté (REITs). Diversification vers le secteur immobilier.',
+  SH: 'Inverse du S&P 500. Monte quand le marché baisse.',
+};
 
 export default function PortfolioPage() {
   const { data: portfolioData, isLoading: portfolioLoading } = usePortfolio();
   const { data: regimeData, isLoading: regimeLoading } = useRegime();
+  const { data: predictionsData, isLoading: predictionsLoading } = usePredictions();
 
-  const isLoading = portfolioLoading || regimeLoading;
+  const isLoading = portfolioLoading || regimeLoading || predictionsLoading;
+
+  // Helper pour obtenir le signal d'un ETF
+  const getSignalForTicker = (ticker: string) => {
+    if (!predictionsData) return null;
+    return predictionsData.predictions.find(p => p.ticker === ticker);
+  };
 
   // Calculer le total des poids pour vérification
   const totalWeight = portfolioData
@@ -107,11 +133,32 @@ export default function PortfolioPage() {
                     .map(([ticker, weight]) => {
                       const color = ETF_COLORS[ticker] || '#6B7280';
                       const percentage = (weight * 100).toFixed(1);
+                      const signal = getSignalForTicker(ticker);
+                      const signalConfig = signal ? SIGNAL_CONFIG[signal.signal as SignalType] : null;
 
                       return (
                         <div key={ticker} className="space-y-1">
-                          <div className="flex justify-between text-sm">
-                            <span className="font-medium">{ticker}</span>
+                          <div className="flex justify-between text-sm items-center">
+                            <div className="flex items-center gap-2">
+                              <Tooltip>
+                                <TooltipTrigger className="flex items-center gap-1 cursor-help">
+                                  <span className="font-medium">{getTickerDisplayName(ticker)}</span>
+                                  <HelpCircle className="h-3 w-3 text-muted-foreground/50" />
+                                </TooltipTrigger>
+                                <TooltipContent side="right" className="max-w-xs">
+                                  <p className="text-sm">{ETF_DESCRIPTIONS[ticker] || ticker}</p>
+                                </TooltipContent>
+                              </Tooltip>
+                              {signalConfig && (
+                                <span className={cn(
+                                  'text-xs px-1.5 py-0.5 rounded',
+                                  signalConfig.bgColor,
+                                  signalConfig.color
+                                )}>
+                                  {signalConfig.emoji}
+                                </span>
+                              )}
+                            </div>
                             <span className="text-muted-foreground">
                               {percentage}%
                             </span>
@@ -180,6 +227,7 @@ export default function PortfolioPage() {
                 <thead>
                   <tr className="border-b">
                     <th className="p-3 text-left font-medium">ETF</th>
+                    <th className="p-3 text-center font-medium">Signal</th>
                     <th className="p-3 text-right font-medium">Poids</th>
                     <th className="p-3 text-center font-medium">Min</th>
                     <th className="p-3 text-center font-medium">Max</th>
@@ -192,19 +240,51 @@ export default function PortfolioPage() {
                       const isAtMin = weight <= 0.05;
                       const isAtMax = weight >= 0.25;
                       const value = weight * 10000;
+                      const signal = getSignalForTicker(ticker);
+                      const signalConfig = signal ? SIGNAL_CONFIG[signal.signal as SignalType] : null;
 
                       return (
                         <tr key={ticker} className="border-b hover:bg-muted/50">
                           <td className="p-3">
-                            <div className="flex items-center gap-2">
-                              <div
-                                className="w-3 h-3 rounded-full"
-                                style={{
-                                  backgroundColor: ETF_COLORS[ticker] || '#6B7280',
-                                }}
-                              />
-                              <span className="font-medium">{ticker}</span>
-                            </div>
+                            <Tooltip>
+                              <TooltipTrigger className="cursor-help">
+                                <div className="flex items-center gap-2">
+                                  <div
+                                    className="w-3 h-3 rounded-full"
+                                    style={{
+                                      backgroundColor: ETF_COLORS[ticker] || '#6B7280',
+                                    }}
+                                  />
+                                  <span className="font-medium">{getTickerDisplayName(ticker)}</span>
+                                </div>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p className="text-sm">{ETF_DESCRIPTIONS[ticker] || ticker}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </td>
+                          <td className="p-3 text-center">
+                            {signalConfig && (
+                              <Tooltip>
+                                <TooltipTrigger>
+                                  <Badge className={cn(
+                                    'border-0',
+                                    signalConfig.bgColor,
+                                    signalConfig.color
+                                  )}>
+                                    {signalConfig.emoji} {signalConfig.label}
+                                  </Badge>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p className="text-sm">{signalConfig.explanation}</p>
+                                  {signal && (
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                      Probabilité de hausse : {Math.round(signal.probability * 100)}%
+                                    </p>
+                                  )}
+                                </TooltipContent>
+                              </Tooltip>
+                            )}
                           </td>
                           <td className="p-3 text-right font-mono">
                             {(weight * 100).toFixed(1)}%
@@ -231,6 +311,7 @@ export default function PortfolioPage() {
                     })}
                   <tr className="font-medium">
                     <td className="p-3">Total</td>
+                    <td className="p-3"></td>
                     <td className="p-3 text-right font-mono">
                       {(totalWeight * 100).toFixed(0)}%
                     </td>

@@ -5,7 +5,14 @@ import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { ETFCard } from '@/components/cards/ETFCard';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useETFs, useAllStats, useMacroLatest, useRegime } from '@/hooks';
+import {
+  useETFs,
+  useAllStats,
+  useMacroLatest,
+  useRegime,
+  usePredictions,
+  useMarketSentiment,
+} from '@/hooks';
 import {
   TrendingUp,
   Activity,
@@ -17,13 +24,11 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import {
-  formatPercent,
   formatDateReadable,
 } from '@/lib/utils/formatters';
 import {
   ETF_TICKERS,
   REGIME_EXPLANATIONS,
-  getVIXLabel,
 } from '@/lib/utils/constants';
 import { cn } from '@/lib/utils';
 import {
@@ -100,23 +105,10 @@ export default function DashboardPage() {
   const { data: statsData, isLoading: statsLoading } = useAllStats();
   const { data: macroData, isLoading: macroLoading } = useMacroLatest();
   const { data: regimeData, isLoading: regimeLoading } = useRegime();
+  const { data: predictionsData, isLoading: predictionsLoading } = usePredictions();
+  const { data: sentimentData, isLoading: sentimentLoading } = useMarketSentiment();
 
   const [showMacro, setShowMacro] = useState(false);
-
-  // Trouver les stats pour les ETFs principaux
-  const portfolioStats = statsData?.stats.filter((s) =>
-    ETF_TICKERS.includes(s.ticker as (typeof ETF_TICKERS)[number])
-  );
-
-  // Calculer les métriques agrégées
-  const avgReturn =
-    portfolioStats && portfolioStats.length > 0
-      ? portfolioStats.reduce((sum, s) => sum + s.total_return, 0) /
-        portfolioStats.length
-      : null;
-
-  // Date de début commune (approximation)
-  const startDate = portfolioStats?.[0]?.start_date;
 
   return (
     <div className="space-y-8">
@@ -208,39 +200,121 @@ export default function DashboardPage() {
           </Card>
         )}
 
-        {/* Performance moyenne */}
-        {statsLoading ? (
+        {/* Prédictions IA */}
+        {predictionsLoading ? (
           <Skeleton className="h-44" />
+        ) : predictionsData ? (
+          <Card className="relative overflow-hidden border-border/50 bg-card/80 backdrop-blur-sm">
+            <CardContent className="p-6">
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Top recommandations
+                  </p>
+                  <Tooltip>
+                    <TooltipTrigger className="cursor-help">
+                      <HelpCircle className="h-3.5 w-3.5 text-muted-foreground/50" />
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-xs">
+                      <p className="text-sm">
+                        L&apos;IA analyse le marché et identifie les meilleurs ETF à privilégier ce mois-ci.
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <div className="space-y-2">
+                  {predictionsData.top_picks.slice(0, 3).map((ticker, idx) => {
+                    const pred = predictionsData.predictions.find(p => p.ticker === ticker);
+                    if (!pred) return null;
+                    return (
+                      <div key={ticker} className="flex items-center justify-between">
+                        <span className="text-sm font-medium">
+                          #{idx + 1} {pred.display_name}
+                        </span>
+                        <span className={cn(
+                          'text-xs px-2 py-0.5 rounded',
+                          pred.signal === 'STRONG_BUY' && 'bg-green-500/20 text-green-500',
+                          pred.signal === 'BUY' && 'bg-green-400/20 text-green-400',
+                          pred.signal === 'HOLD' && 'bg-amber-400/20 text-amber-400',
+                          pred.signal === 'SELL' && 'bg-red-400/20 text-red-400',
+                          pred.signal === 'STRONG_SELL' && 'bg-red-500/20 text-red-500'
+                        )}>
+                          {pred.signal_emoji} {pred.signal_label}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+                <p className="text-xs text-muted-foreground/70">
+                  Mis à jour : {predictionsData.as_of}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         ) : (
-          <HeroCard
-            title="Performance du portefeuille"
-            value={avgReturn !== null ? formatPercent(avgReturn) : '-'}
-            explanation="Return moyen des 8 ETF sur toute la période historique."
-            subtitle={
-              startDate
-                ? `Données depuis ${formatDateReadable(startDate)}`
-                : undefined
-            }
-            icon={TrendingUp}
-            trend={
-              avgReturn !== null
-                ? avgReturn > 0
-                  ? 'positive'
-                  : 'negative'
-                : 'neutral'
-            }
-            helpText="Si tu avais investi de façon égale dans les 8 ETF, voici ton gain moyen."
-          />
+          <Skeleton className="h-44" />
         )}
 
-        {/* Niveau de peur */}
-        {macroLoading ? (
+        {/* Sentiment du marché */}
+        {sentimentLoading ? (
           <Skeleton className="h-44" />
+        ) : sentimentData ? (
+          <Card className="relative overflow-hidden border-border/50 bg-card/80 backdrop-blur-sm">
+            <CardContent className="p-6">
+              <div className="flex items-start justify-between">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-medium text-muted-foreground">
+                      Sentiment du marché
+                    </p>
+                    <Tooltip>
+                      <TooltipTrigger className="cursor-help">
+                        <HelpCircle className="h-3.5 w-3.5 text-muted-foreground/50" />
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="max-w-xs">
+                        <p className="text-sm">
+                          L&apos;IA analyse les news financières pour mesurer l&apos;humeur générale des investisseurs.
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                  <div
+                    className={cn(
+                      'text-2xl font-bold',
+                      sentimentData.score >= 0.3 && 'text-green-500',
+                      sentimentData.score <= -0.3 && 'text-red-500',
+                      sentimentData.score > -0.3 && sentimentData.score < 0.3 && 'text-amber-400'
+                    )}
+                  >
+                    {sentimentData.label === 'optimiste' && 'Optimiste'}
+                    {sentimentData.label === 'pessimiste' && 'Pessimiste'}
+                    {sentimentData.label === 'neutre' && 'Neutre'}
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    {sentimentData.interpretation}
+                  </p>
+                  <p className="text-xs text-muted-foreground/70">
+                    Confiance: {sentimentData.confidence}
+                  </p>
+                </div>
+                <div
+                  className={cn(
+                    'p-3',
+                    sentimentData.score >= 0.3 && 'bg-green-500/10',
+                    sentimentData.score <= -0.3 && 'bg-red-500/10',
+                    sentimentData.score > -0.3 && sentimentData.score < 0.3 && 'bg-amber-400/10'
+                  )}
+                >
+                  <Activity className="h-6 w-6 text-primary" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         ) : (
           <HeroCard
             title="Niveau de peur (VIX)"
             value={macroData?.vix?.toFixed(1) ?? '-'}
-            explanation={getVIXLabel(macroData?.vix)}
+            explanation={macroData?.vix ? (macroData.vix < 20 ? 'Marché calme et confiant' : macroData.vix > 30 ? 'Forte inquiétude des investisseurs' : 'Tension modérée') : 'Données non disponibles'}
             subtitle={
               macroData?.as_of_date
                 ? `Au ${formatDateReadable(macroData.as_of_date)}`
