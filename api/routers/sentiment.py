@@ -2,6 +2,7 @@
 Router pour les endpoints Sentiment.
 
 Expose l'analyse de sentiment Mistral via API REST.
+Utilise le flux RSS de L'AGEFI pour les news financières.
 """
 
 from fastapi import APIRouter, Request
@@ -20,6 +21,7 @@ from api.services.sentiment_service import (
     get_market_sentiment,
     get_sentiment_stats,
 )
+from api.services.rss_service import analyze_market_sentiment_from_rss
 
 router = APIRouter(prefix="/sentiment", tags=["Sentiment"])
 limiter = Limiter(key_func=get_remote_address)
@@ -54,9 +56,11 @@ def analyze(request: Request, payload: SentimentRequest) -> SentimentResponse:
     response_model=MarketSentiment,
     summary="Sentiment global du marché",
     description="""
-    Retourne le sentiment agrégé du marché.
+    Retourne le sentiment agrégé du marché basé sur les news financières.
 
-    Analyse des headlines financières récentes pour déterminer
+    **Source:** Flux RSS de L'AGEFI (news financières françaises).
+
+    Analyse les ~30 dernières headlines avec Mistral AI pour déterminer
     l'humeur générale des investisseurs.
 
     **Labels:**
@@ -64,20 +68,39 @@ def analyze(request: Request, payload: SentimentRequest) -> SentimentResponse:
     - **pessimiste** : Les investisseurs sont prudents
     - **neutre** : Pas de tendance claire
 
-    **Interprétation:** Explication en français simple pour les débutants.
+    **Confiance:**
+    - **high** : 20+ headlines analysées avec cohérence
+    - **medium** : 10+ headlines ou légère variance
+    - **low** : Peu de données ou résultats inconsistants
     """,
 )
 @limiter.limit("30/minute")
-def market_sentiment(request: Request) -> MarketSentiment:
-    """Retourne le sentiment global du marché."""
-    result = get_market_sentiment()
-    return MarketSentiment(
-        score=result["score"],
-        label=result["label"],
-        interpretation=result["interpretation"],
-        confidence=result["confidence"],
-        as_of=result["as_of"],
-    )
+async def market_sentiment(request: Request) -> MarketSentiment:
+    """Retourne le sentiment global du marché basé sur les news RSS."""
+    try:
+        # Utiliser le flux RSS L'AGEFI
+        result = await analyze_market_sentiment_from_rss(
+            feed_key="agefi",
+            max_headlines=30,
+        )
+        return MarketSentiment(
+            score=result["score"],
+            label=result["label"],
+            interpretation=result["interpretation"],
+            confidence=result["confidence"],
+            as_of=result["as_of"],
+        )
+    except Exception as e:
+        # Fallback vers le mock en cas d'erreur
+        print(f"[SENTIMENT] RSS error, using mock: {e}")
+        result = get_market_sentiment()
+        return MarketSentiment(
+            score=result["score"],
+            label=result["label"],
+            interpretation=f"{result['interpretation']} (fallback - RSS indisponible)",
+            confidence="low",
+            as_of=result["as_of"],
+        )
 
 
 @router.get(

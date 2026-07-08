@@ -2,14 +2,11 @@
 
 import { ETFCard } from '@/components/cards/ETFCard';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useETFs, useAllStats } from '@/hooks';
+import { useETFs } from '@/hooks';
 import { ETF_TICKERS, BENCHMARK_TICKERS } from '@/lib/utils/constants';
 
 export default function ETFsPage() {
   const { data: etfsData, isLoading: etfsLoading, error: etfsError } = useETFs();
-  const { data: statsData, isLoading: statsLoading } = useAllStats();
-
-  const isLoading = etfsLoading || statsLoading;
 
   // Séparer les ETFs du portefeuille et les benchmarks
   const portfolioETFs = etfsData?.etfs.filter((etf) =>
@@ -44,7 +41,7 @@ export default function ETFsPage() {
       {/* ETFs du portefeuille */}
       <section>
         <h2 className="text-xl font-semibold mb-4">Portefeuille (8 ETFs)</h2>
-        {isLoading ? (
+        {etfsLoading ? (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {Array.from({ length: 8 }).map((_, i) => (
               <Skeleton key={i} className="h-48" />
@@ -52,10 +49,9 @@ export default function ETFsPage() {
           </div>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            {portfolioETFs?.map((etf) => {
-              const stats = statsData?.stats.find((s) => s.ticker === etf.ticker);
-              return <ETFCard key={etf.ticker} etf={etf} stats={stats} />;
-            })}
+            {portfolioETFs?.map((etf) => (
+              <ETFCard key={etf.ticker} etf={etf} />
+            ))}
           </div>
         )}
       </section>
@@ -63,7 +59,7 @@ export default function ETFsPage() {
       {/* Benchmarks */}
       <section>
         <h2 className="text-xl font-semibold mb-4">Benchmarks</h2>
-        {isLoading ? (
+        {etfsLoading ? (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {Array.from({ length: 2 }).map((_, i) => (
               <Skeleton key={i} className="h-48" />
@@ -71,10 +67,9 @@ export default function ETFsPage() {
           </div>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            {benchmarkETFs?.map((etf) => {
-              const stats = statsData?.stats.find((s) => s.ticker === etf.ticker);
-              return <ETFCard key={etf.ticker} etf={etf} stats={stats} />;
-            })}
+            {benchmarkETFs?.map((etf) => (
+              <ETFCard key={etf.ticker} etf={etf} />
+            ))}
           </div>
         )}
       </section>

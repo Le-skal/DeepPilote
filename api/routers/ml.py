@@ -15,6 +15,7 @@ from api.services.ml_service import (
     clear_cache,
     get_cache_info,
     get_current_regime,
+    get_model_track_record,
     get_portfolio_weights,
     get_predictions,
 )
@@ -153,3 +154,26 @@ def get_backtest(request: Request, years: int = 5) -> dict:
 def get_yearly(request: Request, years: int = 10) -> dict:
     """Retourne les returns annuels."""
     return get_yearly_returns(years)
+
+
+@router.get(
+    "/track-record",
+    summary="Fiabilité historique du modèle",
+    description="""
+    Retourne les métriques de fiabilité du modèle HMM basées sur l'historique.
+
+    **Ce qu'on mesure :**
+    - Quand le modèle prédit "Bull", le marché monte-t-il vraiment ?
+    - Quand il prédit "Bear", le marché baisse-t-il vraiment ?
+
+    **Méthodologie :**
+    - On compare chaque prédiction de régime avec le return réel sur 20 jours suivants
+    - Bull = return > +1%, Bear = return < -1%, etc.
+
+    **Important :** Ces chiffres sont informatifs. Performance passée ≠ résultats futurs.
+    """,
+)
+@limiter.limit("10/minute")
+def get_track_record(request: Request) -> dict:
+    """Retourne la fiabilité historique du modèle."""
+    return get_model_track_record()

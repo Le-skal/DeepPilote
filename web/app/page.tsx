@@ -4,14 +4,15 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { ETFCard } from '@/components/cards/ETFCard';
+import { TrackRecordCard } from '@/components/cards/TrackRecordCard';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   useETFs,
-  useAllStats,
   useMacroLatest,
   useRegime,
   usePredictions,
   useMarketSentiment,
+  useTrackRecord,
 } from '@/hooks';
 import {
   TrendingUp,
@@ -102,11 +103,11 @@ function HeroCard({
 
 export default function DashboardPage() {
   const { data: etfsData, isLoading: etfsLoading } = useETFs();
-  const { data: statsData, isLoading: statsLoading } = useAllStats();
   const { data: macroData, isLoading: macroLoading } = useMacroLatest();
   const { data: regimeData, isLoading: regimeLoading } = useRegime();
   const { data: predictionsData, isLoading: predictionsLoading } = usePredictions();
   const { data: sentimentData, isLoading: sentimentLoading } = useMarketSentiment();
+  const { data: trackRecordData, isLoading: trackRecordLoading } = useTrackRecord();
 
   const [showMacro, setShowMacro] = useState(false);
 
@@ -355,6 +356,12 @@ export default function DashboardPage() {
         </CardContent>
       </Card>
 
+      {/* Track Record - Fiabilité du modèle */}
+      <TrackRecordCard
+        trackRecord={trackRecordData ?? null}
+        isLoading={trackRecordLoading}
+      />
+
       {/* Indicateurs macro - Collapsible */}
       <div>
         <button
@@ -477,7 +484,7 @@ export default function DashboardPage() {
             <ArrowRight className="h-3 w-3" />
           </Link>
         </div>
-        {etfsLoading || statsLoading ? (
+        {etfsLoading ? (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {Array.from({ length: 8 }).map((_, i) => (
               <Skeleton key={i} className="h-48" />
@@ -489,12 +496,9 @@ export default function DashboardPage() {
               .filter((etf) =>
                 ETF_TICKERS.includes(etf.ticker as (typeof ETF_TICKERS)[number])
               )
-              .map((etf) => {
-                const stats = statsData?.stats.find(
-                  (s) => s.ticker === etf.ticker
-                );
-                return <ETFCard key={etf.ticker} etf={etf} stats={stats} />;
-              })}
+              .map((etf) => (
+                <ETFCard key={etf.ticker} etf={etf} />
+              ))}
           </div>
         )}
       </div>

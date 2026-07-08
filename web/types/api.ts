@@ -283,3 +283,38 @@ export interface MarketSentiment {
   confidence: 'high' | 'medium' | 'low';
   as_of: string;
 }
+
+// ============================================================
+// Track Record Types (Fiabilité du modèle)
+// ============================================================
+
+export interface RegimeAccuracy {
+  accuracy: number;
+  sample_size: number;
+  correct_predictions: number;
+}
+
+export interface RecentPrediction {
+  date: string;
+  predicted_regime: RegimeName;
+  actual_return_pct: number;
+  was_correct: boolean;
+}
+
+export interface TrackRecordResponse {
+  overall_accuracy: number | null;
+  regime_accuracy: Record<RegimeName, RegimeAccuracy>;
+  recent_predictions: RecentPrediction[];
+  sample_size: number;
+  evaluation_period: {
+    start: string;
+    end: string;
+  } | null;
+  methodology: {
+    bull_correct_if: string;
+    bear_correct_if: string;
+    volatile_correct_if: string;
+    stable_correct_if: string;
+  };
+  disclaimer: string;
+}

@@ -86,11 +86,13 @@ export function PriceChart({
   const color = ETF_COLORS[ticker] || CHART_COLORS.primary;
   const gradientId = `gradient-${ticker}-${Math.random().toString(36).slice(2)}`;
 
-  // Format data for Recharts
-  const chartData = data.map((item) => ({
-    date: item.date,
-    price: item.close,
-  }));
+  // Format data for Recharts - sort by date ascending (oldest first, newest on right)
+  const chartData = [...data]
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+    .map((item) => ({
+      date: item.date,
+      price: item.close,
+    }));
 
   // Calculate return from data if not provided
   const calculatedReturn =

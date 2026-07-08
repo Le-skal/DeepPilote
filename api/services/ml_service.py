@@ -421,3 +421,144 @@ def get_predictions() -> dict:
             "retrain_frequency": "6 heures",
         },
     }
+
+
+def get_model_track_record() -> dict:
+    """
+    Calcule les métriques de fiabilité historique du modèle.
+
+    Évalue la performance du modèle HMM en comparant ses prédictions
+    de régime avec les returns réels du marché.
+
+    Returns:
+        Dict avec accuracy, precision par régime, historique récent
+    """
+    hmm, features, last_date = _get_trained_hmm()
+
+    if hmm is None or features is None or len(features) < 100:
+        return {
+            "overall_accuracy": None,
+            "regime_accuracy": {},
+            "recent_predictions": [],
+            "sample_size": 0,
+            "evaluation_period": None,
+            "disclaimer": "Pas assez de données pour évaluer la fiabilité du modèle.",
+        }
+
+    # Récupérer les returns SPY pour valider les prédictions
+    returns_df = get_etf_returns(days=1500)
+
+    if returns_df.empty or "SPY" not in returns_df.columns:
+        return {
+            "overall_accuracy": None,
+            "regime_accuracy": {},
+            "recent_predictions": [],
+            "sample_size": 0,
+            "evaluation_period": None,
+            "disclaimer": "Données de marché non disponibles pour validation.",
+        }
+
+    # Aligner features et returns
+    common_dates = features.index.intersection(returns_df.index)
+    features_aligned = features.loc[common_dates]
+    spy_returns = returns_df.loc[common_dates, "SPY"]
+
+    # Prédire les régimes sur tout l'historique
+    regimes = hmm.predict(features_aligned)
+
+    # Calculer les returns forward sur 20 jours (1 mois trading)
+    forward_returns = spy_returns.rolling(20).sum().shift(-20).dropna()
+
+    # Aligner avec les régimes
+    valid_dates = forward_returns.index.intersection(features_aligned.index)
+    regimes_valid = regimes[features_aligned.index.isin(valid_dates)]
+    forward_valid = forward_returns.loc[valid_dates]
+
+    if len(regimes_valid) < 50:
+        return {
+            "overall_accuracy": None,
+            "regime_accuracy": {},
+            "recent_predictions": [],
+            "sample_size": len(regimes_valid),
+            "evaluation_period": None,
+            "disclaimer": "Échantillon trop petit pour évaluation statistique.",
+        }
+
+    # Définir ce qui est "correct" pour chaque régime
+    # Bull: return > 2%, Bear: return < -2%, Volatile: |return| > 3%, Stable: |return| < 2%
+    correct_predictions = []
+    regime_stats = {0: {"correct": 0, "total": 0}, 1: {"correct": 0, "total": 0},
+                    2: {"correct": 0, "total": 0}, 3: {"correct": 0, "total": 0}}
+
+    for regime, fwd_ret in zip(regimes_valid, forward_valid.values):
+        regime_stats[regime]["total"] += 1
+
+        is_correct = False
+        if regime == 0:  # Bull
+            is_correct = fwd_ret > 0.01  # Return positif > 1%
+        elif regime == 1:  # Bear
+            is_correct = fwd_ret < -0.01  # Return négatif < -1%
+        elif regime == 2:  # Volatile
+            is_correct = abs(fwd_ret) > 0.03  # Grande variation > 3%
+        elif regime == 3:  # Stable
+            is_correct = abs(fwd_ret) < 0.02  # Petite variation < 2%
+
+        if is_correct:
+            regime_stats[regime]["correct"] += 1
+            correct_predictions.append(1)
+        else:
+            correct_predictions.append(0)
+
+    # Calculer accuracy globale
+    overall_accuracy = sum(correct_predictions) / len(correct_predictions)
+
+    # Accuracy par régime
+    regime_accuracy = {}
+    for regime_id, stats in regime_stats.items():
+        name = REGIME_NAMES.get(regime_id, f"regime_{regime_id}")
+        if stats["total"] > 0:
+            acc = stats["correct"] / stats["total"]
+            regime_accuracy[name] = {
+                "accuracy": round(acc * 100, 1),
+                "sample_size": stats["total"],
+                "correct_predictions": stats["correct"],
+            }
+
+    # Dernières 12 prédictions mensuelles (rolling 20 jours)
+    recent_predictions = []
+    for i in range(-12, 0):
+        try:
+            idx = i * 20  # Approximation mensuelle
+            if abs(idx) < len(regimes_valid):
+                date = valid_dates[idx]
+                regime_id = regimes_valid[idx]
+                actual_return = forward_valid.iloc[idx] * 100
+                predicted_regime = REGIME_NAMES.get(regime_id, "unknown")
+
+                recent_predictions.append({
+                    "date": date.strftime("%Y-%m-%d"),
+                    "predicted_regime": predicted_regime,
+                    "actual_return_pct": round(actual_return, 2),
+                    "was_correct": correct_predictions[idx] == 1,
+                })
+        except (IndexError, KeyError):
+            continue
+
+    return {
+        "overall_accuracy": round(overall_accuracy * 100, 1),
+        "regime_accuracy": regime_accuracy,
+        "recent_predictions": recent_predictions,
+        "sample_size": len(regimes_valid),
+        "evaluation_period": {
+            "start": valid_dates[0].strftime("%Y-%m-%d"),
+            "end": valid_dates[-1].strftime("%Y-%m-%d"),
+        },
+        "methodology": {
+            "bull_correct_if": "Return 20j > +1%",
+            "bear_correct_if": "Return 20j < -1%",
+            "volatile_correct_if": "|Return 20j| > 3%",
+            "stable_correct_if": "|Return 20j| < 2%",
+        },
+        "disclaimer": "Performance passée ne garantit pas les résultats futurs. "
+                     "Ce modèle est éducatif et ne constitue pas un conseil financier.",
+    }

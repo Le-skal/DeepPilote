@@ -67,7 +67,7 @@ def is_using_mock() -> bool:
 
 def analyze_headlines(headlines: list[str]) -> dict:
     """
-    Analyse une liste de headlines.
+    Analyse une liste de headlines (version sync).
 
     Args:
         headlines: Liste de headlines à analyser
@@ -95,6 +95,32 @@ def analyze_headlines(headlines: list[str]) -> dict:
         "model": "mock" if is_mock else "mistral",
         "processed_at": datetime.now().isoformat(),
     }
+
+
+async def analyze_headlines_async(headlines: list[str]) -> list[dict]:
+    """
+    Analyse une liste de headlines (version async pour RSS).
+
+    Args:
+        headlines: Liste de headlines à analyser
+
+    Returns:
+        Liste de résultats avec score et label
+    """
+    analyzer = get_analyzer()
+
+    results = []
+    for headline in headlines:
+        result = analyzer.analyze(headline)
+        results.append(
+            {
+                "headline": result["headline"],
+                "score": result["score"],
+                "label": result["label"],
+            }
+        )
+
+    return results
 
 
 def get_market_sentiment() -> dict:

@@ -10,6 +10,7 @@ import {
   getYearlyReturns,
   getPredictions,
   getMarketSentiment,
+  getTrackRecord,
 } from '@/lib/api/ml';
 import {
   RegimeResponse,
@@ -18,6 +19,7 @@ import {
   YearlyReturnsResponse,
   PredictionsResponse,
   MarketSentiment,
+  TrackRecordResponse,
 } from '@/types/api';
 
 /**
@@ -87,5 +89,16 @@ export function useMarketSentiment() {
     queryFn: getMarketSentiment,
     staleTime: 30 * 60 * 1000, // 30 minutes (sentiment change lentement)
     refetchInterval: 60 * 60 * 1000, // Refresh toutes les heures
+  });
+}
+
+/**
+ * Hook pour le track record (fiabilité historique) du modèle.
+ */
+export function useTrackRecord() {
+  return useQuery<TrackRecordResponse>({
+    queryKey: ['track-record'],
+    queryFn: getTrackRecord,
+    staleTime: 60 * 60 * 1000, // 1 heure (données historiques)
   });
 }

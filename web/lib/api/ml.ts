@@ -10,6 +10,7 @@ import {
   YearlyReturnsResponse,
   PredictionsResponse,
   MarketSentiment,
+  TrackRecordResponse,
 } from '@/types/api';
 
 /**
@@ -52,4 +53,11 @@ export async function getPredictions(): Promise<PredictionsResponse> {
  */
 export async function getMarketSentiment(): Promise<MarketSentiment> {
   return fetchAPI<MarketSentiment>('/api/v1/sentiment/market');
+}
+
+/**
+ * Récupère le track record (fiabilité historique) du modèle.
+ */
+export async function getTrackRecord(): Promise<TrackRecordResponse> {
+  return fetchAPI<TrackRecordResponse>('/api/v1/ml/track-record');
 }

@@ -1,28 +1,39 @@
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ETFBase, ETFStats } from '@/types/api';
-import { formatPercent } from '@/lib/utils/formatters';
-import { ETF_COLORS, ASSET_CLASSES } from '@/lib/utils/constants';
+import { ETFBase } from '@/types/api';
+import { ETF_COLORS, ASSET_CLASSES, getTickerDisplayName } from '@/lib/utils/constants';
 import { cn } from '@/lib/utils';
-import { TrendingUp, TrendingDown, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
+
+// Descriptions claires de ce que chaque ETF investit
+const ETF_DESCRIPTIONS: Record<string, string> = {
+  SPY: 'Les 500 plus grandes entreprises américaines : Apple, Microsoft, Amazon, Google, etc.',
+  QQQ: 'Les 100 géants de la tech : Apple, Nvidia, Microsoft, Meta, Tesla, etc.',
+  EFA: 'Grandes entreprises d\'Europe, Japon et Australie. Diversification hors USA.',
+  EEM: 'Entreprises des pays émergents : Chine, Inde, Brésil, Taiwan, etc.',
+  TLT: 'Obligations d\'État américaines à 20+ ans. Valeur refuge quand les actions chutent.',
+  HYG: 'Obligations d\'entreprises à haut rendement. Plus de risque, plus de rendement.',
+  GLD: 'Or physique stocké dans des coffres. Protection contre l\'inflation et les crises.',
+  VNQ: 'Immobilier américain coté : centres commerciaux, bureaux, appartements.',
+  SH: 'Inverse du S&P 500. Monte quand le marché baisse. Outil de couverture.',
+};
 
 interface ETFCardProps {
   etf: ETFBase;
-  stats?: ETFStats;
   className?: string;
 }
 
-export function ETFCard({ etf, stats, className }: ETFCardProps) {
+export function ETFCard({ etf, className }: ETFCardProps) {
   const color = ETF_COLORS[etf.ticker] || '#6B7280';
   const assetClass = ASSET_CLASSES[etf.ticker as keyof typeof ASSET_CLASSES];
-  const isPositive = stats && stats.total_return >= 0;
+  const description = ETF_DESCRIPTIONS[etf.ticker] || etf.name;
 
   return (
     <Link href={`/etfs/${etf.ticker}`}>
       <Card
         className={cn(
-          'group border-border/50 bg-card/50 backdrop-blur-sm transition-all cursor-pointer',
+          'group border-border/50 bg-card/50 backdrop-blur-sm transition-all cursor-pointer h-full',
           'hover:border-primary/50 hover:shadow-glow',
           className
         )}
@@ -35,8 +46,8 @@ export function ETFCard({ etf, stats, className }: ETFCardProps) {
                 style={{ backgroundColor: color }}
               />
               <div>
-                <CardTitle className="text-xl font-bold font-mono">{etf.ticker}</CardTitle>
-                <p className="text-xs text-muted-foreground truncate max-w-[180px]">{etf.name}</p>
+                <CardTitle className="text-lg font-bold">{getTickerDisplayName(etf.ticker)}</CardTitle>
+                <p className="text-xs text-muted-foreground font-mono">{etf.ticker}</p>
               </div>
             </div>
             <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 group-hover:text-primary transition-all" />
@@ -48,42 +59,9 @@ export function ETFCard({ etf, stats, className }: ETFCardProps) {
               {assetClass}
             </Badge>
           )}
-
-          {stats && (
-            <div className="grid grid-cols-2 gap-3 text-sm">
-              <div className="space-y-0.5">
-                <p className="text-xs text-muted-foreground uppercase tracking-wider">Return</p>
-                <div className="flex items-center gap-1">
-                  {isPositive ? (
-                    <TrendingUp className="h-3 w-3 text-success" />
-                  ) : (
-                    <TrendingDown className="h-3 w-3 text-destructive" />
-                  )}
-                  <p className={cn('font-mono font-bold', isPositive ? 'text-success' : 'text-destructive')}>
-                    {formatPercent(stats.total_return)}
-                  </p>
-                </div>
-              </div>
-              <div className="space-y-0.5">
-                <p className="text-xs text-muted-foreground uppercase tracking-wider">Sharpe</p>
-                <p className="font-mono font-bold">
-                  {stats.sharpe_ratio?.toFixed(2) ?? '-'}
-                </p>
-              </div>
-              <div className="space-y-0.5">
-                <p className="text-xs text-muted-foreground uppercase tracking-wider">Vol.</p>
-                <p className="font-mono">
-                  {stats.annualized_volatility.toFixed(1)}%
-                </p>
-              </div>
-              <div className="space-y-0.5">
-                <p className="text-xs text-muted-foreground uppercase tracking-wider">Max DD</p>
-                <p className="font-mono text-destructive">
-                  {formatPercent(stats.max_drawdown)}
-                </p>
-              </div>
-            </div>
-          )}
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            {description}
+          </p>
         </CardContent>
       </Card>
     </Link>
