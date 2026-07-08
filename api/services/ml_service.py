@@ -391,15 +391,17 @@ def get_predictions() -> dict:
         signal = probability_to_signal(prob)
         signal_info = SIGNAL_CONFIG[signal]
 
-        predictions.append({
-            "ticker": ticker,
-            "display_name": TICKER_DISPLAY_NAMES.get(ticker, ticker),
-            "probability": round(prob, 2),
-            "signal": signal,
-            "signal_label": signal_info["label"],
-            "signal_emoji": signal_info["emoji"],
-            "signal_explanation": signal_info["explanation"],
-        })
+        predictions.append(
+            {
+                "ticker": ticker,
+                "display_name": TICKER_DISPLAY_NAMES.get(ticker, ticker),
+                "probability": round(prob, 2),
+                "signal": signal,
+                "signal_label": signal_info["label"],
+                "signal_emoji": signal_info["emoji"],
+                "signal_explanation": signal_info["explanation"],
+            }
+        )
 
     # Trier par probabilité décroissante
     predictions.sort(key=lambda x: x["probability"], reverse=True)
@@ -411,9 +413,7 @@ def get_predictions() -> dict:
         "predictions": predictions,
         "top_picks": top_picks,
         "regime": regime,
-        "regime_explanation": REGIME_EXPLANATIONS.get(
-            regime, "Régime inconnu"
-        ),
+        "regime_explanation": REGIME_EXPLANATIONS.get(regime, "Régime inconnu"),
         "as_of": datetime.now().strftime("%Y-%m-%d %H:%M"),
         "model_info": {
             "regime_model": "HMM 4 régimes",
@@ -487,8 +487,12 @@ def get_model_track_record() -> dict:
     # Définir ce qui est "correct" pour chaque régime
     # Bull: return > 2%, Bear: return < -2%, Volatile: |return| > 3%, Stable: |return| < 2%
     correct_predictions = []
-    regime_stats = {0: {"correct": 0, "total": 0}, 1: {"correct": 0, "total": 0},
-                    2: {"correct": 0, "total": 0}, 3: {"correct": 0, "total": 0}}
+    regime_stats = {
+        0: {"correct": 0, "total": 0},
+        1: {"correct": 0, "total": 0},
+        2: {"correct": 0, "total": 0},
+        3: {"correct": 0, "total": 0},
+    }
 
     for regime, fwd_ret in zip(regimes_valid, forward_valid.values):
         regime_stats[regime]["total"] += 1
@@ -535,12 +539,14 @@ def get_model_track_record() -> dict:
                 actual_return = forward_valid.iloc[idx] * 100
                 predicted_regime = REGIME_NAMES.get(regime_id, "unknown")
 
-                recent_predictions.append({
-                    "date": date.strftime("%Y-%m-%d"),
-                    "predicted_regime": predicted_regime,
-                    "actual_return_pct": round(actual_return, 2),
-                    "was_correct": correct_predictions[idx] == 1,
-                })
+                recent_predictions.append(
+                    {
+                        "date": date.strftime("%Y-%m-%d"),
+                        "predicted_regime": predicted_regime,
+                        "actual_return_pct": round(actual_return, 2),
+                        "was_correct": correct_predictions[idx] == 1,
+                    }
+                )
         except (IndexError, KeyError):
             continue
 
@@ -560,5 +566,5 @@ def get_model_track_record() -> dict:
             "stable_correct_if": "|Return 20j| < 2%",
         },
         "disclaimer": "Performance passée ne garantit pas les résultats futurs. "
-                     "Ce modèle est éducatif et ne constitue pas un conseil financier.",
+        "Ce modèle est éducatif et ne constitue pas un conseil financier.",
     }

@@ -6,7 +6,6 @@ from enum import Enum
 
 from pydantic import BaseModel, Field
 
-
 # Noms lisibles pour les tickers
 TICKER_DISPLAY_NAMES = {
     "SPY": "S&P 500",
@@ -131,14 +130,10 @@ class PredictionsResponse(BaseModel):
     predictions: list[TickerPrediction] = Field(
         ..., description="Prédictions par ticker, triées par probabilité décroissante"
     )
-    top_picks: list[str] = Field(
-        ..., description="Top 3 tickers recommandés"
-    )
+    top_picks: list[str] = Field(..., description="Top 3 tickers recommandés")
     regime: str = Field(..., description="Régime de marché actuel")
     regime_explanation: str = Field(
         ..., description="Ce que le régime signifie pour l'investissement"
     )
     as_of: str = Field(..., description="Date des prédictions")
-    model_info: dict = Field(
-        ..., description="Informations sur les modèles utilisés"
-    )
+    model_info: dict = Field(..., description="Informations sur les modèles utilisés")

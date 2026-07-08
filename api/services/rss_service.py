@@ -13,7 +13,6 @@ import httpx
 
 from api.services.sentiment_service import analyze_headlines_async
 
-
 # Configuration des flux RSS
 RSS_FEEDS = {
     "agefi": {
@@ -95,8 +94,14 @@ async def fetch_rss_feed(feed_key: str = "agefi") -> list[RSSItem]:
                 RSSItem(
                     title=title_elem.text.strip(),
                     link=link_elem.text.strip() if link_elem is not None and link_elem.text else "",
-                    pub_date=parse_rss_date(pub_date_elem.text) if pub_date_elem is not None and pub_date_elem.text else None,
-                    description=desc_elem.text.strip() if desc_elem is not None and desc_elem.text else None,
+                    pub_date=(
+                        parse_rss_date(pub_date_elem.text)
+                        if pub_date_elem is not None and pub_date_elem.text
+                        else None
+                    ),
+                    description=(
+                        desc_elem.text.strip() if desc_elem is not None and desc_elem.text else None
+                    ),
                 )
             )
 
@@ -189,13 +194,19 @@ async def analyze_market_sentiment_from_rss(
         interpretation = "Les news financières sont majoritairement positives. Les investisseurs semblent confiants."
     elif avg_score <= -0.3:
         label = "pessimiste"
-        interpretation = "Les news financières sont majoritairement négatives. Prudence recommandée."
+        interpretation = (
+            "Les news financières sont majoritairement négatives. Prudence recommandée."
+        )
     else:
         label = "neutre"
         interpretation = "Les news sont mitigées. Pas de tendance claire dans le sentiment."
 
     # Confiance basée sur le nombre de headlines et la cohérence
-    score_std = (sum((s - avg_score) ** 2 for s in all_scores) / len(all_scores)) ** 0.5 if all_scores else 1.0
+    score_std = (
+        (sum((s - avg_score) ** 2 for s in all_scores) / len(all_scores)) ** 0.5
+        if all_scores
+        else 1.0
+    )
 
     if len(all_scores) >= 20 and score_std < 0.3:
         confidence = "high"
