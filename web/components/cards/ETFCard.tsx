@@ -8,6 +8,7 @@ import { ArrowRight } from 'lucide-react';
 
 // Descriptions claires de ce que chaque ETF investit
 const ETF_DESCRIPTIONS: Record<string, string> = {
+  URTH: 'Les plus grandes entreprises mondiales : USA, Europe, Japon, Australie. Diversification globale.',
   SPY: 'Les 500 plus grandes entreprises américaines : Apple, Microsoft, Amazon, Google, etc.',
   QQQ: 'Les 100 géants de la tech : Apple, Nvidia, Microsoft, Meta, Tesla, etc.',
   EFA: 'Grandes entreprises d\'Europe, Japon et Australie. Diversification hors USA.',

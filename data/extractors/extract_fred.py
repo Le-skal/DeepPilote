@@ -4,13 +4,17 @@ Extraction des données macroéconomiques depuis FRED (Federal Reserve).
 Ce module télécharge les indicateurs macro (VIX, courbe de taux, spreads, etc.)
 via l'API FRED, puis les sauvegarde en CSV.
 
+Supporte le mode incrémental (INCREMENTAL=true) pour ne charger que les
+données récentes.
+
 Usage:
-    python -m data.extractors.extract_fred
+    python -m data.extractors.extract_fred                    # Full reload
+    INCREMENTAL=true python -m data.extractors.extract_fred   # Incrémental
 """
 
 import logging
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 import pandas as pd
@@ -133,10 +137,53 @@ def save_to_csv(df: pd.DataFrame, filepath: Path) -> None:
     logger.info(f"Taille: {filepath.stat().st_size / 1024:.1f} KB")
 
 
+def get_last_macro_date_from_db() -> str | None:
+    """
+    Récupère la dernière date macro en base de données.
+
+    Returns:
+        Date au format YYYY-MM-DD ou None si pas de connexion.
+    """
+    db_url = os.getenv("SUPABASE_DB_URL")
+    if not db_url:
+        return None
+
+    try:
+        from sqlalchemy import create_engine, text
+
+        engine = create_engine(db_url)
+        with engine.connect() as conn:
+            result = conn.execute(text("SELECT MAX(date) FROM macro_indicator"))
+            last_date = result.scalar()
+
+        if last_date:
+            logger.info(f"Dernière date macro en DB: {last_date}")
+            return last_date.strftime("%Y-%m-%d")
+        return None
+    except Exception as e:
+        logger.warning(f"Impossible de lire la DB: {e}")
+        return None
+
+
 def main() -> None:
     """Point d'entrée principal."""
-    # Paramètres
-    start_date = "2010-01-01"
+    # Mode incrémental ?
+    incremental = os.getenv("INCREMENTAL", "false").lower() == "true"
+
+    if incremental:
+        logger.info("=== MODE INCRÉMENTAL ===")
+        last_date = get_last_macro_date_from_db()
+        if last_date:
+            # On recule de 7 jours (les données macro ont parfois du retard)
+            start_dt = datetime.strptime(last_date, "%Y-%m-%d") - timedelta(days=7)
+            start_date = start_dt.strftime("%Y-%m-%d")
+            logger.info(f"Téléchargement depuis {start_date}")
+        else:
+            start_date = "2010-01-01"
+    else:
+        logger.info("=== MODE FULL RELOAD ===")
+        start_date = "2010-01-01"
+
     end_date = datetime.now().strftime("%Y-%m-%d")
 
     # Téléchargement
@@ -149,6 +196,7 @@ def main() -> None:
 
     # Stats finales
     logger.info("=== Résumé ===")
+    logger.info(f"Mode: {'incrémental' if incremental else 'full reload'}")
     logger.info(f"Colonnes: {list(macro_data.columns)}")
     logger.info(f"Période: {macro_data.index.min()} → {macro_data.index.max()}")
     logger.info(f"NaN par colonne:\n{macro_data.isna().sum()}")

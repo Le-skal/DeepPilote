@@ -18,6 +18,7 @@ import { cn } from '@/lib/utils';
 
 // Descriptions des ETF pour les tooltips
 const ETF_DESCRIPTIONS: Record<string, string> = {
+  URTH: 'MSCI World : les plus grandes entreprises mondiales (USA, Europe, Japon...).',
   SPY: 'S&P 500 : les 500 plus grandes entreprises américaines.',
   QQQ: 'NASDAQ 100 : les géants de la tech (Apple, Google, Amazon...).',
   EFA: 'Actions des pays développés hors USA (Europe, Japon, Australie).',

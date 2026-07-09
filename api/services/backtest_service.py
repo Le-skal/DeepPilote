@@ -59,8 +59,8 @@ def get_historical_prices(years: int = 5) -> pd.DataFrame:
     if engine is None:
         return pd.DataFrame()
 
-    # Ajouter QQQ pour le benchmark NASDAQ
-    tickers = list(ETF_TICKERS) + ["QQQ"]
+    # Ajouter SPY et QQQ pour les benchmarks (S&P 500, NASDAQ, 60/40)
+    tickers = list(ETF_TICKERS) + ["SPY", "QQQ"]
     tickers_str = ", ".join([f"'{t}'" for t in tickers])
 
     query = f"""

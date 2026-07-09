@@ -13,7 +13,7 @@ class ETFNotFoundError(HTTPException):
     def __init__(self, ticker: str):
         super().__init__(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"ETF '{ticker}' non trouvé. Tickers valides: SPY, EFA, EEM, TLT, HYG, GLD, VNQ, SH, URTH, QQQ",
+            detail=f"ETF '{ticker}' non trouvé. Tickers valides: URTH, EFA, EEM, TLT, HYG, GLD, VNQ, SH (portefeuille) + SPY, QQQ (benchmarks)",
         )
 
 

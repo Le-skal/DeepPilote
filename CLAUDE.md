@@ -34,7 +34,7 @@ Raphaël Martin (alias Skal / Le-skal), 3e année Bachelor Data & IA à l'ECE Pa
 
 | Ticker | Nom complet | Classe d'actifs | Rôle dans le portefeuille |
 |--------|-------------|-----------------|---------------------------|
-| SPY | SPDR S&P 500 ETF Trust | Actions US large cap | Cœur actions US |
+| URTH | iShares MSCI World ETF | Actions mondiales | Cœur actions global |
 | EFA | iShares MSCI EAFE | Actions développées hors US | Diversification géographique |
 | EEM | iShares MSCI Emerging Markets | Actions émergents | Beta émergent |
 | TLT | iShares 20+ Year Treasury Bond | Obligations US longue durée | Anti-corrélation actions |
@@ -45,18 +45,20 @@ Raphaël Martin (alias Skal / Le-skal), 3e année Bachelor Data & IA à l'ECE Pa
 
 ### Pourquoi ce choix
 
-- Tous ont 15+ ans d'historique disponible (SH lancé 2006)
+- Tous ont 15+ ans d'historique disponible (URTH lancé 2012, SH lancé 2006)
 - Tous très liquides, données yfinance fiables
 - Couvre 6 classes d'actifs distinctes (pas un panier mono-thématique)
 - Corrélations variées entre eux = vraie matière à optimisation
 - SH permet une exposition baissière réelle en bear market
+- URTH (MSCI World) offre une exposition mondiale plutôt que US-only
 
 ### Benchmarks de comparaison
 
-- Buy & Hold MSCI World (proxy : ACWI ou URTH)
+- S&P 500 (SPY) — référence US
+- NASDAQ 100 (QQQ) — référence tech
 - 60/40 classique (60% SPY + 40% TLT, rebalancé annuellement)
-- NASDAQ 100 (QQQ)
-- S&P 500 pur (SPY)
+
+> **Note technique** : SPY reste utilisé comme référence pour les features du modèle HMM (spy_return_20d, spy_volatility_20d) car le S&P 500 est le meilleur proxy pour le régime de marché US.
 
 ---
 

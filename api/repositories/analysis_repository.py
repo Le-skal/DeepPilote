@@ -11,7 +11,8 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 # Liste des ETF du portefeuille (sans benchmarks)
-PORTFOLIO_TICKERS = ["SPY", "EFA", "EEM", "TLT", "HYG", "GLD", "VNQ", "SH"]
+# Note: URTH (MSCI World) remplace SPY qui est maintenant un benchmark
+PORTFOLIO_TICKERS = ["URTH", "EFA", "EEM", "TLT", "HYG", "GLD", "VNQ", "SH"]
 
 
 def get_correlation_matrix(

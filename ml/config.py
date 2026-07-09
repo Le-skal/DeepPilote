@@ -2,11 +2,12 @@
 Configuration et constantes pour les modèles ML.
 """
 
-# ETF du portefeuille
-ETF_TICKERS = ["SPY", "EFA", "EEM", "TLT", "HYG", "GLD", "VNQ", "SH"]
+# ETF du portefeuille (8 ETFs optimisés par le modèle ML)
+# Note: SPY a été remplacé par URTH (MSCI World) pour éviter le chevauchement avec les benchmarks
+ETF_TICKERS = ["URTH", "EFA", "EEM", "TLT", "HYG", "GLD", "VNQ", "SH"]
 
-# Benchmarks
-BENCHMARK_TICKERS = ["URTH", "QQQ"]
+# Benchmarks (pour comparer la performance de DeepPilot)
+BENCHMARK_TICKERS = ["SPY", "QQQ"]
 
 # Régimes de marché
 REGIME_NAMES = {

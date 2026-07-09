@@ -4,11 +4,16 @@ Pipeline d'agrégation et de nettoyage des données.
 Ce module fusionne les données prix ETF et macro, applique les règles de nettoyage,
 et calcule les features de base (returns, volatilité, indicateurs techniques).
 
+En mode incrémental (INCREMENTAL=true), charge l'historique depuis Supabase
+puis ajoute les nouvelles données avant de recalculer les features.
+
 Usage:
-    python -m data.pipeline.aggregate
+    python -m data.pipeline.aggregate                    # Depuis fichiers raw
+    INCREMENTAL=true python -m data.pipeline.aggregate   # Depuis DB + nouvelles données
 """
 
 import logging
+import os
 from datetime import datetime
 from pathlib import Path
 
@@ -255,30 +260,132 @@ def load_latest_raw_data() -> tuple[pd.DataFrame, pd.DataFrame]:
     return prices_df, macro_df
 
 
+def load_history_from_db() -> tuple[pd.DataFrame, pd.DataFrame] | None:
+    """
+    Charge l'historique des prix et macro depuis Supabase.
+
+    Returns:
+        Tuple (prices_df, macro_df) ou None si pas de connexion.
+    """
+    db_url = os.getenv("SUPABASE_DB_URL")
+    if not db_url:
+        logger.warning("SUPABASE_DB_URL non définie")
+        return None
+
+    try:
+        from sqlalchemy import create_engine
+
+        engine = create_engine(db_url)
+
+        # Charger les prix (format long -> wide)
+        logger.info("Chargement des prix depuis Supabase...")
+        prices_long = pd.read_sql(
+            "SELECT date, ticker, close FROM price ORDER BY date",
+            engine,
+            parse_dates=["date"],
+        )
+        prices_df = prices_long.pivot(index="date", columns="ticker", values="close")
+        prices_df.index.name = "Date"
+        logger.info(f"  Prix: {len(prices_df)} lignes, {len(prices_df.columns)} tickers")
+
+        # Charger les macro
+        logger.info("Chargement macro depuis Supabase...")
+        macro_df = pd.read_sql(
+            "SELECT * FROM macro_indicator ORDER BY date",
+            engine,
+            parse_dates=["date"],
+        )
+        macro_df = macro_df.set_index("date")
+        macro_df.index.name = "Date"
+        logger.info(f"  Macro: {len(macro_df)} lignes")
+
+        return prices_df, macro_df
+
+    except Exception as e:
+        logger.error(f"Erreur chargement DB: {e}")
+        return None
+
+
+def merge_incremental_data(
+    db_prices: pd.DataFrame,
+    db_macro: pd.DataFrame,
+    new_prices: pd.DataFrame,
+    new_macro: pd.DataFrame,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """
+    Fusionne les données historiques DB avec les nouvelles données.
+
+    Les nouvelles données écrasent les anciennes en cas de conflit (même date).
+
+    Args:
+        db_prices: Prix historiques depuis DB.
+        db_macro: Macro historiques depuis DB.
+        new_prices: Nouvelles données prix.
+        new_macro: Nouvelles données macro.
+
+    Returns:
+        Tuple (merged_prices, merged_macro).
+    """
+    logger.info("Fusion des données historiques avec les nouvelles...")
+
+    # Fusionner les prix (nouvelles données prioritaires)
+    merged_prices = pd.concat([db_prices, new_prices])
+    merged_prices = merged_prices[~merged_prices.index.duplicated(keep="last")]
+    merged_prices = merged_prices.sort_index()
+    logger.info(f"  Prix après fusion: {len(merged_prices)} lignes")
+
+    # Fusionner les macro
+    merged_macro = pd.concat([db_macro, new_macro])
+    merged_macro = merged_macro[~merged_macro.index.duplicated(keep="last")]
+    merged_macro = merged_macro.sort_index()
+    logger.info(f"  Macro après fusion: {len(merged_macro)} lignes")
+
+    return merged_prices, merged_macro
+
+
 def main() -> None:
     """Point d'entrée principal du pipeline."""
     from data.extractors.extract_yfinance import ETF_TICKERS
 
-    logger.info("=== Pipeline d'agrégation ===")
+    incremental = os.getenv("INCREMENTAL", "false").lower() == "true"
 
-    # 1. Chargement des données brutes
+    if incremental:
+        logger.info("=== Pipeline d'agrégation (MODE INCRÉMENTAL) ===")
+    else:
+        logger.info("=== Pipeline d'agrégation ===")
+
+    # 1. Chargement des données brutes (nouvelles données du jour)
     try:
-        prices_df, macro_df = load_latest_raw_data()
+        new_prices, new_macro = load_latest_raw_data()
     except FileNotFoundError as e:
         logger.error(f"Données manquantes: {e}")
         logger.info("Lancez d'abord les extracteurs (extract_yfinance.py, extract_fred.py)")
         return
 
-    # 2. Fusion prix + macro
+    # 2. En mode incrémental, charger l'historique depuis DB et fusionner
+    if incremental:
+        db_data = load_history_from_db()
+        if db_data:
+            db_prices, db_macro = db_data
+            prices_df, macro_df = merge_incremental_data(
+                db_prices, db_macro, new_prices, new_macro
+            )
+        else:
+            logger.warning("Pas de données DB, utilisation des fichiers raw uniquement")
+            prices_df, macro_df = new_prices, new_macro
+    else:
+        prices_df, macro_df = new_prices, new_macro
+
+    # 3. Fusion prix + macro
     merged = merge_prices_macro(prices_df, macro_df)
 
-    # 3. Nettoyage
+    # 4. Nettoyage
     cleaned = clean_data(merged, etf_tickers=ETF_TICKERS)
 
-    # 4. Calcul des features
+    # 5. Calcul des features
     final = compute_basic_features(cleaned, tickers=ETF_TICKERS)
 
-    # 5. Sauvegarde
+    # 6. Sauvegarde
     PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
     output_file = PROCESSED_DIR / f"dataset_{datetime.now().strftime('%Y%m%d')}.csv"
     final.to_csv(output_file)
@@ -286,6 +393,7 @@ def main() -> None:
 
     # Stats finales
     logger.info("=== Résumé ===")
+    logger.info(f"Mode: {'incrémental' if incremental else 'full reload'}")
     logger.info(f"Période: {final.index.min()} → {final.index.max()}")
     logger.info(f"Lignes: {len(final)}")
     logger.info(f"Colonnes: {len(final.columns)}")

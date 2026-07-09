@@ -8,10 +8,11 @@
 import { RegimeName } from '@/types/api';
 
 /**
- * Liste des ETFs du portefeuille.
+ * Liste des ETFs du portefeuille DeepPilot.
+ * Note: URTH (MSCI World) remplace SPY qui est maintenant un benchmark.
  */
 export const ETF_TICKERS = [
-  'SPY',
+  'URTH',
   'EFA',
   'EEM',
   'TLT',
@@ -22,9 +23,9 @@ export const ETF_TICKERS = [
 ] as const;
 
 /**
- * Benchmarks pour comparaison.
+ * Benchmarks pour comparaison (SPY, QQQ).
  */
-export const BENCHMARK_TICKERS = ['URTH', 'QQQ'] as const;
+export const BENCHMARK_TICKERS = ['SPY', 'QQQ'] as const;
 
 /**
  * Tous les tickers disponibles.
@@ -36,7 +37,7 @@ export const ALL_TICKERS = [...ETF_TICKERS, ...BENCHMARK_TICKERS] as const;
  * Couleurs choisies pour contraster sur fond sombre violet.
  */
 export const ETF_COLORS: Record<string, string> = {
-  SPY: '#A855F7', // violet-500 (primary)
+  URTH: '#A855F7', // violet-500 (primary) - MSCI World, cœur du portefeuille
   EFA: '#22C55E', // green-500 (contrast)
   EEM: '#F59E0B', // amber-500 (warm accent)
   TLT: '#C084FC', // violet-400 (secondary violet)
@@ -44,8 +45,8 @@ export const ETF_COLORS: Record<string, string> = {
   GLD: '#FBBF24', // yellow-400 (gold)
   VNQ: '#E879F9', // fuchsia-400 (neon)
   SH: '#94A3B8', // slate-400 (neutral)
-  URTH: '#2DD4BF', // teal-400 (cool accent)
-  QQQ: '#818CF8', // indigo-400 (blue-violet)
+  SPY: '#2DD4BF', // teal-400 (benchmark S&P 500)
+  QQQ: '#818CF8', // indigo-400 (benchmark NASDAQ)
 };
 
 /**
@@ -365,3 +366,32 @@ export const REGIME_EXPLANATIONS: Record<RegimeName, string> = {
   volatile: 'Le marché est imprévisible. Grosse incertitude, rester prudent.',
   stable: 'Le marché est calme. Peu de mouvements, situation normale.',
 };
+
+/**
+ * URLs des outils développeur.
+ * Utilise les variables d'environnement ou les valeurs par défaut locales.
+ */
+export const DEV_TOOLS = {
+  swagger: {
+    label: 'API Swagger',
+    description: 'Documentation interactive de l\'API REST',
+    url: typeof window !== 'undefined'
+      ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/docs`
+      : '/docs',
+    icon: 'FileCode2',
+  },
+  redoc: {
+    label: 'API ReDoc',
+    description: 'Documentation API alternative (ReDoc)',
+    url: typeof window !== 'undefined'
+      ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/redoc`
+      : '/redoc',
+    icon: 'BookOpen',
+  },
+  mlflow: {
+    label: 'MLflow',
+    description: 'Tracking des expériences ML et model registry',
+    url: process.env.NEXT_PUBLIC_MLFLOW_URL || 'http://localhost:5000',
+    icon: 'FlaskConical',
+  },
+} as const;

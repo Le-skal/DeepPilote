@@ -8,9 +8,11 @@ Battre les benchmarks passifs (Buy & Hold MSCI World, 60/40 classique, NASDAQ 10
 
 ## Univers d'investissement
 
+### Portefeuille DeepPilot (8 ETFs)
+
 | Ticker | Nom | Classe d'actifs |
 |--------|-----|-----------------|
-| SPY | SPDR S&P 500 ETF | Actions US large cap |
+| URTH | iShares MSCI World ETF | Actions mondiales |
 | EFA | iShares MSCI EAFE | Actions développées hors US |
 | EEM | iShares MSCI Emerging Markets | Actions émergents |
 | TLT | iShares 20+ Year Treasury Bond | Obligations US longue durée |
@@ -18,6 +20,13 @@ Battre les benchmarks passifs (Buy & Hold MSCI World, 60/40 classique, NASDAQ 10
 | GLD | SPDR Gold Shares | Or |
 | VNQ | Vanguard Real Estate ETF | REIT US |
 | SH | ProShares Short S&P 500 | Inverse S&P 500 |
+
+### Benchmarks
+
+| Ticker | Nom | Usage |
+|--------|-----|-------|
+| SPY | SPDR S&P 500 ETF | Benchmark US |
+| QQQ | Invesco NASDAQ 100 | Benchmark Tech |
 
 ## Modèles ML
 

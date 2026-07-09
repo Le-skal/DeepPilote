@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import { Zap, Code2 } from 'lucide-react';
+import { Zap, Code2, FileCode2, FlaskConical } from 'lucide-react';
+import { DEV_TOOLS } from '@/lib/utils/constants';
 
 export function Footer() {
   return (
@@ -20,21 +21,47 @@ export function Footer() {
           </div>
 
           {/* Links */}
-          <div className="flex items-center gap-6 text-sm">
-            <Link
-              href="/about"
-              className="text-muted-foreground hover:text-primary transition-colors"
-            >
-              Mentions légales
-            </Link>
-            <Link
-              href="https://github.com"
-              target="_blank"
-              className="flex items-center gap-1 text-muted-foreground hover:text-primary transition-colors"
-            >
-              <Code2 className="h-4 w-4" />
-              <span>GitHub</span>
-            </Link>
+          <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6 text-sm">
+            {/* Navigation */}
+            <div className="flex items-center gap-4">
+              <Link
+                href="/about"
+                className="text-muted-foreground hover:text-primary transition-colors"
+              >
+                Mentions légales
+              </Link>
+              <Link
+                href="https://github.com/Le-skal/DeepPilote"
+                target="_blank"
+                className="flex items-center gap-1 text-muted-foreground hover:text-primary transition-colors"
+              >
+                <Code2 className="h-4 w-4" />
+                <span>GitHub</span>
+              </Link>
+            </div>
+
+            {/* Dev Tools */}
+            <div className="hidden md:block w-px h-4 bg-border/50" />
+            <div className="flex items-center gap-4">
+              <Link
+                href={DEV_TOOLS.swagger.url}
+                target="_blank"
+                className="flex items-center gap-1 text-muted-foreground hover:text-primary transition-colors"
+                title={DEV_TOOLS.swagger.description}
+              >
+                <FileCode2 className="h-4 w-4" />
+                <span>API Docs</span>
+              </Link>
+              <Link
+                href={DEV_TOOLS.mlflow.url}
+                target="_blank"
+                className="flex items-center gap-1 text-muted-foreground hover:text-primary transition-colors"
+                title={DEV_TOOLS.mlflow.description}
+              >
+                <FlaskConical className="h-4 w-4" />
+                <span>MLflow</span>
+              </Link>
+            </div>
           </div>
 
           {/* Credits */}

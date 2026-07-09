@@ -3,7 +3,14 @@
 # Ce workflow s'exécute tous les jours à 22h UTC (minuit Paris en hiver, 00h en été)
 # après la clôture de la bourse NYSE (16h30 EST = 21h30 UTC).
 #
-# Il extrait les données fraîches de yfinance et FRED, puis les charge dans Supabase.
+# MODE INCRÉMENTAL (par défaut):
+# - Ne télécharge que les données depuis la dernière date en DB (~5-10 jours)
+# - Beaucoup plus rapide que le full reload (~30s vs ~5min)
+#
+# MODE FULL RELOAD (manuel avec full_reload=true):
+# - Recharge toutes les données depuis 2010
+# - À utiliser si les données sont corrompues ou pour réinitialiser
+#
 # Les modèles ML utilisent automatiquement les nouvelles données via le TTL cache (6h).
 
 name: Data Refresh
@@ -56,6 +63,9 @@ jobs:
           python -m data.extractors.extract_yfinance
         env:
           PYTHONPATH: ${{ github.workspace }}
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          # Mode incrémental sauf si full_reload demandé
+          INCREMENTAL: ${{ github.event.inputs.full_reload != 'true' && 'true' || 'false' }}
 
       - name: Extract macro data (FRED)
         run: |
@@ -64,6 +74,8 @@ jobs:
         env:
           PYTHONPATH: ${{ github.workspace }}
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          INCREMENTAL: ${{ github.event.inputs.full_reload != 'true' && 'true' || 'false' }}
 
       - name: Run aggregation pipeline
         run: |
@@ -71,6 +83,8 @@ jobs:
           python -m data.pipeline.aggregate
         env:
           PYTHONPATH: ${{ github.workspace }}
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          INCREMENTAL: ${{ github.event.inputs.full_reload != 'true' && 'true' || 'false' }}
 
       - name: Load to Supabase
         run: |
