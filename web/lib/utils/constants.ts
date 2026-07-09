@@ -368,30 +368,33 @@ export const REGIME_EXPLANATIONS: Record<RegimeName, string> = {
 };
 
 /**
+ * URL de l'API backend.
+ * Production: Render, Dev: localhost
+ */
+const API_URL = process.env.NODE_ENV === 'production'
+  ? 'https://deeppilote.onrender.com'
+  : 'http://localhost:8000';
+
+/**
  * URLs des outils développeur.
- * Utilise les variables d'environnement ou les valeurs par défaut locales.
  */
 export const DEV_TOOLS = {
   swagger: {
     label: 'API Swagger',
     description: 'Documentation interactive de l\'API REST',
-    url: typeof window !== 'undefined'
-      ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/docs`
-      : '/docs',
+    url: `${API_URL}/docs`,
     icon: 'FileCode2',
   },
   redoc: {
     label: 'API ReDoc',
     description: 'Documentation API alternative (ReDoc)',
-    url: typeof window !== 'undefined'
-      ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/redoc`
-      : '/redoc',
+    url: `${API_URL}/redoc`,
     icon: 'BookOpen',
   },
   mlflow: {
     label: 'MLflow',
-    description: 'Tracking des expériences ML et model registry',
-    url: process.env.NEXT_PUBLIC_MLFLOW_URL || 'http://localhost:5000',
+    description: 'Tracking des expériences ML (local uniquement)',
+    url: 'http://localhost:5000',
     icon: 'FlaskConical',
   },
 } as const;
