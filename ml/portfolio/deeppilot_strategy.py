@@ -7,11 +7,14 @@ Combine :
 3. Optimisation de portefeuille (Markowitz)
 
 Réallocation mensuelle avec frais de transaction.
+Logging MLflow automatique si MLFLOW_TRACKING_URI est défini.
 """
 
+import os
 import numpy as np
 import pandas as pd
 from typing import Optional
+from datetime import datetime
 
 from ml.config import (
     ETF_TICKERS,
@@ -30,6 +33,16 @@ from ml.features.feature_engineering import (
     prepare_prediction_features,
     create_target,
 )
+
+# MLflow tracking (optionnel - activé si MLFLOW_TRACKING_URI est défini)
+_MLFLOW_ENABLED = bool(os.getenv("MLFLOW_TRACKING_URI"))
+if _MLFLOW_ENABLED:
+    try:
+        import mlflow
+        print(f"[MLflow] Tracking activé: {os.getenv('MLFLOW_TRACKING_URI')}")
+    except ImportError:
+        _MLFLOW_ENABLED = False
+        print("[MLflow] Package non installé, tracking désactivé")
 
 
 class DeepPilotStrategy:
@@ -107,6 +120,21 @@ class DeepPilotStrategy:
         # Combiner pour features de régime
         df_combined = pd.concat([df_prices, df_macro], axis=1).dropna()
 
+        # MLflow: démarrer un run si activé
+        if _MLFLOW_ENABLED:
+            mlflow.set_experiment("deeppilot-training")
+            mlflow.start_run(run_name=f"training_{datetime.now().strftime('%Y%m%d_%H%M')}")
+            mlflow.log_params({
+                "n_tickers": len(self._tickers),
+                "tickers": ",".join(self._tickers),
+                "risk_free_rate": self.risk_free_rate,
+                "min_weight": self.min_weight,
+                "max_weight": self.max_weight,
+                "training_samples": len(df_combined),
+                "training_start": str(df_combined.index.min().date()),
+                "training_end": str(df_combined.index.max().date()),
+            })
+
         # 1. Entraîner le modèle de régime
         print("Entraînement du modèle de régime (HMM)...")
         X_regime = prepare_regime_features(df_combined)
@@ -115,8 +143,18 @@ class DeepPilotStrategy:
         # Prédire les régimes pour le dataset
         regimes = self.regime_model.predict_series(X_regime)
 
+        # MLflow: logger les métriques HMM
+        if _MLFLOW_ENABLED:
+            regime_counts = regimes.value_counts().to_dict()
+            mlflow.log_metrics({
+                "hmm_n_regimes": N_REGIMES,
+                "hmm_samples": len(X_regime),
+                **{f"regime_{k}_count": v for k, v in regime_counts.items()},
+            })
+
         # 2. Entraîner un modèle de prédiction par ticker
         print("Entraînement des modèles de prédiction...")
+        rf_metrics = {}
         for ticker in self._tickers:
             print(f"  - {ticker}")
 
@@ -138,6 +176,16 @@ class DeepPilotStrategy:
                 model = ReturnPredictorRF()
                 model.fit(X_pred, y)
                 self.prediction_models[ticker] = model
+
+                # Collecter les métriques RF
+                if hasattr(model, 'model') and hasattr(model.model, 'oob_score_'):
+                    rf_metrics[f"rf_{ticker}_oob_score"] = model.model.oob_score_
+
+        # MLflow: logger les métriques RF
+        if _MLFLOW_ENABLED and rf_metrics:
+            mlflow.log_metrics(rf_metrics)
+            mlflow.log_metric("rf_models_trained", len(self.prediction_models))
+            mlflow.end_run()
 
         self._is_fitted = True
         return self
