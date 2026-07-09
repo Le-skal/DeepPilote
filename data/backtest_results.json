@@ -6,5 +6,5 @@
     "end": "unknown"
   },
   "error": "2 validation errors for Settings\nsupabase_url\n  Field required [type=missing, input_value={'supabase_db_url': 'post...base.com:6543/postgres'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing\nsupabase_key\n  Field required [type=missing, input_value={'supabase_db_url': 'post...base.com:6543/postgres'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.13/v/missing",
-  "generated_at": "2026-07-08T01:45:19.144866"
+  "generated_at": "2026-07-09T01:33:33.592067"
 }
