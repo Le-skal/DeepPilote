@@ -1,8 +1,8 @@
 # MLflow Server pour DeepPilot
-# Hébergé sur Render avec Supabase PostgreSQL comme backend
+# Hébergé sur Render avec SQLite comme backend (simple et gratuit)
 #
 # Build: docker build -t deeppilot-mlflow ./mlflow
-# Run local: docker run -p 5000:5000 -e DATABASE_URL=... deeppilot-mlflow
+# Run local: docker run -p 5000:5000 deeppilot-mlflow
 
 FROM python:3.11-slim
 
@@ -10,30 +10,25 @@ FROM python:3.11-slim
 LABEL maintainer="Raphael Martin"
 LABEL description="MLflow tracking server for DeepPilot"
 
-# Install dependencies
+# Install dependencies (pas besoin de psycopg2 avec SQLite)
 RUN pip install --no-cache-dir \
     mlflow==2.14.0 \
-    psycopg2-binary==2.9.9 \
     boto3==1.34.0
 
-# Create directory for artifacts (local storage)
-RUN mkdir -p /mlruns
+# Create directories for SQLite DB and artifacts
+RUN mkdir -p /data /mlruns
 WORKDIR /app
 
 # Expose MLflow default port
 EXPOSE 5000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:5000/health || exit 1
-
-# Start MLflow server
-# - backend-store-uri: PostgreSQL pour les métadonnées (runs, params, metrics)
-# - default-artifact-root: Stockage local pour les artifacts (modèles, plots)
-# Note: Pour la prod, on pourrait utiliser S3/GCS pour les artifacts
-CMD ["sh", "-c", "mlflow server \
-    --host 0.0.0.0 \
-    --port 5000 \
-    --backend-store-uri ${DATABASE_URL} \
-    --default-artifact-root /mlruns \
-    --serve-artifacts"]
+# Start MLflow server with SQLite backend
+# Note: Les données sont stockées dans /data/mlflow.db
+# Sur Render free tier, les données sont perdues au redémarrage (pas de disque persistant)
+# Pour un projet étudiant c'est OK - les expériences sont aussi loggées localement
+CMD ["mlflow", "server", \
+    "--host", "0.0.0.0", \
+    "--port", "5000", \
+    "--backend-store-uri", "sqlite:///data/mlflow.db", \
+    "--default-artifact-root", "/mlruns", \
+    "--serve-artifacts"]

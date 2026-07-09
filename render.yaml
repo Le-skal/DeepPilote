@@ -26,12 +26,9 @@ services:
         sync: false
     healthCheckPath: /health
 
-  # Service 2: MLflow Tracking Server
+  # Service 2: MLflow Tracking Server (SQLite backend)
   - type: web
     name: deeppilote-mlflow
     runtime: docker
     dockerfilePath: ./mlflow/Dockerfile
-    envVars:
-      - key: DATABASE_URL
-        sync: false  # Même URL que SUPABASE_DB_URL
-    healthCheckPath: /health
+    # Pas besoin de DATABASE_URL - utilise SQLite local
