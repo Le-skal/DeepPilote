@@ -56,10 +56,11 @@ def validate_hmm() -> tuple[bool, dict]:
 
         load_dotenv()
 
-        # Charger les données
+        # Charger les données (inclut SPY pour la détection de crises)
         print("Chargement des données...")
+        tickers_with_spy = list(ETF_TICKERS) + ["SPY"] if "SPY" not in ETF_TICKERS else list(ETF_TICKERS)
         prices = download_etf_prices(
-            ETF_TICKERS, start_date="2008-01-01", end_date=datetime.now().strftime("%Y-%m-%d")
+            tickers_with_spy, start_date="2008-01-01", end_date=datetime.now().strftime("%Y-%m-%d")
         )
 
         # Charger macro (DB ou fichier local en fallback)
