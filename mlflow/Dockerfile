@@ -10,25 +10,20 @@ FROM python:3.11-slim
 LABEL maintainer="Raphael Martin"
 LABEL description="MLflow tracking server for DeepPilot"
 
-# Install dependencies (pas besoin de psycopg2 avec SQLite)
-RUN pip install --no-cache-dir \
-    mlflow==2.14.0 \
-    boto3==1.34.0
+# Install dependencies
+RUN pip install --no-cache-dir mlflow==2.14.0
 
-# Create directories for SQLite DB and artifacts
-RUN mkdir -p /data /mlruns
-WORKDIR /app
+# Create work directory with proper permissions
+WORKDIR /mlflow
+RUN mkdir -p /mlflow/db /mlflow/artifacts && chmod -R 777 /mlflow
 
 # Expose MLflow default port
 EXPOSE 5000
 
-# Start MLflow server with SQLite backend
-# Note: Les données sont stockées dans /data/mlflow.db
-# Sur Render free tier, les données sont perdues au redémarrage (pas de disque persistant)
-# Pour un projet étudiant c'est OK - les expériences sont aussi loggées localement
+# Start MLflow server with SQLite backend (chemin absolu)
 CMD ["mlflow", "server", \
     "--host", "0.0.0.0", \
     "--port", "5000", \
-    "--backend-store-uri", "sqlite:///data/mlflow.db", \
-    "--default-artifact-root", "/mlruns", \
+    "--backend-store-uri", "sqlite:////mlflow/db/mlflow.db", \
+    "--default-artifact-root", "/mlflow/artifacts", \
     "--serve-artifacts"]
