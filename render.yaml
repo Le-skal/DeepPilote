@@ -1,0 +1,37 @@
+# Render Blueprint - Configuration des services DeepPilot
+# https://render.com/docs/blueprint-spec
+#
+# Ce fichier documente les services Render du projet.
+# Tu peux l'utiliser pour créer les services automatiquement via Render Dashboard.
+
+services:
+  # Service 1: API FastAPI
+  - type: web
+    name: deeppilote
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn api.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: SUPABASE_DB_URL
+        sync: false  # À configurer manuellement (secret)
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
+      - key: FRED_API_KEY
+        sync: false
+      - key: MISTRAL_API_KEY
+        sync: false
+      - key: SENTRY_DSN
+        sync: false
+    healthCheckPath: /health
+
+  # Service 2: MLflow Tracking Server
+  - type: web
+    name: deeppilote-mlflow
+    runtime: docker
+    dockerfilePath: ./mlflow/Dockerfile
+    envVars:
+      - key: DATABASE_URL
+        sync: false  # Même URL que SUPABASE_DB_URL
+    healthCheckPath: /health

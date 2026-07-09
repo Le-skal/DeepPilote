@@ -40,7 +40,8 @@ jobs:
 
       - name: Build
         env:
-          NEXT_PUBLIC_API_URL: https://deeppilote.onrender.com
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+          NEXT_PUBLIC_MLFLOW_URL: ${{ secrets.NEXT_PUBLIC_MLFLOW_URL }}
         run: npm run build
 
   # Optionnel : tests E2E avec Playwright (à activer plus tard)

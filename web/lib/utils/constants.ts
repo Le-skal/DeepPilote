@@ -369,11 +369,15 @@ export const REGIME_EXPLANATIONS: Record<RegimeName, string> = {
 
 /**
  * URL de l'API backend.
- * Production: Render, Dev: localhost
+ * Utilise NEXT_PUBLIC_API_URL (défini dans Vercel/CI) ou localhost en dev.
  */
-const API_URL = process.env.NODE_ENV === 'production'
-  ? 'https://deeppilote.onrender.com'
-  : 'http://localhost:8000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+/**
+ * URL du serveur MLflow.
+ * Utilise NEXT_PUBLIC_MLFLOW_URL (défini dans Vercel/CI) ou localhost en dev.
+ */
+const MLFLOW_URL = process.env.NEXT_PUBLIC_MLFLOW_URL || 'http://localhost:5000';
 
 /**
  * URLs des outils développeur.
@@ -393,8 +397,8 @@ export const DEV_TOOLS = {
   },
   mlflow: {
     label: 'MLflow',
-    description: 'Tracking des expériences ML (local uniquement)',
-    url: 'http://localhost:5000',
+    description: 'Tracking des expériences ML et model registry',
+    url: MLFLOW_URL,
     icon: 'FlaskConical',
   },
 } as const;
