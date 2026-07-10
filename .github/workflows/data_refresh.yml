@@ -166,7 +166,20 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-
+      # -------------------------------------------------------------
+      # AJOUTE CE BLOC ICI (JUSTE AVANT LE RUN BACKTEST)
+      # -------------------------------------------------------------
+      - name: Wake up MLflow on Render
+        run: |
+          echo "Démarrage du ping de réveil pour MLflow sur Render..."
+          # Récupère l'URL directement depuis ton secret GitHub pour ne pas la mettre en clair
+          curl -s "${{ secrets.MLFLOW_TRACKING_URI }}" > /dev/null
+          echo "Ping envoyé. Attente de 75 secondes pour laisser le temps au cold start de se terminer..."
+          sleep 75
+          echo "L'instance MLflow devrait être opérationnelle !"
+      # -------------------------------------------------------------
+      # Ton étape existante qui va maintenant s'exécuter à coup sûr
+      # -------------------------------------------------------------
       - name: Run backtest
         run: |
           echo "🤖 Régénération du backtest DeepPilot..."
