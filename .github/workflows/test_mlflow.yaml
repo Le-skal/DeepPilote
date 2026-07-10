@@ -32,9 +32,10 @@ jobs:
         run: |
           echo "⏳ Réveil du serveur MLflow (Render free tier)..."
           for i in $(seq 1 60); do
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 5 \
-              "$MLFLOW_TRACKING_URI/api/2.0/mlflow/experiments/search" \
-              -u "$MLFLOW_TRACKING_USERNAME:$MLFLOW_TRACKING_PASSWORD" 2>/dev/null || echo "000")
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 \
+              -u "$MLFLOW_TRACKING_USERNAME:$MLFLOW_TRACKING_PASSWORD" \
+              "$MLFLOW_TRACKING_URI/api/2.0/mlflow/experiments/get-by-name?experiment_name=Default" \
+              2>/dev/null)
             if [ "$STATUS" = "200" ]; then
               echo "✅ MLflow prêt après $((i * 10))s"
               exit 0
