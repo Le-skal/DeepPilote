@@ -7,9 +7,12 @@ env:
   MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
   MLFLOW_TRACKING_USERNAME: ${{ secrets.MLFLOW_TRACKING_USERNAME }}
   MLFLOW_TRACKING_PASSWORD: ${{ secrets.MLFLOW_TRACKING_PASSWORD }}
-  # Retry config pour le free tier Render (cold start lent)
   MLFLOW_MAX_RETRIES: "5"
   MLFLOW_RETRY_DELAY: "5"
+  # Supabase (requis par api/config.py pour charger les données)
+  SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+  SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+  SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
 
 jobs:
   test-backtest:
@@ -27,7 +30,6 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      # ── Warm-up : ping le serveur Render jusqu'à ce qu'il réponde ──
       - name: Réveil de MLflow (timeout 10min)
         run: |
           echo "⏳ Réveil du serveur MLflow (Render free tier)..."
@@ -46,7 +48,6 @@ jobs:
           echo "❌ MLflow pas disponible après 10min"
           exit 1
 
-      # ── Backtest de test ──
       - name: Run backtest
         run: |
           echo "🤖 Lancement du backtest de test..."
