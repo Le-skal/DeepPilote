@@ -9,7 +9,7 @@ env:
   MLFLOW_TRACKING_PASSWORD: ${{ secrets.MLFLOW_TRACKING_PASSWORD }}
   MLFLOW_MAX_RETRIES: "5"
   MLFLOW_RETRY_DELAY: "5"
-  # Supabase (requis par api/config.py pour charger les données)
+  # Supabase (requis par api/config.py pour charger les données!)
   SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
   SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
   SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
