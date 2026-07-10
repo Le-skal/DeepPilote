@@ -11,6 +11,7 @@ Logging MLflow automatique si MLFLOW_TRACKING_URI est défini.
 """
 
 import os
+import time
 import numpy as np
 import pandas as pd
 from typing import Optional
@@ -39,10 +40,38 @@ _MLFLOW_ENABLED = bool(os.getenv("MLFLOW_TRACKING_URI"))
 if _MLFLOW_ENABLED:
     try:
         import mlflow
+        from mlflow.exceptions import RestException
         print(f"[MLflow] Tracking activé: {os.getenv('MLFLOW_TRACKING_URI')}")
     except ImportError:
         _MLFLOW_ENABLED = False
         print("[MLflow] Package non installé, tracking désactivé")
+
+
+# ─── Retry wrapper pour appels MLflow distants ───────────────────────
+_MLFLOW_MAX_RETRIES = int(os.getenv("MLFLOW_MAX_RETRIES", "5"))
+_MLFLOW_RETRY_DELAY = int(os.getenv("MLFLOW_RETRY_DELAY", "5"))
+
+
+def _safe_mlflow_call(func, *args, **kwargs):
+    """
+    Exécute un appel MLflow avec retry automatique.
+    
+    Le serveur distant (Render free tier) peut mettre du temps à persister
+    les ressources (runs, experiments). Ce wrapper retente l'appel en cas
+    de RestException (RESOURCE_DOES_NOT_EXIST, etc.).
+    """
+    for attempt in range(_MLFLOW_MAX_RETRIES):
+        try:
+            return func(*args, **kwargs)
+        except RestException as e:
+            if attempt < _MLFLOW_MAX_RETRIES - 1:
+                wait = _MLFLOW_RETRY_DELAY * (attempt + 1)
+                print(f"  ⏳ MLflow retry {attempt + 1}/{_MLFLOW_MAX_RETRIES} "
+                      f"dans {wait}s... ({e.error_code})")
+                time.sleep(wait)
+            else:
+                print(f"  ❌ MLflow: échec après {_MLFLOW_MAX_RETRIES} tentatives")
+                raise
 
 
 class DeepPilotStrategy:
@@ -107,19 +136,20 @@ class DeepPilotStrategy:
         df_combined = pd.concat([df_prices, df_macro], axis=1).dropna()
 
         # =============================================================
-        # 1. GESTION DU RUN MLFLOW (NETTOYÉE ET SÉCURISÉE)
+        # 1. GESTION DU RUN MLFLOW (AVEC RETRY)
         # =============================================================
         if _MLFLOW_ENABLED:
-            mlflow.set_experiment("deeppilot-training")
+            _safe_mlflow_call(mlflow.set_experiment, "deeppilot-training")
             
             # Gestion dynamique : si un run parent existe (le backtest), on fait du nested
             is_nested = mlflow.active_run() is not None
-            mlflow.start_run(
+            _safe_mlflow_call(
+                mlflow.start_run,
                 run_name=f"training_{datetime.now().strftime('%Y%m%d_%H%M')}", 
-                nested=is_nested
+                nested=is_nested,
             )
             
-            mlflow.log_params({
+            _safe_mlflow_call(mlflow.log_params, {
                 "n_tickers": len(self._tickers),
                 "tickers": ",".join(self._tickers),
                 "risk_free_rate": self.risk_free_rate,
@@ -143,7 +173,7 @@ class DeepPilotStrategy:
         # MLflow: logger les métriques HMM
         if _MLFLOW_ENABLED:
             regime_counts = regimes.value_counts().to_dict()
-            mlflow.log_metrics({
+            _safe_mlflow_call(mlflow.log_metrics, {
                 "hmm_n_regimes": N_REGIMES,
                 "hmm_samples": len(X_regime),
                 **{f"regime_{k}_count": v for k, v in regime_counts.items()},
@@ -182,8 +212,8 @@ class DeepPilotStrategy:
         # =============================================================
         if _MLFLOW_ENABLED:
             if rf_metrics:
-                mlflow.log_metrics(rf_metrics)
-            mlflow.log_metric("rf_models_trained", len(self.prediction_models))
+                _safe_mlflow_call(mlflow.log_metrics, rf_metrics)
+            _safe_mlflow_call(mlflow.log_metric, "rf_models_trained", len(self.prediction_models))
             mlflow.end_run()  # Ferme proprement la session d'entraînement courante
 
         self._is_fitted = True
