@@ -5,6 +5,6 @@
     "start": "unknown",
     "end": "unknown"
   },
-  "error": "RESOURCE_DOES_NOT_EXIST: No Experiment with id=1 exists",
-  "generated_at": "2026-07-09T20:23:31.571867"
+  "error": "Run with UUID baed092c77f9471a9d49dcf9b7053519 is already active. To start a new run, first end the current run with mlflow.end_run(). To start a nested run, call start_run with nested=True",
+  "generated_at": "2026-07-10T00:45:07.473909"
 }
