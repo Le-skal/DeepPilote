@@ -70,12 +70,6 @@ class DeepPilotStrategy:
     ):
         """
         Initialise la stratégie.
-
-        Args:
-            risk_free_rate: Taux sans risque annualisé
-            min_weight: Poids minimum par actif
-            max_weight: Poids maximum par actif
-            regime_adjustment: Ajuster les poids selon le régime
         """
         self.risk_free_rate = risk_free_rate
         self.min_weight = min_weight
@@ -103,14 +97,6 @@ class DeepPilotStrategy:
     ) -> "DeepPilotStrategy":
         """
         Entraîne tous les modèles.
-
-        Args:
-            df_prices: DataFrame avec prix des ETF (colonnes = tickers)
-            df_macro: DataFrame avec données macro (VIX, spread crédit, yield curve)
-            tickers: Liste des tickers à utiliser (défaut: ETF_TICKERS)
-
-        Returns:
-            self
         """
         self._tickers = tickers or [t for t in ETF_TICKERS if t in df_prices.columns]
 
@@ -120,10 +106,19 @@ class DeepPilotStrategy:
         # Combiner pour features de régime
         df_combined = pd.concat([df_prices, df_macro], axis=1).dropna()
 
-        # MLflow: démarrer un run si activé
+        # =============================================================
+        # 1. GESTION DU RUN MLFLOW (NETTOYÉE ET SÉCURISÉE)
+        # =============================================================
         if _MLFLOW_ENABLED:
             mlflow.set_experiment("deeppilot-training")
-            mlflow.start_run(run_name=f"training_{datetime.now().strftime('%Y%m%d_%H%M')}")
+            
+            # Gestion dynamique : si un run parent existe (le backtest), on fait du nested
+            is_nested = mlflow.active_run() is not None
+            mlflow.start_run(
+                run_name=f"training_{datetime.now().strftime('%Y%m%d_%H%M')}", 
+                nested=is_nested
+            )
+            
             mlflow.log_params({
                 "n_tickers": len(self._tickers),
                 "tickers": ",".join(self._tickers),
@@ -135,7 +130,9 @@ class DeepPilotStrategy:
                 "training_end": str(df_combined.index.max().date()),
             })
 
-        # 1. Entraîner le modèle de régime
+        # =============================================================
+        # 2. ENTRAÎNEMENT DES MODÈLES
+        # =============================================================
         print("Entraînement du modèle de régime (HMM)...")
         X_regime = prepare_regime_features(df_combined)
         self.regime_model.fit(X_regime)
@@ -152,7 +149,6 @@ class DeepPilotStrategy:
                 **{f"regime_{k}_count": v for k, v in regime_counts.items()},
             })
 
-        # 2. Entraîner un modèle de prédiction par ticker
         print("Entraînement des modèles de prédiction...")
         rf_metrics = {}
         for ticker in self._tickers:
@@ -181,11 +177,14 @@ class DeepPilotStrategy:
                 if hasattr(model, 'model') and hasattr(model.model, 'oob_score_'):
                     rf_metrics[f"rf_{ticker}_oob_score"] = model.model.oob_score_
 
-        # MLflow: logger les métriques RF
-        if _MLFLOW_ENABLED and rf_metrics:
-            mlflow.log_metrics(rf_metrics)
+        # =============================================================
+        # 3. FERMETURE DU RUN MLFLOW
+        # =============================================================
+        if _MLFLOW_ENABLED:
+            if rf_metrics:
+                mlflow.log_metrics(rf_metrics)
             mlflow.log_metric("rf_models_trained", len(self.prediction_models))
-            mlflow.end_run()
+            mlflow.end_run()  # Ferme proprement la session d'entraînement courante
 
         self._is_fitted = True
         return self
@@ -193,12 +192,6 @@ class DeepPilotStrategy:
     def predict_regime(self, X_regime: pd.DataFrame) -> int:
         """
         Prédit le régime actuel.
-
-        Args:
-            X_regime: Features de régime (dernière observation)
-
-        Returns:
-            Régime prédit (0-3)
         """
         if not self._is_fitted:
             raise ValueError("La stratégie doit être entraînée")
@@ -215,13 +208,6 @@ class DeepPilotStrategy:
     ) -> pd.Series:
         """
         Prédit les probabilités de rendement positif par ticker.
-
-        Args:
-            df_combined: Données combinées (prix + macro)
-            regimes: Série des régimes
-
-        Returns:
-            Series avec P(return > 0) par ticker
         """
         if not self._is_fitted:
             raise ValueError("La stratégie doit être entraînée")
@@ -253,20 +239,9 @@ class DeepPilotStrategy:
     ) -> pd.Series:
         """
         Ajuste les returns attendus selon prédictions et régime.
-
-        Args:
-            base_returns: Returns historiques annualisés
-            prediction_probas: P(return > 0) par ticker
-            regime: Régime actuel
-
-        Returns:
-            Returns ajustés
         """
-        # Ajustement basé sur les prédictions
-        # Proba > 0.5 → bonus, < 0.5 → malus
         prediction_adjustment = (prediction_probas - 0.5) * 0.10  # +/- 5% max
 
-        # Ajustement basé sur le régime
         regime_multiplier = {
             0: 1.0,   # bull : normal
             1: 0.7,   # bear : réduire exposure
@@ -292,29 +267,17 @@ class DeepPilotStrategy:
     ) -> dict:
         """
         Calcule les poids optimaux.
-
-        Args:
-            df_returns: Returns journaliers récents
-            prediction_probas: P(return > 0) par ticker
-            regime: Régime actuel
-            lookback_days: Jours pour estimation covariance
-
-        Returns:
-            Dict avec poids et métriques
         """
-        # Returns et covariance historiques
         recent = df_returns[self._tickers].tail(lookback_days)
         base_returns = recent.mean() * 252
         cov_matrix = recent.cov() * 252
 
-        # Ajuster les returns
         adjusted_returns = self.get_adjusted_returns(
             base_returns,
             prediction_probas,
             regime,
         )
 
-        # Optimiser
         result = self.optimizer.optimize(
             adjusted_returns.values,
             cov_matrix.values,
@@ -324,7 +287,6 @@ class DeepPilotStrategy:
 
         self._current_weights = result["weights"]
 
-        # Ajouter le contexte
         result["regime"] = regime
         result["regime_name"] = REGIME_NAMES.get(regime, f"regime_{regime}")
         result["predictions"] = prediction_probas.to_dict()
@@ -340,24 +302,13 @@ class DeepPilotStrategy:
     ) -> dict:
         """
         Effectue un rebalancement complet.
-
-        Args:
-            df_prices: Prix des ETF
-            df_macro: Données macro
-            current_date: Date du rebalancement
-            lookback_days: Jours d'historique
-
-        Returns:
-            Dict avec nouveaux poids et métriques
         """
         if not self._is_fitted:
             raise ValueError("La stratégie doit être entraînée")
 
-        # Filtrer jusqu'à la date courante (pas de look-ahead)
         df_prices_hist = df_prices.loc[:current_date]
         df_macro_hist = df_macro.loc[:current_date]
 
-        # Combiner
         df_combined = pd.concat([df_prices_hist, df_macro_hist], axis=1).dropna()
 
         # 1. Détecter le régime
@@ -380,9 +331,6 @@ class DeepPilotStrategy:
     def get_current_weights(self) -> Optional[pd.Series]:
         """
         Retourne les poids actuels.
-
-        Returns:
-            Series des poids ou None
         """
         if self._current_weights is None:
             return None
@@ -396,9 +344,6 @@ class DeepPilotStrategy:
     def get_regime_info(self) -> dict:
         """
         Retourne les informations sur le régime actuel.
-
-        Returns:
-            Dict avec régime et statistiques
         """
         if self._current_regime is None:
             return {"regime": None}
@@ -411,9 +356,6 @@ class DeepPilotStrategy:
     def get_model_summary(self) -> dict:
         """
         Retourne un résumé des modèles entraînés.
-
-        Returns:
-            Dict avec informations sur les modèles
         """
         return {
             "is_fitted": self._is_fitted,
