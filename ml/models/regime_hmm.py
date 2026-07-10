@@ -54,14 +54,36 @@ class RegimeHMM:
             covariance_type=covariance_type,
             n_iter=n_iter,
             random_state=random_state,
+            min_covar=1e-3,  # Régularisation pour éviter les matrices singulières
         )
         self.scaler = StandardScaler()
         self._is_fitted = False
         self._regime_order: Optional[np.ndarray] = None
 
+    def _clean_features(self, X: pd.DataFrame) -> pd.DataFrame:
+        """
+        Nettoie les features avant le fit/predict.
+        
+        Supprime les colonnes à variance quasi-nulle et les NaN/Inf
+        qui causent des matrices de covariance singulières.
+        """
+        X = X.replace([np.inf, -np.inf], np.nan).dropna()
+
+        # Supprimer les colonnes à variance quasi-nulle
+        variances = X.var()
+        low_var_cols = variances[variances < 1e-10].index.tolist()
+        if low_var_cols:
+            print(f"  ⚠️ HMM: colonnes à variance nulle supprimées: {low_var_cols}")
+            X = X.drop(columns=low_var_cols)
+
+        return X
+
     def fit(self, X: pd.DataFrame) -> "RegimeHMM":
         """
-        Entraîne le modèle HMM.
+        Entraîne le modèle HMM avec fallback automatique.
+
+        Tente d'abord avec covariance_type='full', et si la matrice
+        n'est pas positive-definite, fallback sur 'diag'.
 
         Args:
             X: Features de régime (doit être une série temporelle continue)
@@ -69,11 +91,29 @@ class RegimeHMM:
         Returns:
             self
         """
+        X = self._clean_features(X)
+        self._feature_columns = X.columns.tolist()
+
         # Normaliser les features
         X_scaled = self.scaler.fit_transform(X)
 
-        # Entraîner HMM
-        self.model.fit(X_scaled)
+        # Tenter le fit avec covariance full
+        try:
+            self.model.fit(X_scaled)
+        except ValueError as e:
+            if "positive-definite" in str(e):
+                print(f"  ⚠️ HMM: covariance 'full' instable, fallback sur 'diag'")
+                self.covariance_type = "diag"
+                self.model = GaussianHMM(
+                    n_components=self.n_regimes,
+                    covariance_type="diag",
+                    n_iter=self.n_iter,
+                    random_state=self.random_state,
+                    min_covar=1e-3,
+                )
+                self.model.fit(X_scaled)
+            else:
+                raise
 
         # Réordonner les états par volatilité
         self._reorder_states(X)
@@ -94,6 +134,7 @@ class RegimeHMM:
         if not self._is_fitted:
             raise ValueError("Le modèle doit être entraîné avant de prédire")
 
+        X = self._align_features(X)
         X_scaled = self.scaler.transform(X)
         raw_labels = self.model.predict(X_scaled)
 
@@ -118,6 +159,7 @@ class RegimeHMM:
         if not self._is_fitted:
             raise ValueError("Le modèle doit être entraîné avant de prédire")
 
+        X = self._align_features(X)
         X_scaled = self.scaler.transform(X)
         raw_proba = self.model.predict_proba(X_scaled)
 
@@ -140,6 +182,7 @@ class RegimeHMM:
         Returns:
             Series des régimes
         """
+        X = self._align_features(X)
         labels = self.predict(X)
         return pd.Series(labels, index=X.index, name="regime")
 
@@ -153,9 +196,23 @@ class RegimeHMM:
         Returns:
             DataFrame avec colonnes prob_bull, prob_bear, etc.
         """
+        X = self._align_features(X)
         proba = self.predict_proba(X)
         columns = [f"prob_{REGIME_NAMES.get(i, f'regime_{i}')}" for i in range(self.n_regimes)]
         return pd.DataFrame(proba, index=X.index, columns=columns)
+
+    def _align_features(self, X: pd.DataFrame) -> pd.DataFrame:
+        """
+        Aligne les colonnes de X avec celles utilisées au fit.
+        
+        Gère le cas où _clean_features a supprimé des colonnes au fit.
+        """
+        if hasattr(self, '_feature_columns'):
+            # Ne garder que les colonnes vues au fit
+            available = [c for c in self._feature_columns if c in X.columns]
+            X = X[available]
+        X = X.replace([np.inf, -np.inf], np.nan).dropna()
+        return X
 
     def _reorder_states(self, X: pd.DataFrame) -> None:
         """
@@ -352,5 +409,6 @@ class RegimeHMM:
         """Retourne la log-vraisemblance du modèle sur les données."""
         if not self._is_fitted:
             raise ValueError("Le modèle doit être entraîné")
+        X = self._align_features(X)
         X_scaled = self.scaler.transform(X)
         return self.model.score(X_scaled)
