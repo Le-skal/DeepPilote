@@ -5,6 +5,6 @@
     "start": "unknown",
     "end": "unknown"
   },
-  "error": "Run with UUID baed092c77f9471a9d49dcf9b7053519 is already active. To start a new run, first end the current run with mlflow.end_run(). To start a nested run, call start_run with nested=True",
-  "generated_at": "2026-07-10T00:45:07.473909"
+  "error": "RESOURCE_DOES_NOT_EXIST: Run with id=3cee49757846421c9deed9d247215004 not found",
+  "generated_at": "2026-07-10T09:14:46.539340"
 }
