@@ -1,9 +1,9 @@
 {
   "metrics": {
-    "total_return": 85.6,
-    "cagr": 6.4,
+    "total_return": 84.85,
+    "cagr": 6.35,
     "volatility": 10.0,
-    "sharpe": 0.24,
+    "sharpe": 0.235,
     "max_drawdown": -24.04,
     "win_rate": 55.7,
     "name": "DeepPilot"
@@ -2095,12 +2095,12 @@
     },
     {
       "date": "2026-07-19",
-      "value": 185.6
+      "value": 184.85
     }
   ],
   "period": {
-    "start": "2016-07-16",
-    "end": "2026-07-16"
+    "start": "2016-07-17",
+    "end": "2026-07-17"
   },
-  "generated_at": "2026-07-18T00:18:10.434176"
+  "generated_at": "2026-07-21T01:36:28.144061"
 }
