@@ -41,12 +41,12 @@ def _get_analyzer() -> tuple[SentimentAnalyzer, bool]:
     if api_key:
         try:
             client = MistralClient()
-            # Test que le client fonctionne
-            if client.is_available():
-                logger.info("Sentiment: Utilisation du client Mistral")
-                return SentimentAnalyzer(client=client), False
+            logger.info("Sentiment: Utilisation du client Mistral")
+            print("[SENTIMENT] Mistral client actif")
+            return SentimentAnalyzer(client=client), False
         except Exception as e:
             logger.warning(f"Sentiment: Erreur client Mistral, fallback mock: {e}")
+            print(f"[SENTIMENT] Erreur Mistral, fallback mock: {e}")
 
     # Fallback vers mock
     logger.info("Sentiment: Utilisation du client Mock (pas de clé API)")
