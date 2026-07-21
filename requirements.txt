@@ -29,8 +29,5 @@ xgboost>=2.0.0
 hmmlearn>=0.3.0
 scipy>=1.12.0
 
-# MLOps
-mlflow>=2.10.0
-
 # LLM / Sentiment
-mistralai>=1.0.0
+mistralai>=1.0.0,<2.0.0
