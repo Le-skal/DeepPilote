@@ -52,12 +52,12 @@ class MistralClient:
                 )
             try:
                 from mistralai import Mistral
-                self._client = Mistral(api_key=self.api_key)
             except ImportError:
                 raise ImportError(
                     "mistralai non installé. "
                     "Lancez: pip install mistralai"
                 )
+            self._client = Mistral(api_key=self.api_key)
         return self._client
 
     def chat(
