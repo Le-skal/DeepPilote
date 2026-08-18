@@ -1,7 +1,7 @@
 {
   "metrics": {
-    "total_return": 89.36,
-    "cagr": 6.61,
+    "total_return": 89.48,
+    "cagr": 6.62,
     "volatility": 10.03,
     "sharpe": 0.261,
     "max_drawdown": -24.04,
@@ -2095,12 +2095,12 @@
     },
     {
       "date": "2026-08-16",
-      "value": 189.36
+      "value": 189.48
     }
   ],
   "period": {
-    "start": "2016-08-13",
-    "end": "2026-08-13"
+    "start": "2016-08-14",
+    "end": "2026-08-14"
   },
-  "generated_at": "2026-08-15T00:18:24.662899"
+  "generated_at": "2026-08-18T00:15:13.333891"
 }
